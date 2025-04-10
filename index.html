@@ -1305,7 +1305,7 @@
             // Supprimer l'utilisateur quand il se déconnecte
             userPresenceRef.onDisconnect().remove();
             
-            // Écouter les changements d'inventaire
+            // Écouter les changements d'inventaire - au niveau supérieur
             inventoryRef.on('value', snapshot => {
                 if (snapshot.exists()) {
                     renderInventory(snapshot.val());
@@ -1314,6 +1314,23 @@
                     // Initialiser l'inventaire s'il n'existe pas
                     initializeInventory();
                 }
+            });
+            
+            // Écouter les changements au niveau des catégories spécifiques
+            // Cela garantit les mises à jour même lors de la suppression du dernier élément
+            const allCategories = ['weapons', 'food', 'medicine', 'tools', 'clothing', 'materials', 
+                                  'ammunition', 'fuel', 'electronics', 'books', 'containers', 'other'];
+            
+            allCategories.forEach(category => {
+                inventoryRef.child(`${currentStorage}/${category}`).on('value', snapshot => {
+                    // Une catégorie spécifique a changé, rafraîchir l'inventaire
+                    inventoryRef.once('value', fullSnapshot => {
+                        if (fullSnapshot.exists()) {
+                            renderInventory(fullSnapshot.val());
+                            updateStats(fullSnapshot.val());
+                        }
+                    });
+                });
             });
             
             // Écouter les changements d'emplacements de stockage
@@ -1523,12 +1540,29 @@
                         items.splice(index, 1);
                     }
                     
-                    // Mettre à jour la catégorie entière - cela garantit que si le dernier élément est supprimé,
-                    // la catégorie est correctement mise à jour comme un tableau vide
-                    inventoryRef.child(`${currentStorage}/${category}`).set(items);
+                    // Si nous supprimons le dernier élément, utiliser un tableau vide
+                    if (items.length === 0) {
+                        items = [];
+                    }
                     
-                    showToast("Supprimé", `${itemName} retiré de l'inventaire`, "success");
-                    addActivityLog("a supprimé", itemName);
+                    // Mettre à jour la catégorie entière
+                    inventoryRef.child(`${currentStorage}/${category}`).set(items)
+                    .then(() => {
+                        // Forcer un rafraîchissement immédiat de l'interface
+                        inventoryRef.once('value', fullSnapshot => {
+                            if (fullSnapshot.exists()) {
+                                renderInventory(fullSnapshot.val());
+                                updateStats(fullSnapshot.val());
+                            }
+                        });
+                        
+                        showToast("Supprimé", `${itemName} retiré de l'inventaire`, "success");
+                        addActivityLog("a supprimé", itemName);
+                    })
+                    .catch(error => {
+                        console.error("Erreur lors de la suppression:", error);
+                        showToast("Erreur", "Problème lors de la suppression de l'objet", "error");
+                    });
                 });
             });
         }
