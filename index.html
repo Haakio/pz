@@ -1,4 +1,1038 @@
-<!DOCTYPE html>
+                <label for="storage-name">Nom de l'emplacement</label>
+                <input type="text" id="storage-name" class="form-control" placeholder="Ex: Coffre de la cuisine">
+            </div>
+            
+            <div class="form-group">
+                <label for="storage-icon">Icône</label>
+                <select id="storage-icon" class="form-control">
+                    <option value="fa-box">📦 Coffre</option>
+                    <option value="fa-home">🏠 Maison</option>
+                    <option value="fa-car">🚗 Véhicule</option>
+                    <option value="fa-warehouse">🏭 Entrepôt</option>
+                    <option value="fa-shopping-cart">🛒 Chariot</option>
+                    <option value="fa-backpack">🎒 Sac à dos</option>
+                </select>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal('storage-modal')">Annuler</button>
+                <button class="btn btn-success" onclick="addNewStorage()">Ajouter</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for room selection -->
+    <div class="overlay active" id="room-modal">
+        <div class="modal">
+            <h2 class="modal-title">Rejoindre un inventaire partagé</h2>
+            
+            <div class="form-group">
+                <label for="room-id">Code d'inventaire</label>
+                <div class="room-input">
+                    <input type="text" id="room-id" class="form-control" placeholder="Entrez un code (ex: team123)">
+                    <button class="btn join-room" onclick="joinRoom()"><i class="fas fa-sign-in-alt"></i> Rejoindre</button>
+                </div>
+                <small style="color: var(--text-secondary);">Entrez un code unique que vous pourrez partager avec votre équipe.</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="user-name">Votre nom (optionnel)</label>
+                <input type="text" id="user-name" class="form-control" placeholder="Comment vous identifier auprès des autres">
+            </div>
+        </div>
+    </div>
+    
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-biohazard"></i>
+                PROJECT ZOMBOID TRACKER
+            </div>
+            <div class="subtitle">Gérez facilement votre inventaire en situation d'apocalypse</div>
+            <div class="room-name" id="current-room-display"></div>
+            <div class="users-online" id="users-online">
+                <i class="fas fa-circle"></i>
+                <span id="online-count">0</span> utilisateurs connectés
+            </div>
+        </header>
+        
+        <div class="storage-selector" id="storage-selector">
+            <button class="storage-btn active" data-storage="main" onclick="switchStorage('main')">
+                <i class="fas fa-user"></i> Inventaire principal
+            </button>
+            <!-- Les autres emplacements seront ajoutés dynamiquement -->
+            <button class="storage-btn add-storage-btn" onclick="openModal('storage-modal')">
+                <i class="fas fa-plus"></i> Nouvel emplacement
+            </button>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" id="total-items">0</div>
+                <div class="stat-name">Objets total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-weapons">0</div>
+                <div class="stat-name">Armes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-food">0</div>
+                <div class="stat-name">Nourriture</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="total-categories">0</div>
+                <div class="stat-name">Catégories</div>
+            </div>
+        </div>
+        
+        <div class="dashboard">
+            <div class="panel">
+                <h2 class="panel-title"><i class="fas fa-plus-circle"></i> Ajouter un objet</h2>
+                
+                <div class="form-group">
+                    <label for="item-name">Nom de l'objet</label>
+                    <input type="text" id="item-name" class="form-control" placeholder="Ex: Marteau">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label for="item-category">Catégorie</label>
+                        <select id="item-category" class="form-control">
+                            <option value="weapons">🔪 Armes</option>
+                            <option value="food">🍗 Nourriture</option>
+                            <option value="medicine">💊 Médicaments</option>
+                            <option value="tools">🔧 Outils</option>
+                            <option value="clothing">👕 Vêtements</option>
+                            <option value="materials">🧱 Matériaux</option>
+                            <option value="ammunition">🔫 Munitions</option>
+                            <option value="fuel">⛽ Carburant</option>
+                            <option value="electronics">💻 Électronique</option>
+                            <option value="books">📚 Livres</option>
+                            <option value="containers">📦 Containers</option>
+                            <option value="other">🔮 Autres</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1;">
+                        <label for="item-count">Quantité</label>
+                        <div class="input-group">
+                            <input type="number" id="item-count" class="form-control quantity-input" value="1" min="1">
+                            <div class="input-group-append">
+                                <span class="input-group-text quantity-label">unités</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="item-description">Description (optionnel)</label>
+                    <input type="text" id="item-description" class="form-control" placeholder="Ex: En bon état, trouvé dans la maison au nord">
+                </div>
+                
+                <button id="add-item" class="btn btn-block" onclick="addItem()">
+                    <i class="fas fa-plus"></i> Ajouter à l'inventaire
+                </button>
+                
+                <hr style="margin: 25px 0; border-color: #444;">
+                
+                <h3 class="quick-add-title">
+                    <i class="fas fa-bolt"></i> Ajout rapide
+                </h3>
+                
+                <div class="common-items">
+                    <div class="common-item" onclick="quickAddItem('Marteau', 'tools')">
+                        <i class="fas fa-hammer"></i>
+                        <div class="common-item-name">Marteau</div>
+                    </div>
+                    <div class="common-item" onclick="quickAddItem('Conserve', 'food')">
+                        <i class="fas fa-utensils"></i>
+                        <div class="common-item-name">Conserve</div>
+                    </div>
+                    <div class="common-item" onclick="quickAddItem('Bandage', 'medicine')">
+                        <i class="fas fa-band-aid"></i>
+                        <div class="common-item-name">Bandage</div>
+                    </div>
+                    <div class="common-item" onclick="quickAddItem('Batte de baseball', 'weapons')">
+                        <i class="fas fa-baseball-bat"></i>
+                        <div class="common-item-name">Batte</div>
+                    </div>
+                    <div class="common-item" onclick="quickAddItem('T-shirt', 'clothing')">
+                        <i class="fas fa-tshirt"></i>
+                        <div class="common-item-name">T-shirt</div>
+                    </div>
+                    <div class="common-item" onclick="quickAddItem('Planches', 'materials')">
+                        <i class="fas fa-wood"></i>
+                        <div class="common-item-name">Planches</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel">
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" class="search-input" id="search-input" placeholder="Rechercher un objet..." oninput="filterItems()">
+                </div>
+                
+                <div class="category-filter" id="category-filter">
+                    <button class="filter-btn active" data-category="all">Tous</button>
+                    <button class="filter-btn" data-category="weapons">Armes</button>
+                    <button class="filter-btn" data-category="food">Nourriture</button>
+                    <button class="filter-btn" data-category="medicine">Médicaments</button>
+                    <button class="filter-btn" data-category="tools">Outils</button>
+                    <button class="filter-btn" data-category="other">Autres</button>
+                </div>
+                
+                <div class="refresh-container">
+                    <button class="btn refresh-btn" onclick="refreshInventory()">
+                        <i class="fas fa-sync-alt"></i> Rafraîchir l'inventaire
+                    </button>
+                </div>
+                
+                <div class="inventory-container" id="inventory">
+                    <!-- Le contenu de l'inventaire sera généré dynamiquement -->
+                </div>
+
+                <div class="activity-log" id="activity-log">
+                    <div class="activity-log-title">
+                        <i class="fas fa-history"></i> Activité récente
+                    </div>
+                    <div id="log-entries">
+                        <!-- Les entrées du journal seront ajoutées ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+        // Configuration Firebase - Remplacez avec vos propres identifiants
+        const firebaseConfig = {
+            apiKey: "AIzaSyASp6Gfi4Fz8Nduap0on89oAZzCkPLKpFc",
+            authDomain: "lions-890e9.firebaseapp.com",
+            databaseURL: "https://lions-890e9-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "lions-890e9",
+            storageBucket: "lions-890e9.firebasestorage.app",
+            messagingSenderId: "560777699926",
+            appId: "1:560777699926:web:2e256d3d1d337513be91f7",
+            measurementId: "G-ZX3N3XWJ4K"
+        };
+        
+        // Initialiser Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // Variables globales
+        let currentRoomId = null;
+        let currentStorage = 'main';
+        let activeFilter = 'all';
+        let searchQuery = '';
+        let userName = 'Anonyme';
+        let userPresenceRef = null;
+        let inventoryRef = null;
+        let userListRef = null;
+        let activityLogRef = null;
+        let storageLocationsRef = null;
+        
+        // Noms des catégories en français
+        const categoryNames = {
+            weapons: "Armes",
+            food: "Nourriture",
+            medicine: "Médicaments",
+            tools: "Outils",
+            clothing: "Vêtements",
+            materials: "Matériaux",
+            ammunition: "Munitions",
+            fuel: "Carburant",
+            electronics: "Électronique",
+            books: "Livres",
+            containers: "Containers",
+            other: "Autres"
+        };
+
+        // Icônes pour chaque catégorie
+        const categoryIcons = {
+            weapons: "fa-knife",
+            food: "fa-drumstick-bite",
+            medicine: "fa-pills",
+            tools: "fa-wrench",
+            clothing: "fa-tshirt",
+            materials: "fa-cube",
+            ammunition: "fa-gun",
+            fuel: "fa-gas-pump",
+            electronics: "fa-laptop",
+            books: "fa-book",
+            containers: "fa-box",
+            other: "fa-question"
+        };
+        
+        // Fonction pour rejoindre une salle
+        function joinRoom() {
+            const roomId = document.getElementById('room-id').value.trim();
+            if (!roomId) {
+                showToast("Erreur", "Veuillez entrer un code d'inventaire", "error");
+                return;
+            }
+            
+            // Vérifier si le nom d'utilisateur est fourni
+            const inputUserName = document.getElementById('user-name').value.trim();
+            if (inputUserName) {
+                userName = inputUserName;
+            } else {
+                userName = 'Utilisateur ' + Math.floor(Math.random() * 1000);
+            }
+            
+            // Définir la référence à la salle actuelle
+            currentRoomId = roomId;
+            
+            // Mettre à jour l'affichage
+            document.getElementById('current-room-display').textContent = `Inventaire partagé: ${roomId}`;
+            
+            // Fermer la modal
+            document.getElementById('room-modal').classList.remove('active');
+            
+            // Démarrer Firebase
+            setupFirebase();
+            
+            // Afficher un toast de bienvenue
+            showToast("Connecté", `Vous avez rejoint l'inventaire "${roomId}"`, "success");
+        }
+        
+        // Configurer les écouteurs Firebase et initialiser l'application
+        function setupFirebase() {
+            // Référence à l'inventaire actuel
+            inventoryRef = database.ref(`rooms/${currentRoomId}/inventory`);
+            
+            // Référence aux emplacements de stockage
+            storageLocationsRef = database.ref(`rooms/${currentRoomId}/storageLocations`);
+            
+            // Référence aux utilisateurs connectés
+            userListRef = database.ref(`rooms/${currentRoomId}/users`);
+            
+            // Référence au journal d'activité
+            activityLogRef = database.ref(`rooms/${currentRoomId}/activityLog`);
+            
+            // Gérer la présence de l'utilisateur
+            userPresenceRef = userListRef.push({
+                name: userName,
+                lastActive: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // Supprimer l'utilisateur quand il se déconnecte
+            userPresenceRef.onDisconnect().remove();
+            
+            // Écouter les changements d'inventaire - au niveau supérieur
+            inventoryRef.on('value', snapshot => {
+                if (snapshot.exists()) {
+                    renderInventory(snapshot.val());
+                    updateStats(snapshot.val());
+                } else {
+                    // Initialiser l'inventaire s'il n'existe pas
+                    initializeInventory();
+                }
+            });
+            
+            // Écouter les changements d'emplacements de stockage
+            storageLocationsRef.on('value', snapshot => {
+                if (snapshot.exists()) {
+                    renderStorageLocations(snapshot.val());
+                } else {
+                    // Initialiser les emplacements s'ils n'existent pas
+                    initializeStorageLocations();
+                }
+            });
+            
+            // Écouter les changements dans la liste des utilisateurs
+            userListRef.on('value', snapshot => {
+                const users = snapshot.val() || {};
+                const count = Object.keys(users).length;
+                document.getElementById('online-count').textContent = count;
+            });
+            
+            // Écouter les entrées du journal d'activité
+            activityLogRef.limitToLast(10).on('value', snapshot => {
+                renderActivityLog(snapshot.val() || {});
+            });
+            
+            // Mettre à jour l'heure de dernière activité périodiquement
+            setInterval(() => {
+                if (userPresenceRef) {
+                    userPresenceRef.update({
+                        lastActive: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
+            }, 60000); // Chaque minute
+        }
+        
+        // Fonction pour forcer un rafraîchissement de l'inventaire
+        function refreshInventory() {
+            document.body.classList.add('loading');
+            showToast("Rafraîchissement", "Mise à jour de l'inventaire...", "success");
+            
+            // Forcer la récupération des données depuis Firebase
+            inventoryRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        renderInventory(snapshot.val());
+                        updateStats(snapshot.val());
+                        showToast("Terminé", "Inventaire mis à jour avec succès", "success");
+                    } else {
+                        showToast("Erreur", "Aucune donnée d'inventaire trouvée", "error");
+                    }
+                    document.body.classList.remove('loading');
+                })
+                .catch(error => {
+                    console.error("Erreur lors du rafraîchissement:", error);
+                    showToast("Erreur", "Problème lors de la mise à jour", "error");
+                    document.body.classList.remove('loading');
+                });
+        }
+        
+        // Initialiser l'inventaire
+        function initializeInventory() {
+            const defaultInventory = {
+                main: {
+                    weapons: [],
+                    food: [],
+                    medicine: [],
+                    tools: [],
+                    clothing: [],
+                    materials: [],
+                    ammunition: [],
+                    fuel: [],
+                    electronics: [],
+                    books: [],
+                    containers: [],
+                    other: []
+                }
+            };
+            
+            inventoryRef.set(defaultInventory);
+        }
+        
+        // Initialiser les emplacements de stockage
+        function initializeStorageLocations() {
+            const defaultStorageLocations = [
+                { id: 'main', name: 'Inventaire principal', icon: 'fa-user' }
+            ];
+            
+            storageLocationsRef.set(defaultStorageLocations);
+        }
+        
+        // Fonction pour ajouter une entrée au journal d'activité
+        function addActivityLog(action, details) {
+            if (!activityLogRef) return;
+            
+            activityLogRef.push({
+                time: firebase.database.ServerValue.TIMESTAMP,
+                user: userName,
+                action: action,
+                details: details
+            });
+        }
+        
+        // Afficher le journal d'activité
+        function renderActivityLog(logEntries) {
+            const logContainer = document.getElementById('log-entries');
+            logContainer.innerHTML = '';
+            
+            if (!logEntries || Object.keys(logEntries).length === 0) {
+                const emptyLog = document.createElement('div');
+                emptyLog.className = 'log-entry';
+                emptyLog.textContent = 'Aucune activité récente';
+                logContainer.appendChild(emptyLog);
+                return;
+            }
+            
+            // Convertir l'objet en tableau pour pouvoir le trier
+            const entries = Object.entries(logEntries).map(([key, value]) => ({
+                id: key,
+                ...value
+            }));
+            
+            // Trier les entrées par horodatage (du plus récent au plus ancien)
+            entries.sort((a, b) => b.time - a.time);
+            
+            // Afficher les 10 dernières entrées
+            entries.slice(0, 10).forEach(entry => {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                
+                const time = new Date(entry.time);
+                const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
+                
+                logEntry.innerHTML = `
+                    <span class="log-time">${timeString}</span>
+                    <span class="log-user">${entry.user}</span> 
+                    ${entry.action} ${entry.details}
+                `;
+                
+                logContainer.appendChild(logEntry);
+            });
+        }
+        
+        // Fonction pour ajouter un nouvel objet
+        function addItem() {
+            const name = document.getElementById('item-name').value.trim();
+            const category = document.getElementById('item-category').value;
+            const count = parseInt(document.getElementById('item-count').value);
+            const description = document.getElementById('item-description').value.trim();
+            
+            if (!name) {
+                showToast("Erreur", "Veuillez entrer un nom d'objet", "error");
+                return;
+            }
+            
+            if (isNaN(count) || count < 1) {
+                showToast("Erreur", "Veuillez entrer une quantité valide", "error");
+                return;
+            }
+            
+            // Référence à la catégorie actuelle
+            const categoryRef = inventoryRef.child(`${currentStorage}/${category}`);
+            
+            // Vérifier si l'objet existe déjà
+            categoryRef.once('value', snapshot => {
+                const items = snapshot.val() || [];
+                const existingItemIndex = items.findIndex(item => 
+                    item && item.name && item.name.toLowerCase() === name.toLowerCase()
+                );
+                
+                if (existingItemIndex !== -1) {
+                    // Mettre à jour la quantité si l'objet existe déjà
+                    const newCount = items[existingItemIndex].count + count;
+                    categoryRef.child(existingItemIndex).update({ count: newCount });
+                    
+                    showToast("Mise à jour", `Quantité de ${name} augmentée de ${count}`, "success");
+                    addActivityLog("a ajouté", `${count} ${name}`);
+                } else {
+                    // Ajouter un nouvel objet
+                    const newItem = {
+                        name: name,
+                        count: count,
+                        description: description,
+                        addedOn: firebase.database.ServerValue.TIMESTAMP
+                    };
+                    
+                    // Ajouter à la fin du tableau
+                    categoryRef.once('value', snapshot => {
+                        const currentItems = snapshot.val() || [];
+                        currentItems.push(newItem);
+                        categoryRef.set(currentItems);
+                        
+                        showToast("Ajouté", `${count} ${name} ajouté à l'inventaire`, "success");
+                        addActivityLog("a ajouté", `${count} ${name}`);
+                    });
+                }
+                
+                // Réinitialiser le formulaire
+                document.getElementById('item-name').value = '';
+                document.getElementById('item-count').value = '1';
+                document.getElementById('item-description').value = '';
+            });
+        }
+        
+        // Fonction pour l'ajout rapide d'objets
+        function quickAddItem(name, category) {
+            document.getElementById('item-name').value = name;
+            document.getElementById('item-category').value = category;
+            document.getElementById('item-count').value = '1';
+            
+            // Focus sur le champ quantité pour permettre une modification rapide
+            document.getElementById('item-count').focus();
+            document.getElementById('item-count').select();
+        }
+        
+        // Fonction pour retirer un objet
+        function removeItem(category, index) {
+            // Obtenir le nom de l'objet pour le journal
+            inventoryRef.child(`${currentStorage}/${category}/${index}/name`).once('value', snapshot => {
+                const itemName = snapshot.val() || 'Objet inconnu';
+                
+                // Récupérer la liste complète des objets de cette catégorie
+                inventoryRef.child(`${currentStorage}/${category}`).once('value', snapshot => {
+                    let items = snapshot.val() || [];
+                    
+                    // Si items n'est pas un tableau, le convertir en tableau
+                    if (!Array.isArray(items)) {
+                        items = [];
+                    }
+                    
+                    // Supprimer l'élément à l'index spécifié
+                    if (index >= 0 && index < items.length) {
+                        items.splice(index, 1);
+                    }
+                    
+                    // Si nous supprimons le dernier élément, utiliser un tableau vide explicite
+                    if (items.length === 0) {
+                        items = [];
+                    }
+                    
+                    // Mettre à jour la catégorie entière
+                    inventoryRef.child(`${currentStorage}/${category}`).set(items)
+                    .then(() => {
+                        // Forcer un rafraîchissement immédiat de l'interface
+                        refreshInventory();
+                        
+                        showToast("Supprimé", `${itemName} retiré de l'inventaire`, "success");
+                        addActivityLog("a supprimé", itemName);
+                    })
+                    .catch(error => {
+                        console.error("Erreur lors de la suppression:", error);
+                        showToast("Erreur", "Problème lors de la suppression de l'objet", "error");
+                    });
+                });
+            });
+        }
+        
+        // Fonction pour augmenter la quantité
+        function increaseCount(category, index) {
+            const itemRef = inventoryRef.child(`${currentStorage}/${category}/${index}`);
+            
+            itemRef.once('value', snapshot => {
+                const item = snapshot.val();
+                if (item) {
+                    itemRef.update({ count: item.count + 1 });
+                    addActivityLog("a augmenté", `${item.name} (+1)`);
+                }
+            });
+        }
+        
+        // Fonction pour diminuer la quantité
+        function decreaseCount(category, index) {
+            const itemRef = inventoryRef.child(`${currentStorage}/${category}/${index}`);
+            
+            itemRef.once('value', snapshot => {
+                const item = snapshot.val();
+                if (item) {
+                    if (item.count > 1) {
+                        itemRef.update({ count: item.count - 1 });
+                        addActivityLog("a diminué", `${item.name} (-1)`);
+                    } else {
+                        removeItem(category, index);
+                    }
+                }
+            });
+        }
+        
+        // Fonction pour filtrer les objets
+        function filterItems() {
+            searchQuery = document.getElementById('search-input').value.toLowerCase();
+            renderInventory();
+        }
+        
+        // Fonction pour définir le filtre de catégorie
+        function setCategoryFilter(filter) {
+            activeFilter = filter;
+            
+            // Mettre à jour les boutons de filtre
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.category === filter) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            renderInventory();
+        }
+        
+        // Fonction pour afficher l'inventaire
+        function renderInventory(inventoryData) {
+            const inventoryElement = document.getElementById('inventory');
+            inventoryElement.innerHTML = '';
+            
+            if (!inventoryData) return;
+            
+            const inventory = inventoryData[currentStorage];
+            if (!inventory) return;
+            
+            let hasItems = false;
+            
+            // Parcourir chaque catégorie
+            for (const category in inventory) {
+                // Ignorer cette catégorie si un filtre est actif
+                if (activeFilter !== 'all' && category !== activeFilter) continue;
+                
+                // Filtrer les objets en fonction de la recherche
+                const items = inventory[category] || [];
+                const filteredItems = items.filter(item => 
+                    item && item.name && (
+                        item.name.toLowerCase().includes(searchQuery) || 
+                        (item.description && item.description.toLowerCase().includes(searchQuery))
+                    )
+                );
+                
+                // Ne pas afficher les catégories vides après filtrage
+                if (filteredItems.length === 0) continue;
+                
+                hasItems = true;
+                
+                const categorySection = document.createElement('div');
+                categorySection.className = 'category-section';
+                categorySection.dataset.category = category;
+                
+                // Ajouter l'en-tête de la catégorie
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `
+                    <div>
+                        <i class="fas ${categoryIcons[category]} category-icon"></i>
+                        ${categoryNames[category]}
+                        <span class="badge badge-primary">${filteredItems.length}</span>
+                    </div>
+                    <i class="fas fa-chevron-down toggle-collapse"></i>
+                `;
+                categoryHeader.onclick = () => toggleCategoryCollapse(categorySection);
+                categorySection.appendChild(categoryHeader);
+                
+                // Contenu de la catégorie
+                const categoryContent = document.createElement('div');
+                categoryContent.className = 'category-content';
+                
+                // Ajouter le tableau d'objets
+                const table = document.createElement('table');
+                table.className = 'inventory-table';
+                
+                // En-tête du tableau
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th>Objet</th>
+                        <th>Quantité</th>
+                        <th>Actions</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+                
+                // Corps du tableau
+                const tbody = document.createElement('tbody');
+                
+                // Ajouter chaque objet
+                filteredItems.forEach((item, index) => {
+                    if (!item) return; // Ignorer les éléments nuls
+                    
+                    const actualIndex = items.indexOf(item); // Index réel dans la liste complète
+                    const tr = document.createElement('tr');
+                    
+                    tr.innerHTML = `
+                        <td class="item-name">
+                            <i class="fas ${categoryIcons[category]} item-icon"></i>
+                            ${item.name}
+                            ${item.description ? `<div class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">${item.description}</span></div>` : ''}
+                        </td>
+                        <td>
+                            <span class="counter-display">${item.count}</span>
+                        </td>
+                        <td class="item-actions">
+                            <button class="action-btn" onclick="decreaseCount('${category}', ${actualIndex})">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="action-btn add" onclick="increaseCount('${category}', ${actualIndex})">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="removeItem('${category}', ${actualIndex})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(tr);
+                });
+                
+                table.appendChild(tbody);
+                categoryContent.appendChild(table);
+                categorySection.appendChild(categoryContent);
+                
+                inventoryElement.appendChild(categorySection);
+            }
+            
+            // Afficher un message si aucun objet ne correspond
+            if (!hasItems) {
+                const emptyState = document.createElement('div');
+                emptyState.className = 'empty-state';
+                
+                if (searchQuery || activeFilter !== 'all') {
+                    emptyState.innerHTML = `
+                        <i class="fas fa-search"></i>
+                        <p>Aucun objet ne correspond à votre recherche</p>
+                        <button class="btn" onclick="resetFilters()">Réinitialiser les filtres</button>
+                    `;
+                } else {
+                    emptyState.innerHTML = `
+                        <i class="fas fa-box-open"></i>
+                        <p>Votre inventaire est vide</p>
+                        <p>Ajoutez des objets à l'aide du formulaire à gauche</p>
+                    `;
+                }
+                
+                inventoryElement.appendChild(emptyState);
+            }
+        }
+        
+        // Fonction pour réinitialiser les filtres
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            searchQuery = '';
+            setCategoryFilter('all');
+        }
+        
+        // Fonction pour basculer l'état de pliage d'une catégorie
+        function toggleCategoryCollapse(categorySection) {
+            categorySection.classList.toggle('collapsed');
+        }
+        
+        // Fonction pour mettre à jour les statistiques
+        function updateStats(inventoryData) {
+            if (!inventoryData) return;
+            
+            const inventory = inventoryData[currentStorage];
+            if (!inventory) return;
+            
+            // Calculer le nombre total d'objets
+            let totalItems = 0;
+            let totalWeapons = 0;
+            let totalFood = 0;
+            let nonEmptyCategories = 0;
+            
+            for (const category in inventory) {
+                const items = inventory[category] || [];
+                const categoryCount = items.reduce((sum, item) => sum + (item ? item.count : 0), 0);
+                totalItems += categoryCount;
+                
+                if (items.length > 0) {
+                    nonEmptyCategories++;
+                }
+                
+                if (category === 'weapons') {
+                    totalWeapons = categoryCount;
+                } else if (category === 'food') {
+                    totalFood = categoryCount;
+                }
+            }
+            
+            // Mettre à jour les affichages
+            document.getElementById('total-items').textContent = totalItems;
+            document.getElementById('total-weapons').textContent = totalWeapons;
+            document.getElementById('total-food').textContent = totalFood;
+            document.getElementById('total-categories').textContent = nonEmptyCategories;
+        }
+        
+        // Fonction pour ajouter un nouvel emplacement de stockage
+        function addNewStorage() {
+            const name = document.getElementById('storage-name').value.trim();
+            const icon = document.getElementById('storage-icon').value;
+            
+            if (!name) {
+                showToast("Erreur", "Veuillez entrer un nom pour l'emplacement", "error");
+                return;
+            }
+            
+            // Générer un ID unique
+            const id = 'storage_' + Date.now();
+            
+            // Récupérer la liste actuelle des emplacements
+            storageLocationsRef.once('value', snapshot => {
+                const locations = snapshot.val() || [];
+                
+                // Ajouter le nouvel emplacement
+                locations.push({
+                    id: id,
+                    name: name,
+                    icon: icon
+                });
+                
+                // Mettre à jour dans Firebase
+                storageLocationsRef.set(locations);
+                
+                // Initialiser l'inventaire pour ce nouvel emplacement
+                const defaultCategories = {
+                    weapons: [],
+                    food: [],
+                    medicine: [],
+                    tools: [],
+                    clothing: [],
+                    materials: [],
+                    ammunition: [],
+                    fuel: [],
+                    electronics: [],
+                    books: [],
+                    containers: [],
+                    other: []
+                };
+                
+                inventoryRef.child(id).set(defaultCategories);
+                
+                // Fermer la modal
+                closeModal('storage-modal');
+                
+                // Passer au nouvel emplacement
+                switchStorage(id);
+                
+                showToast("Succès", `Nouvel emplacement "${name}" ajouté`, "success");
+                addActivityLog("a créé", `un nouvel emplacement: ${name}`);
+            });
+        }
+        
+        // Fonction pour afficher les emplacements de stockage
+        function renderStorageLocations(locations) {
+            const container = document.getElementById('storage-selector');
+            
+            if (!locations || !Array.isArray(locations)) return;
+            
+            // Vider le conteneur
+            container.innerHTML = '';
+            
+            // Ajouter chaque emplacement
+            locations.forEach(location => {
+                const button = document.createElement('button');
+                button.className = 'storage-btn' + (location.id === currentStorage ? ' active' : '');
+                button.dataset.storage = location.id;
+                button.onclick = () => switchStorage(location.id);
+                
+                button.innerHTML = `
+                    <i class="fas ${location.icon}"></i> ${location.name}
+                `;
+                
+                container.appendChild(button);
+            });
+            
+            // Ajouter le bouton pour créer un nouvel emplacement
+            const addButton = document.createElement('button');
+            addButton.className = 'storage-btn add-storage-btn';
+            addButton.onclick = () => openModal('storage-modal');
+            addButton.innerHTML = '<i class="fas fa-plus"></i> Nouvel emplacement';
+            
+            container.appendChild(addButton);
+        }
+        
+        // Fonction pour changer d'emplacement de stockage
+        function switchStorage(storageId) {
+            currentStorage = storageId;
+            
+            // Mettre à jour l'interface
+            document.querySelectorAll('.storage-btn').forEach(btn => {
+                if (btn.dataset.storage === storageId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            // Interroger les données actuelles pour mettre à jour l'affichage
+            inventoryRef.once('value', snapshot => {
+                if (snapshot.exists()) {
+                    renderInventory(snapshot.val());
+                    updateStats(snapshot.val());
+                }
+            });
+            
+            // Enregistrer cette action dans le journal
+            storageLocationsRef.once('value', snapshot => {
+                const locations = snapshot.val() || [];
+                const currentLocation = locations.find(loc => loc.id === storageId);
+                
+                if (currentLocation) {
+                    addActivityLog("a changé d'emplacement", `vers ${currentLocation.name}`);
+                }
+            });
+        }
+        
+        // Fonction pour afficher une notification toast
+        function showToast(title, message, type = "success") {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Définir le contenu
+            document.querySelector('.toast-title').textContent = title;
+            toastMessage.textContent = message;
+            
+            // Définir le type
+            toast.className = "toast show";
+            if (type === "success") {
+                toast.classList.add("success");
+                toast.querySelector('i').className = "fas fa-check-circle fa-lg";
+            } else if (type === "error") {
+                toast.classList.add("error");
+                toast.querySelector('i').className = "fas fa-exclamation-circle fa-lg";
+            }
+            
+            // Afficher le toast
+            toast.classList.add("show");
+            
+            // Masquer automatiquement après 3 secondes
+            setTimeout(hideToast, 3000);
+        }
+        
+        // Fonction pour masquer le toast
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove("show");
+        }
+        
+        // Fonction pour ouvrir une modal
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+        
+        // Fonction pour fermer une modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+        
+        // Ajouter des écouteurs d'événements pour les boutons de filtre
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setCategoryFilter(btn.dataset.category);
+                });
+            });
+            
+            // Permettre d'appuyer sur Entrée pour rejoindre une salle
+            document.getElementById('room-id').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    joinRoom();
+                }
+            });
+            
+            document.getElementById('user-name').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    joinRoom();
+                }
+            });
+            
+            // Permettre d'appuyer sur Entrée pour ajouter un objet
+            document.getElementById('item-name').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+            
+            document.getElementById('item-count').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+            
+            document.getElementById('item-description').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addItem();
+                }
+            });
+        });
+        
+        // Fonction pour gérer les déconnexions
+        window.addEventListener('beforeunload', () => {
+            if (userPresenceRef) {
+                userPresenceRef.remove();
+            }
+        });
+    </script>
+</body>
+</html><!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -962,6 +1996,45 @@
             font-weight: bold;
             color: var(--text);
         }
+
+        /* Refresh button styles */
+        .refresh-container {
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .refresh-btn {
+            padding: 8px 15px;
+            background-color: var(--surface-light);
+            border: none;
+            border-radius: var(--border-radius);
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .refresh-btn:hover {
+            background-color: var(--primary);
+        }
+
+        .refresh-btn i {
+            margin-right: 5px;
+        }
+
+        /* Fixed width for quantity input and label */
+        .quantity-input {
+            width: 70%;
+            border-radius: var(--border-radius) 0 0 var(--border-radius);
+        }
+
+        .quantity-label {
+            width: 30%;
+            text-align: center;
+            justify-content: center;
+            display: flex;
+        }
     </style>
 </head>
 <body>
@@ -986,6 +2059,7 @@
             
             <div class="form-group">
                 <label for="storage-name">Nom de l'emplacement</label>
+               <label for="storage-name">Nom de l'emplacement</label>
                 <input type="text" id="storage-name" class="form-control" placeholder="Ex: Coffre de la cuisine">
             </div>
             
@@ -1007,1032 +2081,5 @@
             </div>
         </div>
     </div>
-    
-    <!-- Modal for room selection -->
-    <div class="overlay active" id="room-modal">
-        <div class="modal">
-            <h2 class="modal-title">Rejoindre un inventaire partagé</h2>
-            
-            <div class="form-group">
-                <label for="room-id">Code d'inventaire</label>
-                <div class="room-input">
-                    <input type="text" id="room-id" class="form-control" placeholder="Entrez un code (ex: team123)">
-                    <button class="btn join-room" onclick="joinRoom()"><i class="fas fa-sign-in-alt"></i> Rejoindre</button>
-                </div>
-                <small style="color: var(--text-secondary);">Entrez un code unique que vous pourrez partager avec votre équipe.</small>
-            </div>
-            
-            <div class="form-group">
-                <label for="user-name">Votre nom (optionnel)</label>
-                <input type="text" id="user-name" class="form-control" placeholder="Comment vous identifier auprès des autres">
-            </div>
-        </div>
-    </div>
-    
-    <div class="app-container">
-        <header>
-            <div class="logo">
-                <i class="fas fa-biohazard"></i>
-                PROJECT ZOMBOID TRACKER
-            </div>
-            <div class="subtitle">Gérez facilement votre inventaire en situation d'apocalypse</div>
-            <div class="room-name" id="current-room-display"></div>
-            <div class="users-online" id="users-online">
-                <i class="fas fa-circle"></i>
-                <span id="online-count">0</span> utilisateurs connectés
-            </div>
-        </header>
-        
-        <div class="storage-selector" id="storage-selector">
-            <button class="storage-btn active" data-storage="main" onclick="switchStorage('main')">
-                <i class="fas fa-user"></i> Inventaire principal
-            </button>
-            <!-- Les autres emplacements seront ajoutés dynamiquement -->
-            <button class="storage-btn add-storage-btn" onclick="openModal('storage-modal')">
-                <i class="fas fa-plus"></i> Nouvel emplacement
-            </button>
-        </div>
-        
-        <div class="stats-container">
-            <div class="stat-card">
-                <div class="stat-value" id="total-items">0</div>
-                <div class="stat-name">Objets total</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="total-weapons">0</div>
-                <div class="stat-name">Armes</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="total-food">0</div>
-                <div class="stat-name">Nourriture</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="total-categories">0</div>
-                <div class="stat-name">Catégories</div>
-            </div>
-        </div>
-        
-        <div class="dashboard">
-            <div class="panel">
-                <h2 class="panel-title"><i class="fas fa-plus-circle"></i> Ajouter un objet</h2>
-                
-                <div class="form-group">
-                    <label for="item-name">Nom de l'objet</label>
-                    <input type="text" id="item-name" class="form-control" placeholder="Ex: Marteau">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group" style="flex: 2;">
-                        <label for="item-category">Catégorie</label>
-                        <select id="item-category" class="form-control">
-                            <option value="weapons">🔪 Armes</option>
-                            <option value="food">🍗 Nourriture</option>
-                            <option value="medicine">💊 Médicaments</option>
-                            <option value="tools">🔧 Outils</option>
-                            <option value="clothing">👕 Vêtements</option>
-                            <option value="materials">🧱 Matériaux</option>
-                            <option value="ammunition">🔫 Munitions</option>
-                            <option value="fuel">⛽ Carburant</option>
-                            <option value="electronics">💻 Électronique</option>
-                            <option value="books">📚 Livres</option>
-                            <option value="containers">📦 Containers</option>
-                            <option value="other">🔮 Autres</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group" style="flex: 1;">
-                        <label for="item-count">Quantité</label>
-                        <div class="input-group">
-                            <input type="number" id="item-count" class="form-control" value="1" min="1" style="width: 70%;">
-                            <div class="input-group-append" style="width: 30%;">
-                                <span class="input-group-text" style="width: 100%; justify-content: center;">unités</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="item-description">Description (optionnel)</label>
-                    <input type="text" id="item-description" class="form-control" placeholder="Ex: En bon état, trouvé dans la maison au nord">
-                </div>
-                
-                <button id="add-item" class="btn btn-block" onclick="addItem()">
-                    <i class="fas fa-plus"></i> Ajouter à l'inventaire
-                </button>
-                
-                <hr style="margin: 25px 0; border-color: #444;">
-                
-                <h3 class="quick-add-title">
-                    <i class="fas fa-bolt"></i> Ajout rapide
-                </h3>
-                
-                <div class="common-items">
-                    <div class="common-item" onclick="quickAddItem('Marteau', 'tools')">
-                        <i class="fas fa-hammer"></i>
-                        <div class="common-item-name">Marteau</div>
-                    </div>
-                    <div class="common-item" onclick="quickAddItem('Conserve', 'food')">
-                        <i class="fas fa-utensils"></i>
-                        <div class="common-item-name">Conserve</div>
-                    </div>
-                    <div class="common-item" onclick="quickAddItem('Bandage', 'medicine')">
-                        <i class="fas fa-band-aid"></i>
-                        <div class="common-item-name">Bandage</div>
-                    </div>
-                    <div class="common-item" onclick="quickAddItem('Batte de baseball', 'weapons')">
-                        <i class="fas fa-baseball-bat"></i>
-                        <div class="common-item-name">Batte</div>
-                    </div>
-                    <div class="common-item" onclick="quickAddItem('T-shirt', 'clothing')">
-                        <i class="fas fa-tshirt"></i>
-                        <div class="common-item-name">T-shirt</div>
-                    </div>
-                    <div class="common-item" onclick="quickAddItem('Planches', 'materials')">
-                        <i class="fas fa-wood"></i>
-                        <div class="common-item-name">Planches</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="panel">
-                <div class="search-container">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="search-input" id="search-input" placeholder="Rechercher un objet..." oninput="filterItems()">
-                </div>
-                
-                <div class="category-filter" id="category-filter">
-                    <button class="filter-btn active" data-category="all">Tous</button>
-                    <button class="filter-btn" data-category="weapons">Armes</button>
-                    <button class="filter-btn" data-category="food">Nourriture</button>
-                    <button class="filter-btn" data-category="medicine">Médicaments</button>
-                    <button class="filter-btn" data-category="tools">Outils</button>
-                    <button class="filter-btn" data-category="other">Autres</button>
-                </div>
-                
-                <div style="text-align: right; margin-bottom: 15px;">
-                    <button class="btn" onclick="refreshInventory()">
-                        <i class="fas fa-sync-alt"></i> Rafraîchir l'inventaire
-                    </button>
-                </div>
-                
-                <div class="inventory-container" id="inventory">
-                    <!-- Le contenu de l'inventaire sera généré dynamiquement -->
-                </div>
-
-                <div class="activity-log" id="activity-log">
-                    <div class="activity-log-title">
-                        <i class="fas fa-history"></i> Activité récente
-                    </div>
-                    <div id="log-entries">
-                        <!-- Les entrées du journal seront ajoutées ici -->
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-    <script>
-        // Configuration Firebase - Remplacez avec vos propres identifiants
-        const firebaseConfig = {
-            apiKey: "AIzaSyASp6Gfi4Fz8Nduap0on89oAZzCkPLKpFc",
-            authDomain: "lions-890e9.firebaseapp.com",
-            projectId: "lions-890e9",
-            storageBucket: "lions-890e9.firebasestorage.app",
-            messagingSenderId: "560777699926",
-            appId: "1:560777699926:web:2e256d3d1d337513be91f7",
-            measurementId: "G-ZX3N3XWJ4K"
-        };
-        
-        // Initialiser Firebase
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        
-        // Variables globales
-        let currentRoomId = null;
-        let currentStorage = 'main';
-        let activeFilter = 'all';
-        let searchQuery = '';
-        let userName = 'Anonyme';
-        let userPresenceRef = null;
-        let inventoryRef = null;
-        let userListRef = null;
-        let activityLogRef = null;
-        let storageLocationsRef = null;
-        
-        // Noms des catégories en français
-        const categoryNames = {
-            weapons: "Armes",
-            food: "Nourriture",
-            medicine: "Médicaments",
-            tools: "Outils",
-            clothing: "Vêtements",
-            materials: "Matériaux",
-            ammunition: "Munitions",
-            fuel: "Carburant",
-            electronics: "Électronique",
-            books: "Livres",
-            containers: "Containers",
-            other: "Autres"
-        };
-
-        // Icônes pour chaque catégorie
-        const categoryIcons = {
-            weapons: "fa-knife",
-            food: "fa-drumstick-bite",
-            medicine: "fa-pills",
-            tools: "fa-wrench",
-            clothing: "fa-tshirt",
-            materials: "fa-cube",
-            ammunition: "fa-gun",
-            fuel: "fa-gas-pump",
-            electronics: "fa-laptop",
-            books: "fa-book",
-            containers: "fa-box",
-            other: "fa-question"
-        };
-        
-        // Fonction pour rejoindre une salle
-        function joinRoom() {
-            const roomId = document.getElementById('room-id').value.trim();
-            if (!roomId) {
-                showToast("Erreur", "Veuillez entrer un code d'inventaire", "error");
-                return;
-            }
-            
-            // Vérifier si le nom d'utilisateur est fourni
-            const inputUserName = document.getElementById('user-name').value.trim();
-            if (inputUserName) {
-                userName = inputUserName;
-            } else {
-                userName = 'Utilisateur ' + Math.floor(Math.random() * 1000);
-            }
-            
-            // Définir la référence à la salle actuelle
-            currentRoomId = roomId;
-            
-            // Mettre à jour l'affichage
-            document.getElementById('current-room-display').textContent = `Inventaire partagé: ${roomId}`;
-            
-            // Fermer la modal
-            document.getElementById('room-modal').classList.remove('active');
-            
-            // Démarrer Firebase
-            setupFirebase();
-            
-            // Afficher un toast de bienvenue
-            showToast("Connecté", `Vous avez rejoint l'inventaire "${roomId}"`, "success");
-        }
-        
-        // Configurer les écouteurs Firebase et initialiser l'application
-        function setupFirebase() {
-            // Référence à l'inventaire actuel
-            inventoryRef = database.ref(`rooms/${currentRoomId}/inventory`);
-            
-            // Référence aux emplacements de stockage
-            storageLocationsRef = database.ref(`rooms/${currentRoomId}/storageLocations`);
-            
-            // Référence aux utilisateurs connectés
-            userListRef = database.ref(`rooms/${currentRoomId}/users`);
-            
-            // Référence au journal d'activité
-            activityLogRef = database.ref(`rooms/${currentRoomId}/activityLog`);
-            
-            // Gérer la présence de l'utilisateur
-            userPresenceRef = userListRef.push({
-                name: userName,
-                lastActive: firebase.database.ServerValue.TIMESTAMP
-            });
-            
-            // Supprimer l'utilisateur quand il se déconnecte
-            userPresenceRef.onDisconnect().remove();
-            
-            // Écouter les changements d'inventaire - au niveau supérieur
-            inventoryRef.on('value', snapshot => {
-                if (snapshot.exists()) {
-                    renderInventory(snapshot.val());
-                    updateStats(snapshot.val());
-                } else {
-                    // Initialiser l'inventaire s'il n'existe pas
-                    initializeInventory();
-                }
-            });
-            
-            // Écouter les changements au niveau des catégories spécifiques
-            // Cela garantit les mises à jour même lors de la suppression du dernier élément
-            const allCategories = ['weapons', 'food', 'medicine', 'tools', 'clothing', 'materials', 
-                                  'ammunition', 'fuel', 'electronics', 'books', 'containers', 'other'];
-            
-            allCategories.forEach(category => {
-                inventoryRef.child(`${currentStorage}/${category}`).on('value', snapshot => {
-                    // Une catégorie spécifique a changé, rafraîchir l'inventaire
-                    inventoryRef.once('value', fullSnapshot => {
-                        if (fullSnapshot.exists()) {
-                            renderInventory(fullSnapshot.val());
-                            updateStats(fullSnapshot.val());
-                        }
-                    });
-                });
-            });
-            
-            // Écouter les changements d'emplacements de stockage
-            storageLocationsRef.on('value', snapshot => {
-                if (snapshot.exists()) {
-                    renderStorageLocations(snapshot.val());
-                } else {
-                    // Initialiser les emplacements s'ils n'existent pas
-                    initializeStorageLocations();
-                }
-            });
-            
-            // Écouter les changements dans la liste des utilisateurs
-            userListRef.on('value', snapshot => {
-                const users = snapshot.val() || {};
-                const count = Object.keys(users).length;
-                document.getElementById('online-count').textContent = count;
-            });
-            
-            // Écouter les entrées du journal d'activité
-            activityLogRef.limitToLast(10).on('value', snapshot => {
-                renderActivityLog(snapshot.val() || {});
-            });
-            
-            // Mettre à jour l'heure de dernière activité périodiquement
-            setInterval(() => {
-                if (userPresenceRef) {
-                    userPresenceRef.update({
-                        lastActive: firebase.database.ServerValue.TIMESTAMP
-                    });
-                }
-            }, 60000); // Chaque minute
-        }
-        
-        // Initialiser l'inventaire
-        function initializeInventory() {
-            const defaultInventory = {
-                main: {
-                    weapons: [],
-                    food: [],
-                    medicine: [],
-                    tools: [],
-                    clothing: [],
-                    materials: [],
-                    ammunition: [],
-                    fuel: [],
-                    electronics: [],
-                    books: [],
-                    containers: [],
-                    other: []
-                }
-            };
-            
-            inventoryRef.set(defaultInventory);
-        }
-        
-        // Initialiser les emplacements de stockage
-        function initializeStorageLocations() {
-            const defaultStorageLocations = [
-                { id: 'main', name: 'Inventaire principal', icon: 'fa-user' }
-            ];
-            
-            storageLocationsRef.set(defaultStorageLocations);
-        }
-        
-        // Fonction pour ajouter une entrée au journal d'activité
-        function addActivityLog(action, details) {
-            if (!activityLogRef) return;
-            
-            activityLogRef.push({
-                time: firebase.database.ServerValue.TIMESTAMP,
-                user: userName,
-                action: action,
-                details: details
-            });
-        }
-        
-        // Afficher le journal d'activité
-        function renderActivityLog(logEntries) {
-            const logContainer = document.getElementById('log-entries');
-            logContainer.innerHTML = '';
-            
-            if (!logEntries || Object.keys(logEntries).length === 0) {
-                const emptyLog = document.createElement('div');
-                emptyLog.className = 'log-entry';
-                emptyLog.textContent = 'Aucune activité récente';
-                logContainer.appendChild(emptyLog);
-                return;
-            }
-            
-            // Convertir l'objet en tableau pour pouvoir le trier
-            const entries = Object.entries(logEntries).map(([key, value]) => ({
-                id: key,
-                ...value
-            }));
-            
-            // Trier les entrées par horodatage (du plus récent au plus ancien)
-            entries.sort((a, b) => b.time - a.time);
-            
-            // Afficher les 10 dernières entrées
-            entries.slice(0, 10).forEach(entry => {
-                const logEntry = document.createElement('div');
-                logEntry.className = 'log-entry';
-                
-                const time = new Date(entry.time);
-                const timeString = `${time.getHours().toString().padStart(2, '0')}:${time.getMinutes().toString().padStart(2, '0')}`;
-                
-                logEntry.innerHTML = `
-                    <span class="log-time">${timeString}</span>
-                    <span class="log-user">${entry.user}</span> 
-                    ${entry.action} ${entry.details}
-                `;
-                
-                logContainer.appendChild(logEntry);
-            });
-        }
-        
-        // Fonction pour ajouter un nouvel objet
-        function addItem() {
-            const name = document.getElementById('item-name').value.trim();
-            const category = document.getElementById('item-category').value;
-            const count = parseInt(document.getElementById('item-count').value);
-            const description = document.getElementById('item-description').value.trim();
-            
-            if (!name) {
-                showToast("Erreur", "Veuillez entrer un nom d'objet", "error");
-                return;
-            }
-            
-            if (isNaN(count) || count < 1) {
-                showToast("Erreur", "Veuillez entrer une quantité valide", "error");
-                return;
-            }
-            
-            // Référence à la catégorie actuelle
-            const categoryRef = inventoryRef.child(`${currentStorage}/${category}`);
-            
-            // Vérifier si l'objet existe déjà
-            categoryRef.once('value', snapshot => {
-                const items = snapshot.val() || [];
-                const existingItemIndex = items.findIndex(item => 
-                    item && item.name && item.name.toLowerCase() === name.toLowerCase()
-                );
-                
-                if (existingItemIndex !== -1) {
-                    // Mettre à jour la quantité si l'objet existe déjà
-                    const newCount = items[existingItemIndex].count + count;
-                    categoryRef.child(existingItemIndex).update({ count: newCount });
-                    
-                    showToast("Mise à jour", `Quantité de ${name} augmentée de ${count}`, "success");
-                    addActivityLog("a ajouté", `${count} ${name}`);
-                } else {
-                    // Ajouter un nouvel objet
-                    const newItem = {
-                        name: name,
-                        count: count,
-                        description: description,
-                        addedOn: firebase.database.ServerValue.TIMESTAMP
-                    };
-                    
-                    // Ajouter à la fin du tableau
-                    categoryRef.once('value', snapshot => {
-                        const currentItems = snapshot.val() || [];
-                        currentItems.push(newItem);
-                        categoryRef.set(currentItems);
-                        
-                        showToast("Ajouté", `${count} ${name} ajouté à l'inventaire`, "success");
-                        addActivityLog("a ajouté", `${count} ${name}`);
-                    });
-                }
-                
-                // Réinitialiser le formulaire
-                document.getElementById('item-name').value = '';
-                document.getElementById('item-count').value = '1';
-                document.getElementById('item-description').value = '';
-            });
-        }
-        
-        // Fonction pour l'ajout rapide d'objets
-        function quickAddItem(name, category) {
-            document.getElementById('item-name').value = name;
-            document.getElementById('item-category').value = category;
-            document.getElementById('item-count').value = '1';
-            
-            // Focus sur le champ quantité pour permettre une modification rapide
-            document.getElementById('item-count').focus();
-            document.getElementById('item-count').select();
-        }
-        
-        // Fonction pour retirer un objet
-        function removeItem(category, index) {
-            // Obtenir le nom de l'objet pour le journal
-            inventoryRef.child(`${currentStorage}/${category}/${index}/name`).once('value', snapshot => {
-                const itemName = snapshot.val() || 'Objet inconnu';
-                
-                // Récupérer la liste complète des objets de cette catégorie
-                inventoryRef.child(`${currentStorage}/${category}`).once('value', snapshot => {
-                    let items = snapshot.val() || [];
-                    
-                    // Si items n'est pas un tableau, le convertir en tableau
-                    if (!Array.isArray(items)) {
-                        items = [];
-                    }
-                    
-                    // Supprimer l'élément à l'index spécifié
-                    if (index >= 0 && index < items.length) {
-                        items.splice(index, 1);
-                    }
-                    
-                    // Si nous supprimons le dernier élément, utiliser un tableau vide
-                    if (items.length === 0) {
-                        items = [];
-                    }
-                    
-                    // Mettre à jour la catégorie entière
-                    inventoryRef.child(`${currentStorage}/${category}`).set(items)
-                    .then(() => {
-                        // Forcer un rafraîchissement immédiat de l'interface
-                        inventoryRef.once('value', fullSnapshot => {
-                            if (fullSnapshot.exists()) {
-                                renderInventory(fullSnapshot.val());
-                                updateStats(fullSnapshot.val());
-                            }
-                        });
-                        
-                        showToast("Supprimé", `${itemName} retiré de l'inventaire`, "success");
-                        addActivityLog("a supprimé", itemName);
-                    })
-                    .catch(error => {
-                        console.error("Erreur lors de la suppression:", error);
-                        showToast("Erreur", "Problème lors de la suppression de l'objet", "error");
-                    });
-                });
-            });
-        }
-        
-        // Fonction pour augmenter la quantité
-        function increaseCount(category, index) {
-            const itemRef = inventoryRef.child(`${currentStorage}/${category}/${index}`);
-            
-            itemRef.once('value', snapshot => {
-                const item = snapshot.val();
-                if (item) {
-                    itemRef.update({ count: item.count + 1 });
-                    addActivityLog("a augmenté", `${item.name} (+1)`);
-                }
-            });
-        }
-        
-        // Fonction pour diminuer la quantité
-        function decreaseCount(category, index) {
-            const itemRef = inventoryRef.child(`${currentStorage}/${category}/${index}`);
-            
-            itemRef.once('value', snapshot => {
-                const item = snapshot.val();
-                if (item) {
-                    if (item.count > 1) {
-                        itemRef.update({ count: item.count - 1 });
-                        addActivityLog("a diminué", `${item.name} (-1)`);
-                    } else {
-                        removeItem(category, index);
-                    }
-                }
-            });
-        }
-        
-        // Fonction pour filtrer les objets
-        function filterItems() {
-            searchQuery = document.getElementById('search-input').value.toLowerCase();
-            renderInventory();
-        }
-        
-        // Fonction pour définir le filtre de catégorie
-        function setCategoryFilter(filter) {
-            activeFilter = filter;
-            
-            // Mettre à jour les boutons de filtre
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                if (btn.dataset.category === filter) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-            
-            renderInventory();
-        }
-        
-        // Fonction pour afficher l'inventaire
-        function renderInventory(inventoryData) {
-            const inventoryElement = document.getElementById('inventory');
-            inventoryElement.innerHTML = '';
-            
-            if (!inventoryData) return;
-            
-            const inventory = inventoryData[currentStorage];
-            if (!inventory) return;
-            
-            let hasItems = false;
-            
-            // Parcourir chaque catégorie
-            for (const category in inventory) {
-                // Ignorer cette catégorie si un filtre est actif
-                if (activeFilter !== 'all' && category !== activeFilter) continue;
-                
-                // Filtrer les objets en fonction de la recherche
-                const items = inventory[category] || [];
-                const filteredItems = items.filter(item => 
-                    item && item.name && (
-                        item.name.toLowerCase().includes(searchQuery) || 
-                        (item.description && item.description.toLowerCase().includes(searchQuery))
-                    )
-                );
-                
-                // Ne pas afficher les catégories vides après filtrage
-                if (filteredItems.length === 0) continue;
-                
-                hasItems = true;
-                
-                const categorySection = document.createElement('div');
-                categorySection.className = 'category-section';
-                categorySection.dataset.category = category;
-                
-                // Ajouter l'en-tête de la catégorie
-                const categoryHeader = document.createElement('div');
-                categoryHeader.className = 'category-header';
-                categoryHeader.innerHTML = `
-                    <div>
-                        <i class="fas ${categoryIcons[category]} category-icon"></i>
-                        ${categoryNames[category]}
-                        <span class="badge badge-primary">${filteredItems.length}</span>
-                    </div>
-                    <i class="fas fa-chevron-down toggle-collapse"></i>
-                `;
-                categoryHeader.onclick = () => toggleCategoryCollapse(categorySection);
-                categorySection.appendChild(categoryHeader);
-                
-                // Contenu de la catégorie
-                const categoryContent = document.createElement('div');
-                categoryContent.className = 'category-content';
-                
-                // Ajouter le tableau d'objets
-                const table = document.createElement('table');
-                table.className = 'inventory-table';
-                
-                // En-tête du tableau
-                const thead = document.createElement('thead');
-                thead.innerHTML = `
-                    <tr>
-                        <th>Objet</th>
-                        <th>Quantité</th>
-                        <th>Actions</th>
-                    </tr>
-                `;
-                table.appendChild(thead);
-                
-                // Corps du tableau
-                const tbody = document.createElement('tbody');
-                
-                // Ajouter chaque objet
-                filteredItems.forEach((item, index) => {
-                    if (!item) return; // Ignorer les éléments nuls
-                    
-                    const actualIndex = items.indexOf(item); // Index réel dans la liste complète
-                    const tr = document.createElement('tr');
-                    
-                    tr.innerHTML = `
-                        <td class="item-name">
-                            <i class="fas ${categoryIcons[category]} item-icon"></i>
-                            ${item.name}
-                            ${item.description ? `<div class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">${item.description}</span></div>` : ''}
-                        </td>
-                        <td>
-                            <span class="counter-display">${item.count}</span>
-                        </td>
-                        <td class="item-actions">
-                            <button class="action-btn" onclick="decreaseCount('${category}', ${actualIndex})">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <button class="action-btn add" onclick="increaseCount('${category}', ${actualIndex})">
-                                <i class="fas fa-plus"></i>
-                            </button>
-                            <button class="action-btn delete" onclick="removeItem('${category}', ${actualIndex})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    
-                    tbody.appendChild(tr);
-                });
-                
-                table.appendChild(tbody);
-                categoryContent.appendChild(table);
-                categorySection.appendChild(categoryContent);
-                
-                inventoryElement.appendChild(categorySection);
-            }
-            
-            // Afficher un message si aucun objet ne correspond
-            if (!hasItems) {
-                const emptyState = document.createElement('div');
-                emptyState.className = 'empty-state';
-                
-                if (searchQuery || activeFilter !== 'all') {
-                    emptyState.innerHTML = `
-                        <i class="fas fa-search"></i>
-                        <p>Aucun objet ne correspond à votre recherche</p>
-                        <button class="btn" onclick="resetFilters()">Réinitialiser les filtres</button>
-                    `;
-                } else {
-                    emptyState.innerHTML = `
-                        <i class="fas fa-box-open"></i>
-                        <p>Votre inventaire est vide</p>
-                        <p>Ajoutez des objets à l'aide du formulaire à gauche</p>
-                    `;
-                }
-                
-                inventoryElement.appendChild(emptyState);
-            }
-        }
-        
-        // Fonction pour réinitialiser les filtres
-        function resetFilters() {
-            document.getElementById('search-input').value = '';
-            searchQuery = '';
-            setCategoryFilter('all');
-        }
-        
-        // Fonction pour basculer l'état de pliage d'une catégorie
-        function toggleCategoryCollapse(categorySection) {
-            categorySection.classList.toggle('collapsed');
-        }
-        
-        // Fonction pour mettre à jour les statistiques
-        function updateStats(inventoryData) {
-            if (!inventoryData) return;
-            
-            const inventory = inventoryData[currentStorage];
-            if (!inventory) return;
-            
-            // Calculer le nombre total d'objets
-            let totalItems = 0;
-            let totalWeapons = 0;
-            let totalFood = 0;
-            let nonEmptyCategories = 0;
-            
-            for (const category in inventory) {
-                const items = inventory[category] || [];
-                const categoryCount = items.reduce((sum, item) => sum + (item ? item.count : 0), 0);
-                totalItems += categoryCount;
-                
-                if (items.length > 0) {
-                    nonEmptyCategories++;
-                }
-                
-                if (category === 'weapons') {
-                    totalWeapons = categoryCount;
-                } else if (category === 'food') {
-                    totalFood = categoryCount;
-                }
-            }
-            
-            // Mettre à jour les affichages
-            document.getElementById('total-items').textContent = totalItems;
-            document.getElementById('total-weapons').textContent = totalWeapons;
-            document.getElementById('total-food').textContent = totalFood;
-            document.getElementById('total-categories').textContent = nonEmptyCategories;
-        }
-        
-        // Fonction pour ajouter un nouvel emplacement de stockage
-        function addNewStorage() {
-            const name = document.getElementById('storage-name').value.trim();
-            const icon = document.getElementById('storage-icon').value;
-            
-            if (!name) {
-                showToast("Erreur", "Veuillez entrer un nom pour l'emplacement", "error");
-                return;
-            }
-            
-            // Générer un ID unique
-            const id = 'storage_' + Date.now();
-            
-            // Récupérer la liste actuelle des emplacements
-            storageLocationsRef.once('value', snapshot => {
-                const locations = snapshot.val() || [];
-                
-                // Ajouter le nouvel emplacement
-                locations.push({
-                    id: id,
-                    name: name,
-                    icon: icon
-                });
-                
-                // Mettre à jour dans Firebase
-                storageLocationsRef.set(locations);
-                
-                // Initialiser l'inventaire pour ce nouvel emplacement
-                const defaultCategories = {
-                    weapons: [],
-                    food: [],
-                    medicine: [],
-                    tools: [],
-                    clothing: [],
-                    materials: [],
-                    ammunition: [],
-                    fuel: [],
-                    electronics: [],
-                    books: [],
-                    containers: [],
-                    other: []
-                };
-                
-                inventoryRef.child(id).set(defaultCategories);
-                
-                // Fermer la modal
-                closeModal('storage-modal');
-                
-                // Passer au nouvel emplacement
-                switchStorage(id);
-                
-                showToast("Succès", `Nouvel emplacement "${name}" ajouté`, "success");
-                addActivityLog("a créé", `un nouvel emplacement: ${name}`);
-            });
-        }
-        
-        // Fonction pour afficher les emplacements de stockage
-        function renderStorageLocations(locations) {
-            const container = document.getElementById('storage-selector');
-            
-            if (!locations || !Array.isArray(locations)) return;
-            
-            // Vider le conteneur
-            container.innerHTML = '';
-            
-            // Ajouter chaque emplacement
-            locations.forEach(location => {
-                const button = document.createElement('button');
-                button.className = 'storage-btn' + (location.id === currentStorage ? ' active' : '');
-                button.dataset.storage = location.id;
-                button.onclick = () => switchStorage(location.id);
-                
-                button.innerHTML = `
-                    <i class="fas ${location.icon}"></i> ${location.name}
-                `;
-                
-                container.appendChild(button);
-            });
-            
-            // Ajouter le bouton pour créer un nouvel emplacement
-            const addButton = document.createElement('button');
-            addButton.className = 'storage-btn add-storage-btn';
-            addButton.onclick = () => openModal('storage-modal');
-            addButton.innerHTML = '<i class="fas fa-plus"></i> Nouvel emplacement';
-            
-            container.appendChild(addButton);
-        }
-        
-        // Fonction pour changer d'emplacement de stockage
-        function switchStorage(storageId) {
-            currentStorage = storageId;
-            
-            // Mettre à jour l'interface
-            document.querySelectorAll('.storage-btn').forEach(btn => {
-                if (btn.dataset.storage === storageId) {
-                    btn.classList.add('active');
-                } else {
-                    btn.classList.remove('active');
-                }
-            });
-            
-            // Interroger les données actuelles pour mettre à jour l'affichage
-            inventoryRef.once('value', snapshot => {
-                if (snapshot.exists()) {
-                    renderInventory(snapshot.val());
-                    updateStats(snapshot.val());
-                }
-            });
-            
-            // Enregistrer cette action dans le journal
-            storageLocationsRef.once('value', snapshot => {
-                const locations = snapshot.val() || [];
-                const currentLocation = locations.find(loc => loc.id === storageId);
-                
-                if (currentLocation) {
-                    addActivityLog("a changé d'emplacement", `vers ${currentLocation.name}`);
-                }
-            });
-        }
-        
-        // Fonction pour afficher une notification toast
-        function showToast(title, message, type = "success") {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
-            
-            // Définir le contenu
-            document.querySelector('.toast-title').textContent = title;
-            toastMessage.textContent = message;
-            
-            // Définir le type
-            toast.className = "toast show";
-            if (type === "success") {
-                toast.classList.add("success");
-                toast.querySelector('i').className = "fas fa-check-circle fa-lg";
-            } else if (type === "error") {
-                toast.classList.add("error");
-                toast.querySelector('i').className = "fas fa-exclamation-circle fa-lg";
-            }
-            
-            // Afficher le toast
-            toast.classList.add("show");
-            
-            // Masquer automatiquement après 3 secondes
-            setTimeout(hideToast, 3000);
-        }
-        
-        // Fonction pour masquer le toast
-        function hideToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.remove("show");
-        }
-        
-        // Fonction pour ouvrir une modal
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.add('active');
-        }
-        
-        // Fonction pour fermer une modal
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-        
-        // Fonction pour forcer un rafraîchissement de l'inventaire
-        function refreshInventory() {
-            showToast("Rafraîchissement", "Mise à jour de l'inventaire...", "success");
-            
-            // Forcer la récupération des données depuis Firebase
-            inventoryRef.once('value')
-                .then(snapshot => {
-                    if (snapshot.exists()) {
-                        renderInventory(snapshot.val());
-                        updateStats(snapshot.val());
-                        showToast("Terminé", "Inventaire mis à jour avec succès", "success");
-                    } else {
-                        showToast("Erreur", "Aucune donnée d'inventaire trouvée", "error");
-                    }
-                })
-                .catch(error => {
-                    console.error("Erreur lors du rafraîchissement:", error);
-                    showToast("Erreur", "Problème lors de la mise à jour", "error");
-                });
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    setCategoryFilter(btn.dataset.category);
-                });
-            });
-            
-            // Permettre d'appuyer sur Entrée pour rejoindre une salle
-            document.getElementById('room-id').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    joinRoom();
-                }
-            });
-            
-            document.getElementById('user-name').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    joinRoom();
-                }
-            });
-            
-            // Permettre d'appuyer sur Entrée pour ajouter un objet
-            document.getElementById('item-name').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addItem();
-                }
-            });
-            
-            document.getElementById('item-count').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addItem();
-                }
-            });
-            
-            document.getElementById('item-description').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addItem();
-                }
-            });
-        });
-        
-        // Fonction pour gérer les déconnexions
-        window.addEventListener('beforeunload', () => {
-            if (userPresenceRef) {
-                userPresenceRef.remove();
-            }
-        });
-    </script>
 </body>
 </html>
