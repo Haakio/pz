@@ -1103,9 +1103,9 @@
                     <div class="form-group" style="flex: 1;">
                         <label for="item-count">Quantité</label>
                         <div class="input-group">
-                            <input type="number" id="item-count" class="form-control" value="1" min="1">
-                            <div class="input-group-append">
-                                <span class="input-group-text">unité(s)</span>
+                            <input type="number" id="item-count" class="form-control" value="1" min="1" style="width: 70%;">
+                            <div class="input-group-append" style="width: 30%;">
+                                <span class="input-group-text" style="width: 100%; justify-content: center;">unités</span>
                             </div>
                         </div>
                     </div>
@@ -1169,6 +1169,12 @@
                     <button class="filter-btn" data-category="other">Autres</button>
                 </div>
                 
+                <div style="text-align: right; margin-bottom: 15px;">
+                    <button class="btn" onclick="refreshInventory()">
+                        <i class="fas fa-sync-alt"></i> Rafraîchir l'inventaire
+                    </button>
+                </div>
+                
                 <div class="inventory-container" id="inventory">
                     <!-- Le contenu de l'inventaire sera généré dynamiquement -->
                 </div>
@@ -1194,7 +1200,6 @@
         const firebaseConfig = {
             apiKey: "AIzaSyASp6Gfi4Fz8Nduap0on89oAZzCkPLKpFc",
             authDomain: "lions-890e9.firebaseapp.com",
-            databaseURL: "https://lions-890e9-default-rtdb.europe-west1.firebasedatabase.app",
             projectId: "lions-890e9",
             storageBucket: "lions-890e9.firebasestorage.app",
             messagingSenderId: "560777699926",
@@ -1962,7 +1967,26 @@
             document.getElementById(modalId).classList.remove('active');
         }
         
-        // Ajouter des écouteurs d'événements pour les boutons de filtre
+        // Fonction pour forcer un rafraîchissement de l'inventaire
+        function refreshInventory() {
+            showToast("Rafraîchissement", "Mise à jour de l'inventaire...", "success");
+            
+            // Forcer la récupération des données depuis Firebase
+            inventoryRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        renderInventory(snapshot.val());
+                        updateStats(snapshot.val());
+                        showToast("Terminé", "Inventaire mis à jour avec succès", "success");
+                    } else {
+                        showToast("Erreur", "Aucune donnée d'inventaire trouvée", "error");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erreur lors du rafraîchissement:", error);
+                    showToast("Erreur", "Problème lors de la mise à jour", "error");
+                });
+        }
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
