@@ -1509,11 +1509,27 @@
             inventoryRef.child(`${currentStorage}/${category}/${index}/name`).once('value', snapshot => {
                 const itemName = snapshot.val() || 'Objet inconnu';
                 
-                // Supprimer l'objet
-                inventoryRef.child(`${currentStorage}/${category}/${index}`).remove();
-                
-                showToast("Supprimé", `${itemName} retiré de l'inventaire`, "success");
-                addActivityLog("a supprimé", itemName);
+                // Récupérer la liste complète des objets de cette catégorie
+                inventoryRef.child(`${currentStorage}/${category}`).once('value', snapshot => {
+                    let items = snapshot.val() || [];
+                    
+                    // Si items n'est pas un tableau, le convertir en tableau
+                    if (!Array.isArray(items)) {
+                        items = [];
+                    }
+                    
+                    // Supprimer l'élément à l'index spécifié
+                    if (index >= 0 && index < items.length) {
+                        items.splice(index, 1);
+                    }
+                    
+                    // Mettre à jour la catégorie entière - cela garantit que si le dernier élément est supprimé,
+                    // la catégorie est correctement mise à jour comme un tableau vide
+                    inventoryRef.child(`${currentStorage}/${category}`).set(items);
+                    
+                    showToast("Supprimé", `${itemName} retiré de l'inventaire`, "success");
+                    addActivityLog("a supprimé", itemName);
+                });
             });
         }
         
