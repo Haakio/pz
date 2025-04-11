@@ -229,210 +229,225 @@ td {
 
 </head>
 <body>
-<div id="last-updated" style="margin:10px 0; color:#aaa; font-size: 0.9em;">Dernière mise à jour : jamais</div>
-<header>
-<h1>☣️  DeadHope // Terminal de survie ☣️</h1>
-<div id="player-bar" style="margin-bottom:10px;color:#ccc;">Pseudo joueur : <input id="pseudo" placeholder="Ton pseudo" style="margin-left:5px;"/></div>
-<div id="weather-info">Chargement météo...</div>
-<div id="game-clock">Heure en jeu : ...</div>
-</header>
-<nav>
-<a href="#skills">Compétences</a>
-<a href="#zones">Zones dangereuses</a>
-<a href="#map">Carte</a>
-<a href="#" onclick="toggleTheme()">🌓</a>
-</nav>
-<main>
-<section id="characters">
-<h2>Fiches de personnage</h2>
-<button onclick="resetSection('character-list')">🧹 Réinitialiser Fiche de personnages</button>
-<div class="character-wrapper" id="character-list">
-<div class="character-card">
-<input placeholder="Nom" type="text"/>
-<input placeholder="Rôle dans le groupe" type="text"/>
-<textarea placeholder="Notes ou observations..."></textarea>
-<button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
-</div>
-</div>
-<button onclick="ajouterFichePerso()">➕ Ajouter un personnage</button>
-</section>
-<section id="journal">
-<h2>Journal / Événements</h2>
-<input id="filter-journal" oninput="filterTable('filter-journal', 'journal-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-<table style="width: 100%; table-layout: fixed;">
-<thead>
-<tr>
-<th>Date</th>
-<th>Événement</th>
-<th>Joueur</th>
-<th></th>
-</tr>
-</thead>
-<button onclick="resetSection('journal-body')">🧹 Réinitialiser Journal d'événements</button>
-<tbody id="journal-body">
-<tr>
-<td><input type="date"/></td>
-<td><input placeholder="Description" type="text"/></td>
-<td><input placeholder="Nom du joueur" type="text"/></td>
-<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-</tr>
-</tbody>
-</table>
-<button onclick="ajouterJournal()">➕ Ajouter une entrée</button>
-</section>
-<section id="priorities">
-<h2>Assignations / Priorités</h2>
-<input id="filter-priorites" oninput="filterTable('filter-priorites', 'priority-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-<table style="width: 100%; table-layout: fixed;">
-<thead>
-<tr>
-<th>Tâche</th>
-<th>Responsable</th>
-<th>Importance</th>
-<th></th>
-</tr>
-</thead>
-<button onclick="resetSection('priority-body')">🧹 Réinitialiser Priorités</button>
-<tbody id="priority-body">
-<tr>
-<td><input placeholder="Ex: Cuisiner, Patrouiller..." type="text"/></td>
-<td><input placeholder="Nom du joueur" type="text"/></td>
-<td>
-<select>
-<option>⚪ Faible</option>
-<option>🟡 Moyenne</option>
-<option>🔴 Haute</option>
-</select>
-</td>
-<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-</tr>
-</tbody>
-</table>
-<button onclick="ajouterPriorite()">➕ Ajouter une tâche</button>
-</section>
-<section id="missions">
-<h2>🎯 Missions</h2>
-<input id="filter-missions" oninput="filterTable('filter-missions', 'mission-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-<table style="width: 100%; table-layout: fixed;">
-<thead>
-<tr>
-<th>Objectif</th>
-<th>Responsable</th>
-<th>État</th>
-<th>Deadline</th>
-<th></th>
-</tr>
-</thead>
-<button onclick="resetSection('mission-body')">🧹 Réinitialiser Missions</button>
-<tbody id="mission-body">
-<tr>
-<td><input placeholder="Ex: Fouiller maison au nord" type="text"/></td>
-<td><input placeholder="Nom du joueur" type="text"/></td>
-<td>
-<select>
-<option>🟡 En cours</option>
-<option>✅ Fait</option>
-<option>❌ Échoué</option>
-</select>
-</td>
-<td><input type="date"/></td>
-<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-</tr>
-</tbody>
-</table>
-<button onclick="ajouterMission()">➕ Ajouter une mission</button>
-</section>
-<section id="logistique">
-<h2>📦 Logistique / Matériel</h2>
-<input id="filter-logistique" oninput="filterTable('filter-logistique', 'logistique-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-<table style="width: 100%; table-layout: fixed;">
-<thead>
-<tr>
-<th>Type</th>
-<th>Nom</th>
-<th>État</th>
-<th>Emplacement</th>
-<th></th>
-</tr>
-</thead>
-<button onclick="resetSection('logistique-body')">🧹 Réinitialiser Logistique</button>
-<tbody id="logistique-body">
-<tr>
-<td>
-<select>
-<option>🔫 Arme</option>
-<option>🚗 Véhicule</option>
-<option>🧰 Outil</option>
-<option>🩹 Soins</option>
-<option>📻 Électronique</option>
-</select>
-</td>
-<td><input placeholder="Nom ou modèle" type="text"/></td>
-<td>
-<select onchange="checkEtat(this)">
-<option>✅ Fonctionnel</option>
-<option>⚠️ Endommagé</option>
-<option>❌ Hors service</option>
-</select>
-</td>
-<td><input placeholder="Où ? ou Avec qui ?" type="text"/></td>
-<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-</tr>
-</tbody>
-</table>
-<button onclick="ajouterLogistique()">➕ Ajouter un item</button>
-</section>
-<section id="skills">
-<h2>Compétences et responsabilités</h2>
-<table style="width:100%; table-layout: fixed;">
-<thead>
-<tr>
-<th>Niveau dans l'équipe</th>
-<th>Joueur responsable</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><input placeholder="Niveau" type="text"/></td>
-<td><input placeholder="Joueur" type="text"/></td>
-</tr>
-</tbody>
-</table>
-<button onclick="ajouterLigneCompetence()">➕ Ajouter</button>
-</section>
-<section id="zones">
-<h2>Zones dangereuses</h2>
-<div class="danger-grid-wrapper" id="danger-zone-container">
-<div class="danger-zone-entry">
-<input placeholder="Nom du lieu" type="text"/>
-<select>
-<option>Faible</option>
-<option>Modéré</option>
-<option>Élevé</option>
-<option>Extrême</option>
-</select>
-<input placeholder="Informations" type="text"/>
-<button onclick="this.parentElement.remove()">🗑️</button>
-</div>
-</div>
-<button onclick="ajouterZoneDangereuse()">➕ Ajouter une zone</button>
-</section>
-<section id="map">
-<h2>Carte officielle Project Zomboid</h2>
-<iframe allowfullscreen="" src="https://map.projectzomboid.com/"></iframe>
-</section>
-</main>
 
-<!-- Bouton chat et section chat -->
-<button id="chat-toggle" onclick="toggleChat()">💬</button>
-<section id="radio-chat" style="display:none;">
-<h2>📻 Communications radio</h2>
-<div style="margin-bottom: 10px;">
-<input id="chat-input" placeholder="Tape ton message..." style="width:70%;" type="text"/>
-<button onclick="sendMessage()">📡 Envoyer</button>
+<div id="welcome-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#0f0;font-family:'Courier New', monospace;">
+  <h1 style="margin-bottom:2rem;">☣️ Terminal DeadHope ☣️</h1>
+  <div id="terminal-lines" style="margin-bottom: 1rem; max-width: 80%; text-align: left;"></div>
+  <div id="input-zone" style="display: block;">
+    <input id="input-pseudo" type="text" placeholder="Entre ton pseudo..." style="padding:10px;background:#111;border:1px solid #444;color:#0f0;font-size:18px;margin-bottom:1rem;width:300px;text-align:center;">
+    <button onclick="startDashboard()" style="padding:10px 20px;background:#8b0000;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;">Accéder au tableau</button>
+  </div>
 </div>
-<div id="chat-log" style="background:#222;padding:10px;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #444;"></div>
-</section>
+
+<!-- Ajout des éléments audio manquants -->
+<audio id="boot-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
+<audio id="confirm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
+
+<div id="dashboard-content" style="display: block;">
+  <div id="last-updated" style="margin:10px 0; color:#aaa; font-size: 0.9em;">Dernière mise à jour : jamais</div>
+  <header>
+    <h1>☣️  DeadHope // Terminal de survie ☣️</h1>
+    <div id="weather-info">Chargement météo...</div>
+    <div id="game-clock">Heure en jeu : ...</div>
+  </header>
+  <nav>
+    <a href="#skills">Compétences</a>
+    <a href="#zones">Zones dangereuses</a>
+    <a href="#map">Carte</a>
+    <a href="#" onclick="toggleTheme()">🌓</a>
+  </nav>
+  <main>
+    <section id="characters">
+      <h2>Fiches de personnage</h2>
+      <button onclick="resetSection('character-list')">🧹 Réinitialiser Fiche de personnages</button>
+      <div class="character-wrapper" id="character-list">
+        <div class="character-card">
+          <input placeholder="Nom" type="text"/>
+          <input placeholder="Rôle dans le groupe" type="text"/>
+          <textarea placeholder="Notes ou observations..."></textarea>
+          <button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
+        </div>
+      </div>
+      <button onclick="ajouterFichePerso()">➕ Ajouter un personnage</button>
+    </section>
+    <section id="journal">
+      <h2>Journal / Événements</h2>
+      <input id="filter-journal" oninput="filterTable('filter-journal', 'journal-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+      <table style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Événement</th>
+            <th>Joueur</th>
+            <th></th>
+          </tr>
+        </thead>
+        <button onclick="resetSection('journal-body')">🧹 Réinitialiser Journal d'événements</button>
+        <tbody id="journal-body">
+          <tr>
+            <td><input type="date"/></td>
+            <td><input placeholder="Description" type="text"/></td>
+            <td><input placeholder="Nom du joueur" type="text"/></td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="ajouterJournal()">➕ Ajouter une entrée</button>
+    </section>
+    <section id="priorities">
+      <h2>Assignations / Priorités</h2>
+      <input id="filter-priorites" oninput="filterTable('filter-priorites', 'priority-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+      <table style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th>Tâche</th>
+            <th>Responsable</th>
+            <th>Importance</th>
+            <th></th>
+          </tr>
+        </thead>
+        <button onclick="resetSection('priority-body')">🧹 Réinitialiser Priorités</button>
+        <tbody id="priority-body">
+          <tr>
+            <td><input placeholder="Ex: Cuisiner, Patrouiller..." type="text"/></td>
+            <td><input placeholder="Nom du joueur" type="text"/></td>
+            <td>
+              <select>
+                <option>⚪ Faible</option>
+                <option>🟡 Moyenne</option>
+                <option>🔴 Haute</option>
+              </select>
+            </td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="ajouterPriorite()">➕ Ajouter une tâche</button>
+    </section>
+    <section id="missions">
+      <h2>🎯 Missions</h2>
+      <input id="filter-missions" oninput="filterTable('filter-missions', 'mission-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+      <table style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th>Objectif</th>
+            <th>Responsable</th>
+            <th>État</th>
+            <th>Deadline</th>
+            <th></th>
+          </tr>
+        </thead>
+        <button onclick="resetSection('mission-body')">🧹 Réinitialiser Missions</button>
+        <tbody id="mission-body">
+          <tr>
+            <td><input placeholder="Ex: Fouiller maison au nord" type="text"/></td>
+            <td><input placeholder="Nom du joueur" type="text"/></td>
+            <td>
+              <select>
+                <option>🟡 En cours</option>
+                <option>✅ Fait</option>
+                <option>❌ Échoué</option>
+              </select>
+            </td>
+            <td><input type="date"/></td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="ajouterMission()">➕ Ajouter une mission</button>
+    </section>
+    <section id="logistique">
+      <h2>📦 Logistique / Matériel</h2>
+      <input id="filter-logistique" oninput="filterTable('filter-logistique', 'logistique-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+      <table style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Nom</th>
+            <th>État</th>
+            <th>Emplacement</th>
+            <th></th>
+          </tr>
+        </thead>
+        <button onclick="resetSection('logistique-body')">🧹 Réinitialiser Logistique</button>
+        <tbody id="logistique-body">
+          <tr>
+            <td>
+              <select>
+                <option>🔫 Arme</option>
+                <option>🚗 Véhicule</option>
+                <option>🧰 Outil</option>
+                <option>🩹 Soins</option>
+                <option>📻 Électronique</option>
+              </select>
+            </td>
+            <td><input placeholder="Nom ou modèle" type="text"/></td>
+            <td>
+              <select onchange="checkEtat(this)">
+                <option>✅ Fonctionnel</option>
+                <option>⚠️ Endommagé</option>
+                <option>❌ Hors service</option>
+              </select>
+            </td>
+            <td><input placeholder="Où ? ou Avec qui ?" type="text"/></td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="ajouterLogistique()">➕ Ajouter un item</button>
+    </section>
+    <section id="skills">
+      <h2>Compétences et responsabilités</h2>
+      <table style="width:100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th>Niveau dans l'équipe</th>
+            <th>Joueur responsable</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input placeholder="Niveau" type="text"/></td>
+            <td><input placeholder="Joueur" type="text"/></td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="ajouterLigneCompetence()">➕ Ajouter</button>
+    </section>
+    <section id="zones">
+      <h2>Zones dangereuses</h2>
+      <div class="danger-grid-wrapper" id="danger-zone-container">
+        <div class="danger-zone-entry">
+          <input placeholder="Nom du lieu" type="text"/>
+          <select>
+            <option>Faible</option>
+            <option>Modéré</option>
+            <option>Élevé</option>
+            <option>Extrême</option>
+          </select>
+          <input placeholder="Informations" type="text"/>
+          <button onclick="this.parentElement.remove()">🗑️</button>
+        </div>
+      </div>
+      <button onclick="ajouterZoneDangereuse()">➕ Ajouter une zone</button>
+    </section>
+    <section id="map">
+      <h2>Carte officielle Project Zomboid</h2>
+      <iframe allowfullscreen="" src="https://map.projectzomboid.com/"></iframe>
+    </section>
+  </main>
+
+  <!-- Bouton chat et section chat -->
+  <button id="chat-toggle" onclick="toggleChat()">💬</button>
+  <section id="radio-chat" style="display:none;">
+    <h2>📻 Communications radio</h2>
+    <div style="margin-bottom: 10px;">
+      <input id="chat-input" placeholder="Tape ton message..." style="width:70%;" type="text"/>
+      <button onclick="sendMessage()">📡 Envoyer</button>
+    </div>
+    <div id="chat-log" style="background:#222;padding:10px;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #444;"></div>
+  </section>
+</div>
 
 <!-- Ressources audio -->
 <audio id="radio-bip" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
@@ -492,8 +507,10 @@ async function loadWeather() {
   try {
     const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=47.47&longitude=-0.55&current_weather=true');
     const data = await res.json();
-    const weather = data.current_weather;
-    document.getElementById("weather-info").textContent = `🌡️ ${weather.temperature}°C | 🌬️ ${weather.windspeed} km/h`;
+    const weather = data.current_weather || data.current;
+    const temperature = weather?.temperature || "N/A";
+    const windspeed = weather?.windspeed || "N/A";
+    document.getElementById("weather-info").textContent = `🌡️ ${temperature}°C | 🌬️ ${windspeed} km/h`;
   } catch (e) {
     document.getElementById("weather-info").textContent = "🌐 Météo indisponible.";
   }
@@ -608,10 +625,6 @@ function toggleChat() {
   box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-function getPseudo() {
-  const pseudoInput = document.getElementById("pseudo");
-  return pseudoInput?.value.trim() || "Anonyme";
-}
 
 function sendMessage() {
   const input = document.getElementById("chat-input");
@@ -693,7 +706,6 @@ function syncToFirebase() {
   docRef.update({dashboard: data})
     .catch(error => console.error("Erreur de synchronisation:", error));
 }
-
 // Listener pour les messages Firebase
 let previousCount = 0;
 docRef.onSnapshot(snapshot => {
@@ -740,5 +752,78 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 </script>
+
+<script>
+  window.pseudo = pseudo;
+  document.getElementById("welcome-screen").style.display = "none";
+  
+</script>
+
+
+<script>
+const lines = [
+  "Initialisation du protocole DeadHope...",
+  "Chargement du système de communication radio...",
+  "Synchronisation Firebase établie...",
+  "Chargement de la carte de Knox Country...",
+  "Connexion aux bases de données locales...",
+  "Authentification requise pour accéder au terminal."
+];
+
+let currentLine = 0;
+function typeNextLine() {
+  if (currentLine >= lines.length) {
+    document.getElementById("input-zone").style.display = "block";
+    return;
+  }
+  const terminal = document.getElementById("terminal-lines");
+  const newLine = document.createElement("div");
+  newLine.textContent = "";
+  terminal.appendChild(newLine);
+  let i = 0;
+  const text = lines[currentLine];
+  const interval = setInterval(() => {
+    if (i < text.length) {
+      newLine.textContent += text[i++];
+    } else {
+      clearInterval(interval);
+      currentLine++;
+      setTimeout(typeNextLine, 500);
+    }
+  }, 30);
+}
+
+window.addEventListener("load", () => {
+  document.getElementById("boot-sound").play().catch(() => {});
+  typeNextLine();
+});
+
+function startDashboard() {
+  const input = document.getElementById("input-pseudo");
+  const pseudo = input.value.trim();
+  if (!pseudo) {
+    input.style.border = "1px solid red";
+    input.placeholder = "⚠️ Entre ton pseudo !";
+    return;
+  }
+  input.disabled = true;
+  window.pseudo = pseudo;
+  document.getElementById("confirm-sound").play();
+  const terminal = document.getElementById("terminal-lines");
+  terminal.innerHTML += `\nBienvenue, OPÉRATEUR : ${pseudo.toUpperCase()}\nLancement du terminal...`;
+  setTimeout(() => {
+    document.getElementById("welcome-screen").style.display = "none";
+  }, 2000);
+}
+
+function getPseudo() {
+  return window.pseudo || "Anonyme";
+}
+
+document.getElementById("input-pseudo").addEventListener("keypress", function(e) {
+  if (e.key === "Enter") startDashboard();
+});
+</script>
+
 </body>
 </html>
