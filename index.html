@@ -1,2327 +1,310 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeadHope - Tableau de Bord de Survie</title>
-    <style>
-        :root {
-            --dark-bg: #0d1117;
-            --medium-bg: #161b22;
-            --light-bg: #21262d;
-            --accent: #ff4500;
-            --accent-hover: #ff6a33;
-            --text: #e6edf3;
-            --text-dim: #8b949e;
-            --border: #30363d;
-            --danger: #ff4136;
-            --warning: #ffcc00;
-            --success: #2ecc40;
-            --info: #39cccc;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Courier New', monospace;
-        }
-        
-        body {
-            background-color: var(--dark-bg);
-            color: var(--text);
-            line-height: 1.6;
-            padding: 0;
-            margin: 0;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="%230d1117"/><path d="M0 10L100 10M0 30L100 30M0 50L100 50M0 70L100 70M0 90L100 90M10 0L10 100M30 0L30 100M50 0L50 100M70 0L70 100M90 0L90 100" stroke="%23242a33" stroke-width="0.5"/></svg>');
-            background-attachment: fixed;
-        }
-        
-        header {
-            background-color: var(--medium-bg);
-            position: relative;
-            text-align: center;
-            border-bottom: 4px solid var(--accent);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            padding: 0;
-            overflow: hidden;
-        }
-        
-        header::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect x="0" y="0" width="200" height="200" fill="%23161b22"/><path d="M0 50L200 50M0 100L200 100M0 150L200 150M50 0L50 200M100 0L100 200M150 0L150 200" stroke="%23242a33" stroke-width="1"/></svg>');
-            opacity: 0.3;
-            z-index: -1;
-        }
-        
-        .header-overlay {
-            background: rgba(22, 27, 34, 0.7);
-            padding: 1.5rem;
-            position: relative;
-        }
-        
-        header h1 {
-            font-size: 3.5rem;
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 69, 0, 0.6);
-            color: var(--accent);
-            font-family: 'Impact', sans-serif;
-            z-index: 5;
-            position: relative;
-        }
-        
-        header p {
-            font-size: 1.2rem;
-            color: var(--text);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
-            z-index: 5;
-            position: relative;
-        }
-        
-        nav {
-            background-color: var(--light-bg);
-            padding: 0.5rem;
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            position: sticky;
-            top: 101px; /* Ajusté pour s'adapter à la hauteur du header */
-            z-index: 90;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-            border-bottom: 1px solid var(--border);
-        }
-        
-        nav a {
-            color: var(--text);
-            text-decoration: none;
-            padding: 0.7rem 1.2rem;
-            margin: 0.25rem;
-            border-radius: 5px;
-            background-color: var(--medium-bg);
-            transition: all 0.3s ease;
-            border: 1px solid var(--border);
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 1px;
-            font-weight: bold;
-            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        nav a:hover {
-            background-color: var(--accent);
-            color: #000;
-            transform: translateY(-3px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
-        }
-        
-        main {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .section {
-            background-color: var(--medium-bg);
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            overflow: hidden;
-            border: 1px solid var(--border);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .section:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-        
-        .section-header {
-            background: linear-gradient(to right, var(--light-bg), var(--medium-bg));
-            color: var(--accent);
-            padding: 1rem 1.2rem;
-            font-size: 1.3rem;
-            border-bottom: 2px solid var(--accent);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        
-        .section-header h2 {
-            font-family: 'Impact', sans-serif;
-            letter-spacing: 1px;
-        }
-        
-        .section-header button {
-            background: none;
-            border: none;
-            color: var(--text);
-            cursor: pointer;
-            font-size: 1.5rem;
-            transition: all 0.3s ease;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-        }
-        
-        .section-header button:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: var(--accent);
-        }
-        
-        .section-content {
-            padding: 1.5rem;
-            overflow-x: auto;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        table, th, td {
-            border: 1px solid var(--border);
-        }
-        
-        th {
-            background-color: var(--light-bg);
-            padding: 0.75rem;
-            text-align: left;
-            text-transform: uppercase;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            color: var(--accent);
-        }
-        
-        td {
-            padding: 0.75rem;
-            background-color: var(--medium-bg);
-        }
-        
-        tr:nth-child(even) td {
-            background-color: rgba(13, 17, 23, 0.5);
-        }
-        
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .card {
-            background-color: var(--medium-bg);
-            border-radius: 8px;
-            padding: 1.2rem;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-        }
-        
-        .card h3 {
-            color: var(--accent);
-            margin-bottom: 0.8rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.5rem;
-            font-family: 'Impact', sans-serif;
-            letter-spacing: 1px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-        }
-        
-        input, textarea, select {
-            width: 100%;
-            padding: 0.7rem;
-            margin-bottom: 1rem;
-            background-color: var(--dark-bg);
-            border: 1px solid var(--border);
-            color: var(--text);
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-        
-        input:focus, textarea:focus, select:focus {
-            border-color: var(--accent);
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-        
-        button {
-            background: linear-gradient(to bottom, var(--accent), #e03e00);
-            color: #000;
-            border: none;
-            padding: 0.7rem 1.2rem;
-            cursor: pointer;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        }
-        
-        button:hover {
-            background: linear-gradient(to bottom, var(--accent-hover), var(--accent));
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-        }
-        
-        .coords-input {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        
-        .coords-input input {
-            width: 80px;
-        }
-
-        .mission-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.8rem;
-            background-color: rgba(13, 17, 23, 0.5);
-            padding: 0.8rem;
-            border-radius: 5px;
-            border: 1px solid var(--border);
-        }
-        
-        .mission-item input[type="checkbox"] {
-            width: auto;
-            margin-right: 0.8rem;
-            transform: scale(1.2);
-        }
-        
-        .danger-zone {
-            background-color: rgba(255, 65, 54, 0.1);
-            border: 1px solid var(--danger);
-            border-radius: 5px;
-            padding: 1.2rem;
-            margin-top: 1.5rem;
-            box-shadow: 0 0 10px rgba(255, 65, 54, 0.2);
-        }
-        
-        .status-indicator {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 0.5rem;
-            box-shadow: 0 0 5px currentColor;
-        }
-        
-        .status-good {
-            background-color: var(--success);
-        }
-        
-        .status-warning {
-            background-color: var(--warning);
-        }
-        
-        .status-danger {
-            background-color: var(--danger);
-        }
-        
-        .status-unknown {
-            background-color: var(--text-dim);
-        }
-        
-        .resource-bar {
-            height: 24px;
-            background-color: var(--dark-bg);
-            border-radius: 12px;
-            margin-bottom: 0.8rem;
-            overflow: hidden;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--border);
-            position: relative;
-        }
-        
-        .resource-bar-fill {
-            height: 100%;
-            transition: width 0.5s ease, background-color 0.5s ease;
-        }
-        
-        .resource-bar-fill.high {
-            background: linear-gradient(to right, #2ecc40, #39d353);
-            box-shadow: 0 0 8px rgba(46, 204, 64, 0.5);
-        }
-        
-        .resource-bar-fill.medium {
-            background: linear-gradient(to right, #ffcc00, #ffdd33);
-            box-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
-        }
-        
-        .resource-bar-fill.low {
-            background: linear-gradient(to right, #ff4136, #ff6b5b);
-            box-shadow: 0 0 8px rgba(255, 65, 54, 0.5);
-        }
-        
-        .resource-level-text {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #000;
-            font-weight: bold;
-            text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
-        }
-        
-        .priority-stars {
-            color: var(--warning);
-            letter-spacing: 2px;
-            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
-        }
-        
-        .low-resource-warning {
-            display: none;
-            background-color: rgba(255, 65, 54, 0.1);
-            border: 1px solid var(--danger);
-            border-radius: 5px;
-            padding: 0.5rem;
-            margin-top: 0.5rem;
-            color: var(--danger);
-            font-weight: bold;
-            text-align: center;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(255, 65, 54, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0); }
-        }
-        
-        footer {
-            text-align: center;
-            padding: 1.5rem;
-            background-color: var(--medium-bg);
-            color: var(--text-dim);
-            margin-top: 3rem;
-            border-top: 1px solid var(--border);
-            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
-            position: relative;
-        }
-        
-        footer::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect x="0" y="0" width="200" height="200" fill="%23161b22"/><path d="M0 50L200 50M0 100L200 100M0 150L200 150M50 0L50 200M100 0L100 200M150 0L150 200" stroke="%23242a33" stroke-width="1"/></svg>');
-            opacity: 0.1;
-            z-index: -1;
-        }
-        
-        .emergency-codes {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 0.8rem;
-        }
-        
-        .code {
-            padding: 0.8rem;
-            border-radius: 5px;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-        }
-        
-        .code:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-        }
-        
-        .code-red {
-            background-color: rgba(255, 0, 0, 0.15);
-            border: 1px solid #ff0000;
-            box-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
-        }
-        
-        .code-orange {
-            background-color: rgba(255, 165, 0, 0.15);
-            border: 1px solid #ffa500;
-            box-shadow: 0 0 8px rgba(255, 165, 0, 0.2);
-        }
-        
-        .code-yellow {
-            background-color: rgba(255, 255, 0, 0.15);
-            border: 1px solid #ffff00;
-            box-shadow: 0 0 8px rgba(255, 255, 0, 0.2);
-        }
-        
-        .code-green {
-            background-color: rgba(0, 128, 0, 0.15);
-            border: 1px solid #008000;
-            box-shadow: 0 0 8px rgba(0, 128, 0, 0.2);
-        }
-        
-        .code-blue {
-            background-color: rgba(0, 0, 255, 0.15);
-            border: 1px solid #0000ff;
-            box-shadow: 0 0 8px rgba(0, 0, 255, 0.2);
-        }
-        
-        .code-black {
-            background-color: rgba(0, 0, 0, 0.3);
-            border: 1px solid #000000;
-            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
-        }
-        
-        .tips-list li {
-            margin-bottom: 0.8rem;
-            list-style-type: none;
-            position: relative;
-            padding-left: 1.5rem;
-        }
-        
-        .tips-list li::before {
-            content: "▶";
-            color: var(--accent);
-            position: absolute;
-            left: 0;
-        }
-        
-        .mobile-toggle {
-            display: none;
-            background: linear-gradient(to bottom, var(--accent), #e03e00);
-            color: black;
-            padding: 0.8rem;
-            text-align: center;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        .base-location {
-            display: block;
-            color: var(--accent);
-            font-style: italic;
-            margin-top: 0.3rem;
-            font-size: 0.9rem;
-        }
-        
-        .resource-priority {
-            display: flex;
-            align-items: center;
-            margin-top: 0.5rem;
-            justify-content: space-between;
-        }
-        
-        .priority-selector {
-            display: flex;
-            align-items: center;
-        }
-        
-        .priority-selector label {
-            margin-right: 0.5rem;
-        }
-        
-        .star-toggle {
-            background: none;
-            border: none;
-            color: var(--text-dim);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin: 0 2px;
-        }
-        
-        .star-toggle.active {
-            color: var(--warning);
-            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
-        }
-        
-        .star-toggle:hover {
-            transform: scale(1.2);
-        }
-        
-        .notification-area {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            max-width: 300px;
-            z-index: 1000;
-        }
-        
-        .notification {
-            background-color: var(--light-bg);
-            border-left: 4px solid var(--danger);
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.5s ease forwards, fadeOut 0.5s ease 5s forwards;
-            transform: translateX(120%);
-            opacity: 0;
-        }
-        
-        @keyframes slideIn {
-            to { transform: translateX(0); opacity: 1; }
-        }
-        
-        @keyframes fadeOut {
-            to { opacity: 0; transform: translateX(120%); }
-        }
-        
-        @media (max-width: 768px) {
-            nav {
-                flex-direction: column;
-                display: none;
-                position: static;
-            }
-            
-            nav.show {
-                display: flex;
-            }
-            
-            .mobile-toggle {
-                display: block;
-            }
-            
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
-            header h1 {
-                font-size: 2.5rem;
-            }
-            
-            header p {
-                font-size: 1rem;
-            }
-            
-            .section-header h2 {
-                font-size: 1.2rem;
-            }
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .blood-splatter {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            opacity: 0.05;
-            z-index: -1;
-            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><circle cx="100" cy="100" r="50" fill="%23ff0000" filter="blur(10px)"/><circle cx="300" cy="150" r="40" fill="%23ff0000" filter="blur(8px)"/><circle cx="150" cy="300" r="60" fill="%23ff0000" filter="blur(12px)"/><circle cx="250" cy="250" r="30" fill="%23ff0000" filter="blur(6px)"/></svg>');
-        }
-        
-        .footer-logo {
-            font-size: 2.5rem;
-            margin-top: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(255, 69, 0, 0.6);
-            color: var(--accent);
-            font-family: 'Impact', sans-serif;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DeadHope - Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: #111;
+      color: #f5f5f5;
+    }
+    .hidden { display: none; }
+    .login-box {
+      background: #222;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 300px;
+      text-align: center;
+      box-shadow: 0 0 20px #000;
+      margin: 5rem auto;
+    }
+    input, button, select, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border: 1px solid #444;
+      background: #1a1a1a;
+      color: #f5f5f5;
+      font-family: monospace;
+    }
+    button {
+      cursor: pointer;
+      background-color: #8b0000;
+      font-weight: bold;
+    }
+    header, nav, section {
+      padding: 1rem;
+    }
+    nav {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      background-color: #222;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      background-color: #8b0000;
+      border-radius: 5px;
+    }
+    .grid, table {
+      width: 100%;
+      margin-top: 1rem;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #333;
+      padding: 0.5rem;
+    }
+  </style>
 </head>
 <body>
-    <div class="blood-splatter"></div>
+  <!-- Écran de connexion -->
+  <div id="login-screen" class="login-box">
+    <h2>🔐 Connexion</h2>
+    <input type="text" id="room-name" placeholder="Nom de la room" />
+    <input type="password" id="room-pass" placeholder="Mot de passe" />
+    <button id="login-btn">Entrer</button>
+    <p id="error-msg" style="color:red;"></p>
+  </div>
+
+  <!-- Tableau de bord complet -->
+  <div id="dashboard" class="hidden">
     <header>
-        <div class="header-overlay">
-            <h1>DEADHOPE</h1>
-            <p>Tableau de Bord de Survie - Project Zomboid</p>
-        </div>
+      <h1>🧟‍♂️ DeadHope - Dashboard</h1>
     </header>
-    
-    <div class="mobile-toggle" onclick="toggleNav()">☰ MENU</div>
-    
-    <nav id="main-nav">
-        <a href="#map">Carte</a>
-        <a href="#team">Équipe</a>
-        <a href="#missions">Missions</a>
-        <a href="#resources">Ressources</a>
-        <a href="#construction">Construction</a>
-        <a href="#vehicles">Véhicules</a>
-        <a href="#skills">Compétences</a>
-        <a href="#calendar">Calendrier</a>
-        <a href="#security">Sécurité</a>
-        <a href="#journal">Journal</a>
-        <a href="#relations">Relations</a>
-        <a href="#emergency">Urgences</a>
+    <nav>
+      <a href="#characters">Fiches</a>
+      <a href="#journal">Journal</a>
+      <a href="#priorities">Tâches</a>
+      <a href="#missions">Missions</a>
+      <a href="#logistique">Matériel</a>
     </nav>
-    
-    <main>
-        <section id="map" class="section fade-in">
-            <div class="section-header">
-                <h2>🧭 CARTE STRATÉGIQUE</h2>
-                <button onclick="toggleSection('map-content')">-</button>
-            </div>
-        </section>
-        
-        <section id="relations" class="section fade-in">
-            <div class="section-header">
-                <h2>👥 RELATIONS AVEC D'AUTRES GROUPES</h2>
-                <button onclick="toggleSection('relations-content')">-</button>
-            </div>
-            <div class="section-content" id="relations-content">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>GROUPE</th>
-                            <th>LOCALISATION</th>
-                            <th>RELATION</th>
-                            <th>CONTACT PRINCIPAL</th>
-                            <th>NOTES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du groupe"></td>
-                            <td><input type="text" placeholder="Localisation"></td>
-                            <td>
-                                <select>
-                                    <option value="ally">Allié</option>
-                                    <option value="friendly">Amical</option>
-                                    <option value="neutral">Neutre</option>
-                                    <option value="hostile">Hostile</option>
-                                    <option value="enemy">Ennemi</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Nom du contact"></td>
-                            <td><input type="text" placeholder="Informations importantes"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du groupe"></td>
-                            <td><input type="text" placeholder="Localisation"></td>
-                            <td>
-                                <select>
-                                    <option value="ally">Allié</option>
-                                    <option value="friendly">Amical</option>
-                                    <option value="neutral">Neutre</option>
-                                    <option value="hostile">Hostile</option>
-                                    <option value="enemy">Ennemi</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Nom du contact"></td>
-                            <td><input type="text" placeholder="Informations importantes"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du groupe"></td>
-                            <td><input type="text" placeholder="Localisation"></td>
-                            <td>
-                                <select>
-                                    <option value="ally">Allié</option>
-                                    <option value="friendly">Amical</option>
-                                    <option value="neutral">Neutre</option>
-                                    <option value="hostile">Hostile</option>
-                                    <option value="enemy">Ennemi</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Nom du contact"></td>
-                            <td><input type="text" placeholder="Informations importantes"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <h3 style="margin-top: 2rem;">ACCORDS ET ÉCHANGES</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>GROUPE</th>
-                            <th>TYPE D'ACCORD</th>
-                            <th>TERMES</th>
-                            <th>STATUT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner un groupe --</option>
-                                    <option value="group1">Groupe 1</option>
-                                    <option value="group2">Groupe 2</option>
-                                    <option value="group3">Groupe 3</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="trade">Échange commercial</option>
-                                    <option value="defense">Défense mutuelle</option>
-                                    <option value="territory">Territoire</option>
-                                    <option value="assistance">Assistance</option>
-                                    <option value="nonaggression">Non-agression</option>
-                                </select>
-                            </td>
-                            <td><textarea placeholder="Détails de l'accord"></textarea></td>
-                            <td>
-                                <select>
-                                    <option value="proposed">Proposé</option>
-                                    <option value="active">Actif</option>
-                                    <option value="expired">Expiré</option>
-                                    <option value="violated">Violé</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner un groupe --</option>
-                                    <option value="group1">Groupe 1</option>
-                                    <option value="group2">Groupe 2</option>
-                                    <option value="group3">Groupe 3</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="trade">Échange commercial</option>
-                                    <option value="defense">Défense mutuelle</option>
-                                    <option value="territory">Territoire</option>
-                                    <option value="assistance">Assistance</option>
-                                    <option value="nonaggression">Non-agression</option>
-                                </select>
-                            </td>
-                            <td><textarea placeholder="Détails de l'accord"></textarea></td>
-                            <td>
-                                <select>
-                                    <option value="proposed">Proposé</option>
-                                    <option value="active">Actif</option>
-                                    <option value="expired">Expiré</option>
-                                    <option value="violated">Violé</option>
-                                </select>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <button style="margin-top: 1rem;">+ Ajouter un groupe</button>
-            </div>
-        </section>
-        
+
+    <main style="max-width: 1000px; margin: auto;">
+      <section id="characters">
+        <h2>Fiches de personnage</h2>
+        <div id="character-list">
+          <div class="character-card">
+            <input type="text" placeholder="Nom">
+            <input type="text" placeholder="Rôle">
+            <textarea placeholder="Notes..."></textarea>
+            <button onclick="this.parentElement.remove()">🗑️</button>
+          </div>
+        </div>
+        <button onclick="ajouterFichePerso()">➕ Ajouter</button>
+      </section>
+
+      <section id="journal">
+        <h2>Journal</h2>
+        <table><tbody id="journal-body">
+          <tr>
+            <td><input type="date"></td>
+            <td><input type="text" placeholder="Événement"></td>
+            <td><input type="text" placeholder="Joueur"></td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody></table>
+        <button onclick="ajouterJournal()">➕ Ajouter</button>
+      </section>
+
+      <section id="priorities">
+        <h2>Tâches / Priorités</h2>
+        <table><tbody id="priority-body">
+          <tr>
+            <td><input type="text" placeholder="Tâche"></td>
+            <td><input type="text" placeholder="Responsable"></td>
+            <td>
+              <select>
+                <option>⚪ Faible</option>
+                <option>🟡 Moyenne</option>
+                <option>🔴 Haute</option>
+              </select>
+            </td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody></table>
+        <button onclick="ajouterPriorite()">➕ Ajouter</button>
+      </section>
+
+      <section id="missions">
+        <h2>Missions</h2>
+        <table><tbody id="mission-body">
+          <tr>
+            <td><input type="text" placeholder="Objectif"></td>
+            <td><input type="text" placeholder="Responsable"></td>
+            <td>
+              <select>
+                <option>🟡 En cours</option>
+                <option>✅ Fait</option>
+                <option>❌ Échoué</option>
+              </select>
+            </td>
+            <td><input type="date"></td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody></table>
+        <button onclick="ajouterMission()">➕ Ajouter</button>
+      </section>
+
+      <section id="logistique">
+        <h2>Matériel</h2>
+        <table><tbody id="logistique-body">
+          <tr>
+            <td><select><option>🔫 Arme</option><option>🚗 Véhicule</option><option>🧰 Outil</option><option>🩹 Soins</option><option>📻 Électronique</option></select></td>
+            <td><input type="text" placeholder="Nom"></td>
+            <td><select onchange="checkEtat(this)"><option>✅ Fonctionnel</option><option>⚠️ Endommagé</option><option>❌ Hors service</option></select></td>
+            <td><input type="text" placeholder="Avec qui / Où ?"></td>
+            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+          </tr>
+        </tbody></table>
+        <button onclick="ajouterLogistique()">➕ Ajouter</button>
+      </section>
     </main>
-    
-    <footer>
-        <p>DeadHope - Tableau de Bord de Survie | V1.0</p>
-        <div class="footer-logo">DEADHOPE</div>
-        <p style="margin-top: 1rem;">&copy; 2023 - Tous droits réservés</p>
-    </footer>
-    
-    <div class="notification-area"></div>
-    
-    <script>
-        // Fonction pour toggle nav
-        function toggleNav() {
-            const nav = document.getElementById('main-nav');
-            nav.classList.toggle('show');
-        }
-        
-        // Fonction pour toggle section
-        function toggleSection(id) {
-            const content = document.getElementById(id);
-            const button = content.previousElementSibling.querySelector('button');
-            
-            if (content.style.display === 'none') {
-                content.style.display = 'block';
-                button.textContent = '-';
-            } else {
-                content.style.display = 'none';
-                button.textContent = '+';
-            }
-        }
-        
-        // Fonction pour mettre à jour la barre de ressource
-        function updateResourceBar(barId, value) {
-            const bar = document.getElementById(barId);
-            const resourceName = barId.split('-')[0];
-            const warningElement = document.getElementById(resourceName + '-warning');
-            
-            // Limiter la valeur entre 0 et 100
-            const level = Math.max(0, Math.min(100, value));
-            
-            // Mettre à jour la largeur de la barre
-            bar.style.width = level + '%';
-            
-            // Mettre à jour le texte du niveau
-            bar.parentElement.querySelector('.resource-level-text').textContent = level + '%';
-            
-            // Déterminer la couleur de la barre en fonction du niveau
-            bar.classList.remove('high', 'medium', 'low');
-            if (level >= 70) {
-                bar.classList.add('high');
-                warningElement.style.display = 'none';
-            } else if (level >= 40) {
-                bar.classList.add('medium');
-                warningElement.style.display = 'none';
-            } else {
-                bar.classList.add('low');
-                warningElement.style.display = 'block';
-                
-                // Afficher une notification si le niveau est critique
-                if (level < 30) {
-                    showNotification('⚠️ ' + resourceName.toUpperCase() + ' en niveau critique (' + level + '%) !');
-                }
-            }
-        }
-        
-        // Fonction pour basculer les étoiles de priorité
-        function toggleStar(element, index, resourceName) {
-            const stars = element.parentElement.querySelectorAll('.star-toggle');
-            
-            if (index === 0 && !element.classList.contains('active')) {
-                // Activer la première étoile si elle est désactivée
-                element.classList.add('active');
-            } else if (index === stars.length - 1 && element.classList.contains('active')) {
-                // Désactiver la dernière étoile si elle est activée
-                element.classList.remove('active');
-            } else if (element.classList.contains('active')) {
-                // Si l'étoile actuelle est active, désactiver toutes les étoiles après
-                for (let i = index; i < stars.length; i++) {
-                    stars[i].classList.remove('active');
-                }
-            } else {
-                // Si l'étoile actuelle est inactive, activer toutes les étoiles avant
-                for (let i = 0; i <= index; i++) {
-                    stars[i].classList.add('active');
-                }
-            }
-            
-            // Compter le nombre d'étoiles actives
-            const activeStars = element.parentElement.querySelectorAll('.star-toggle.active').length;
-            const resourceDisplayName = {
-                'food': 'Nourriture',
-                'meds': 'Médicaments',
-                'ammo': 'Munitions',
-                'fuel': 'Carburant'
-            }[resourceName] || resourceName;
-            
-            showNotification('⭐ Priorité de ' + resourceDisplayName + ' mise à jour : ' + activeStars + ' étoiles');
-        }
-        
-        // Fonction pour sauvegarder les données
-        function saveData() {
-            const inputs = document.querySelectorAll('input, textarea, select');
-            const data = {};
-            
-            inputs.forEach((input, index) => {
-                if (input.type === 'checkbox') {
-                    data[`input-${index}`] = input.checked;
-                } else if (input.type === 'select-multiple') {
-                    const selectedOptions = Array.from(input.selectedOptions).map(option => option.value);
-                    data[`input-${index}`] = selectedOptions;
-                } else {
-                    data[`input-${index}`] = input.value;
-                }
-            });
-            
-            // Sauvegarder également l'état des barres de ressources
-            const resources = ['food', 'meds', 'ammo', 'fuel'];
-            resources.forEach(resource => {
-                const bar = document.getElementById(resource + '-bar');
-                if (bar) {
-                    data[resource + '-width'] = bar.style.width;
-                    data[resource + '-class'] = Array.from(bar.classList).filter(c => c !== 'resource-bar-fill').join(' ');
-                }
-                
-                // Sauvegarde des étoiles de priorité
-                const stars = document.querySelectorAll(`.priority-selector button[onclick*="${resource}"]`);
-                if (stars.length > 0) {
-                    data[resource + '-stars'] = Array.from(stars).map(star => star.classList.contains('active')).join(',');
-                }
-            });
-            
-            localStorage.setItem('deadhope-data', JSON.stringify(data));
-            showNotification('✅ Données sauvegardées avec succès !');
-        }
-        
-        // Fonction pour charger les données
-        function loadData() {
-            const saved = localStorage.getItem('deadhope-data');
-            if (saved) {
-                const data = JSON.parse(saved);
-                const inputs = document.querySelectorAll('input, textarea, select');
-                
-                inputs.forEach((input, index) => {
-                    const value = data[`input-${index}`];
-                    if (value !== undefined) {
-                        if (input.type === 'checkbox') {
-                            input.checked = value;
-                        } else if (input.type === 'select-multiple') {
-                            if (Array.isArray(value)) {
-                                value.forEach(val => {
-                                    for (let i = 0; i < input.options.length; i++) {
-                                        if (input.options[i].value === val) {
-                                            input.options[i].selected = true;
-                                        }
-                                    }
-                                });
-                            }
-                        } else {
-                            input.value = value;
-                        }
-                    }
-                });
-                
-                // Charger l'état des barres de ressources
-                const resources = ['food', 'meds', 'ammo', 'fuel'];
-                resources.forEach(resource => {
-                    const bar = document.getElementById(resource + '-bar');
-                    if (bar && data[resource + '-width']) {
-                        bar.style.width = data[resource + '-width'];
-                        
-                        // Restaurer la classe (couleur)
-                        bar.classList.remove('high', 'medium', 'low');
-                        if (data[resource + '-class']) {
-                            data[resource + '-class'].split(' ').forEach(cls => {
-                                if (cls) bar.classList.add(cls);
-                            });
-                        }
-                        
-                        // Mettre à jour le texte
-                        const textElement = bar.parentElement.querySelector('.resource-level-text');
-                        if (textElement) {
-                            textElement.textContent = data[resource + '-width'];
-                        }
-                        
-                        // Afficher/masquer les avertissements
-                        const warningElement = document.getElementById(resource + '-warning');
-                        if (warningElement) {
-                            const level = parseInt(data[resource + '-width']);
-                            warningElement.style.display = level < 40 ? 'block' : 'none';
-                        }
-                    }
-                    
-                    // Restaurer les étoiles de priorité
-                    if (data[resource + '-stars']) {
-                        const starStates = data[resource + '-stars'].split(',').map(s => s === 'true');
-                        const stars = document.querySelectorAll(`.priority-selector button[onclick*="${resource}"]`);
-                        stars.forEach((star, i) => {
-                            if (starStates[i]) {
-                                star.classList.add('active');
-                            } else {
-                                star.classList.remove('active');
-                            }
-                        });
-                    }
-                });
-                
-                showNotification('📂 Données chargées avec succès !');
-            } else {
-                showNotification('⚠️ Aucune donnée sauvegardée trouvée !');
-            }
-        }
-        
-        // Fonction pour afficher une notification
-        function showNotification(message) {
-            const notificationArea = document.querySelector('.notification-area');
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            notificationArea.appendChild(notification);
-            
-            // Supprimer la notification après 5.5 secondes
-            setTimeout(() => {
-                notification.remove();
-            }, 5500);
-        }
-        
-        // Ajouter des boutons de sauvegarde et de chargement au menu
-        document.addEventListener('DOMContentLoaded', function() {
-            // Vérifier tous les niveaux de ressources au chargement
-            const resources = ['food', 'meds', 'ammo', 'fuel'];
-            resources.forEach(resource => {
-                const quantityInput = document.getElementById(resource + '-quantity');
-                if (quantityInput) {
-                    updateResourceBar(resource + '-bar', quantityInput.value);
-                }
-            });
-            
-            // Ajouter les boutons au menu
-            const nav = document.getElementById('main-nav');
-            if (nav) {
-                const saveButton = document.createElement('a');
-                saveButton.href = '#';
-                saveButton.textContent = '💾 Sauvegarder';
-                saveButton.style.backgroundColor = '#2ecc40';
-                saveButton.onclick = function(e) {
-                    e.preventDefault();
-                    saveData();
-                };
-                
-                const loadButton = document.createElement('a');
-                loadButton.href = '#';
-                loadButton.textContent = '📂 Charger';
-                loadButton.style.backgroundColor = '#3498db';
-                loadButton.onclick = function(e) {
-                    e.preventDefault();
-                    loadData();
-                };
-                
-                nav.appendChild(saveButton);
-                nav.appendChild(loadButton);
-            }
-            
-            // Afficher un message de bienvenue
-            setTimeout(() => {
-                showNotification('🧟‍♂️ Bienvenue sur le Tableau de Bord DeadHope !');
-            }, 1000);
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+    const app = initializeApp({
+      apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
+      authDomain: "deadhope-a1704.firebaseapp.com",
+      projectId: "deadhope-a1704"
+    });
+    const db = getFirestore(app);
+
+    let docRef = null;
+
+    function syncToFirebase() {
+      const data = {
+        personnages: Array.from(document.querySelectorAll("#character-list .character-card")).map(card => ({
+          nom: card.querySelectorAll("input")[0].value,
+          role: card.querySelectorAll("input")[1].value,
+          notes: card.querySelector("textarea").value
+        })),
+        journal: Array.from(document.querySelectorAll("#journal-body tr")).map(row => ({
+          date: row.cells[0].querySelector("input").value,
+          evenement: row.cells[1].querySelector("input").value,
+          joueur: row.cells[2].querySelector("input").value
+        })),
+        priorites: Array.from(document.querySelectorAll("#priority-body tr")).map(row => ({
+          tache: row.cells[0].querySelector("input").value,
+          joueur: row.cells[1].querySelector("input").value,
+          importance: row.cells[2].querySelector("select").value
+        })),
+        missions: Array.from(document.querySelectorAll("#mission-body tr")).map(row => ({
+          objectif: row.cells[0].querySelector("input").value,
+          joueur: row.cells[1].querySelector("input").value,
+          etat: row.cells[2].querySelector("select").value,
+          deadline: row.cells[3].querySelector("input").value
+        })),
+        logistique: Array.from(document.querySelectorAll("#logistique-body tr")).map(row => ({
+          type: row.cells[0].querySelector("select").value,
+          nom: row.cells[1].querySelector("input").value,
+          etat: row.cells[2].querySelector("select").value,
+          emplacement: row.cells[3].querySelector("input").value
+        }))
+      };
+      if (docRef) setDoc(docRef, data);
+    }
+
+    async function loadData(path, password) {
+      docRef = doc(db, "dashboards", path);
+      const roomCheck = doc(db, "rooms", path);
+      const snap = await getDoc(roomCheck);
+      if (!snap.exists()) await setDoc(roomCheck, { password });
+      else if (snap.data().password !== password) {
+        document.getElementById("error-msg").textContent = "Mot de passe incorrect.";
+        return false;
+      }
+
+      const dashSnap = await getDoc(docRef);
+      if (!dashSnap.exists()) return true;
+
+      const data = dashSnap.data();
+      // apply data...
+      const clearAndFill = (id, buildFn) => {
+        const container = document.getElementById(id);
+        container.innerHTML = "";
+        data[id]?.forEach(buildFn);
+      };
+      clearAndFill("character-list", p => {
+        const div = document.createElement("div");
+        div.className = "character-card";
+        div.innerHTML = `<input value="${p.nom}"><input value="${p.role}"><textarea>${p.notes}</textarea><button onclick="this.parentElement.remove()">🗑️</button>`;
+        document.getElementById("character-list").appendChild(div);
+      });
+      ["journal", "priority", "mission", "logistique"].forEach(type => {
+        const body = document.getElementById(`${type}-body`);
+        body.innerHTML = "";
+        data[type + "s"]?.forEach(item => {
+          const row = body.parentElement.rows[0].cloneNode(true);
+          Array.from(row.querySelectorAll("input, select")).forEach((el, i) => {
+            el.value = Object.values(item)[i] || "";
+          });
+          body.appendChild(row);
         });
-    </script>
+      });
+      return true;
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("login-btn").addEventListener("click", async () => {
+        const room = document.getElementById("room-name").value.trim();
+        const pass = document.getElementById("room-pass").value.trim();
+        if (!room || !pass) return;
+        const ok = await loadData(room, pass);
+        if (ok) {
+          document.getElementById("login-screen").classList.add("hidden");
+          document.getElementById("dashboard").classList.remove("hidden");
+        }
+      });
+
+      document.addEventListener("input", () => syncToFirebase());
+      document.addEventListener("change", () => syncToFirebase());
+    });
+
+    window.ajouterFichePerso = () => {
+      const base = document.querySelector("#character-list .character-card");
+      const clone = base.cloneNode(true);
+      clone.querySelectorAll("input, textarea").forEach(e => e.value = "");
+      base.parentElement.appendChild(clone);
+    };
+    window.ajouterJournal = () => {
+      const base = document.querySelector("#journal-body tr");
+      const clone = base.cloneNode(true);
+      clone.querySelectorAll("input").forEach(e => e.value = "");
+      base.parentElement.appendChild(clone);
+    };
+    window.ajouterPriorite = () => {
+      const base = document.querySelector("#priority-body tr");
+      const clone = base.cloneNode(true);
+      clone.querySelectorAll("input").forEach(e => e.value = "");
+      base.parentElement.appendChild(clone);
+    };
+    window.ajouterMission = () => {
+      const base = document.querySelector("#mission-body tr");
+      const clone = base.cloneNode(true);
+      clone.querySelectorAll("input").forEach(e => e.value = "");
+      base.parentElement.appendChild(clone);
+    };
+    window.ajouterLogistique = () => {
+      const base = document.querySelector("#logistique-body tr");
+      const clone = base.cloneNode(true);
+      clone.querySelectorAll("input").forEach(e => e.value = "");
+      base.parentElement.appendChild(clone);
+    };
+    window.checkEtat = (select) => {
+      const row = select.closest("tr");
+      row.style.backgroundColor = select.value.includes("❌") ? "#4a1c1c" :
+                                  select.value.includes("⚠️") ? "#4a3c1c" : "transparent";
+    };
+  </script>
 </body>
 </html>
-        
-        <section id="emergency" class="section fade-in">
-            <div class="section-header">
-                <h2>🚨 PROTOCOLES D'URGENCE</h2>
-                <button onclick="toggleSection('emergency-content')">-</button>
-            </div>
-            <div class="section-content" id="emergency-content">
-                <h3>CODES DE SITUATION</h3>
-                <div class="emergency-codes">
-                    <div class="code code-red">
-                        CODE ROUGE: Attaque massive de zombies, tous au point de ralliement
-                    </div>
-                    <div class="code code-orange">
-                        CODE ORANGE: Intrusion humaine hostile, postes de défense
-                    </div>
-                    <div class="code code-yellow">
-                        CODE JAUNE: Alerte médicale, se référer au médecin en chef
-                    </div>
-                    <div class="code code-green">
-                        CODE VERT: Évacuation immédiate, route ouest
-                    </div>
-                    <div class="code code-blue">
-                        CODE BLEU: Ressources critiques, rationnement strict
-                    </div>
-                    <div class="code code-black">
-                        CODE NOIR: Dernier recours, chacun pour soi
-                    </div>
-                </div>
-                
-                <h3 style="margin-top: 2rem;">POINTS DE RALLIEMENT</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>NOM</th>
-                            <th>LOCALISATION</th>
-                            <th>UTILISER SI</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" placeholder="Nom de la zone"></td>
-                            <td>
-                                <select>
-                                    <option value="fence">Clôture</option>
-                                    <option value="wall">Mur</option>
-                                    <option value="barricade">Barricade</option>
-                                    <option value="trap">Pièges</option>
-                                    <option value="guard">Surveillance</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="perfect">Parfait</option>
-                                    <option value="good">Bon</option>
-                                    <option value="damaged">Endommagé</option>
-                                    <option value="critical">Critique</option>
-                                    <option value="breached">Brèche</option>
-                                </select>
-                            </td>
-                            <td><input type="date"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom de la zone"></td>
-                            <td>
-                                <select>
-                                    <option value="fence">Clôture</option>
-                                    <option value="wall">Mur</option>
-                                    <option value="barricade">Barricade</option>
-                                    <option value="trap">Pièges</option>
-                                    <option value="guard">Surveillance</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="perfect">Parfait</option>
-                                    <option value="good">Bon</option>
-                                    <option value="damaged">Endommagé</option>
-                                    <option value="critical">Critique</option>
-                                    <option value="breached">Brèche</option>
-                                </select>
-                            </td>
-                            <td><input type="date"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom de la zone"></td>
-                            <td>
-                                <select>
-                                    <option value="fence">Clôture</option>
-                                    <option value="wall">Mur</option>
-                                    <option value="barricade">Barricade</option>
-                                    <option value="trap">Pièges</option>
-                                    <option value="guard">Surveillance</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="perfect">Parfait</option>
-                                    <option value="good">Bon</option>
-                                    <option value="damaged">Endommagé</option>
-                                    <option value="critical">Critique</option>
-                                    <option value="breached">Brèche</option>
-                                </select>
-                            </td>
-                            <td><input type="date"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <div class="danger-zone" style="margin-top: 2rem;">
-                    <h3>PROTOCOLE D'INTRUSION</h3>
-                    <p>En cas d'intrusion hostile (humaine ou zombie), veuillez suivre les étapes suivantes:</p>
-                    <ol style="margin-top: 1rem; margin-left: 1.5rem;">
-                        <li>Alerter tous les membres présents via le système d'alarme</li>
-                        <li>Évacuer les non-combattants vers le bunker de sécurité</li>
-                        <li>Prendre position aux points de défense désignés</li>
-                        <li>Utiliser uniquement des armes silencieuses si possible</li>
-                        <li>En cas d'échec de la défense, se replier selon le plan d'évacuation</li>
-                    </ol>
-                </div>
-            </div>
-        </section>
-        
-        <section id="journal" class="section fade-in">
-            <div class="section-header">
-                <h2>📝 JOURNAL DE BORD</h2>
-                <button onclick="toggleSection('journal-content')">-</button>
-            </div>
-            <div class="section-content" id="journal-content">
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                    <input type="date" style="width: 200px;">
-                    <input type="text" placeholder="Titre de l'entrée" style="flex-grow: 1;">
-                </div>
-                <textarea placeholder="Détaillez les événements importants de la journée, découvertes, pertes, etc." style="height: 150px; margin-bottom: 1.5rem;"></textarea>
-                
-                <h3>ENTRÉES PRÉCÉDENTES</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>DATE</th>
-                            <th>AUTEUR</th>
-                            <th>TITRE</th>
-                            <th>ACTIONS</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>2023-04-12</td>
-                            <td>
-                                <select>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="text" value="Premier jour à la base"></td>
-                            <td>
-                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">Voir</button>
-                                <button style="padding: 0.3rem 0.6rem;">Supprimer</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2023-04-11</td>
-                            <td>
-                                <select>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="text" value="Exploration du magasin"></td>
-                            <td>
-                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">Voir</button>
-                                <button style="padding: 0.3rem 0.6rem;">Supprimer</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2023-04-10</td>
-                            <td>
-                                <select>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="text" value="Construction de la palissade sud"></td>
-                            <td>
-                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">Voir</button>
-                                <button style="padding: 0.3rem 0.6rem;">Supprimer</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <button style="margin-top: 1rem;">Enregistrer l'entrée</button>
-            </div>
-        </section>
-                
-                <h3 style="margin-top: 2rem;">TOURS DE GARDE</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>HEURE</th>
-                            <th>RESPONSABLE</th>
-                            <th>POSTE</th>
-                            <th>NOTES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <select>
-                                    <option value="night">Nuit (00h-08h)</option>
-                                    <option value="morning">Matin (08h-16h)</option>
-                                    <option value="evening">Soir (16h-00h)</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Poste de garde"></td>
-                            <td><input type="text" placeholder="Notes spéciales"></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <select>
-                                    <option value="night">Nuit (00h-08h)</option>
-                                    <option value="morning">Matin (08h-16h)</option>
-                                    <option value="evening">Soir (16h-00h)</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Poste de garde"></td>
-                            <td><input type="text" placeholder="Notes spéciales"></td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <select>
-                                    <option value="night">Nuit (00h-08h)</option>
-                                    <option value="morning">Matin (08h-16h)</option>
-                                    <option value="evening">Soir (16h-00h)</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Poste de garde"></td>
-                            <td><input type="text" placeholder="Notes spéciales"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                    <tbody>
-                        <tr>
-                            <td>Combat</td>
-                            <td>
-                                <select multiple>
-                                    <option value="beginner">Débutant</option>
-                                    <option value="intermediate" selected>Intermédiaire</option>
-                                    <option value="advanced">Avancé</option>
-                                    <option value="expert">Expert</option>
-                                    <option value="master">Maître</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="high">⭐⭐⭐ Haute</option>
-                                    <option value="medium" selected>⭐⭐ Moyenne</option>
-                                    <option value="low">⭐ Basse</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Premiers soins</td>
-                            <td>
-                                <select multiple>
-                                    <option value="beginner">Débutant</option>
-                                    <option value="intermediate">Intermédiaire</option>
-                                    <option value="advanced" selected>Avancé</option>
-                                    <option value="expert">Expert</option>
-                                    <option value="master">Maître</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="high" selected>⭐⭐⭐ Haute</option>
-                                    <option value="medium">⭐⭐ Moyenne</option>
-                                    <option value="low">⭐ Basse</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Agriculture</td>
-                            <td>
-                                <select multiple>
-                                    <option value="beginner" selected>Débutant</option>
-                                    <option value="intermediate">Intermédiaire</option>
-                                    <option value="advanced">Avancé</option>
-                                    <option value="expert">Expert</option>
-                                    <option value="master">Maître</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="high" selected>⭐⭐⭐ Haute</option>
-                                    <option value="medium">⭐⭐ Moyenne</option>
-                                    <option value="low">⭐ Basse</option>
-                                </select>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <h3 style="margin-top: 2rem;">TÂCHES RÉCURRENTES</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>TÂCHE</th>
-                            <th>FRÉQUENCE</th>
-                            <th>RESPONSABLE</th>
-                            <th>DERNIÈRE EXÉCUTION</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" placeholder="Description de la tâche"></td>
-                            <td>
-                                <select>
-                                    <option value="daily">Quotidienne</option>
-                                    <option value="weekly">Hebdomadaire</option>
-                                    <option value="monthly">Mensuelle</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="date"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Description de la tâche"></td>
-                            <td>
-                                <select>
-                                    <option value="daily">Quotidienne</option>
-                                    <option value="weekly">Hebdomadaire</option>
-                                    <option value="monthly">Mensuelle</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="date"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Description de la tâche"></td>
-                            <td>
-                                <select>
-                                    <option value="daily">Quotidienne</option>
-                                    <option value="weekly">Hebdomadaire</option>
-                                    <option value="monthly">Mensuelle</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                            <td><input type="date"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <button style="margin-top: 1rem;">+ Ajouter une tâche récurrente</button>
-            </div>
-        </section>
-        
-        <section id="security" class="section fade-in">
-            <div class="section-header">
-                <h2>🔒 SÉCURITÉ</h2>
-                <button onclick="toggleSection('security-content')">-</button>
-            </div>
-            <div class="section-content" id="security-content">
-                <h3>ÉTAT DES DÉFENSES</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ZONE</th>
-                            <th>TYPE DE DÉFENSE</th>
-                            <th>ÉTAT</th>
-                            <th>DERNIÈRE INSPECTION</th>
-                        </tr>
-                    </thead>
-                
-                <button style="margin-top: 1rem;">+ Ajouter une compétence</button>
-            </div>
-        </section>
-        
-        <section id="calendar" class="section fade-in">
-            <div class="section-header">
-                <h2>📅 CALENDRIER DE SURVIE</h2>
-                <button onclick="toggleSection('calendar-content')">-</button>
-            </div>
-            <div class="section-content" id="calendar-content">
-                <h3>ÉVÉNEMENTS IMPORTANTS</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>DATE</th>
-                            <th>ÉVÉNEMENT</th>
-                            <th>NOTES</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="date"></td>
-                            <td><input type="text" placeholder="Description de l'événement"></td>
-                            <td><input type="text" placeholder="Notes supplémentaires"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="date"></td>
-                            <td><input type="text" placeholder="Description de l'événement"></td>
-                            <td><input type="text" placeholder="Notes supplémentaires"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="date"></td>
-                            <td><input type="text" placeholder="Description de l'événement"></td>
-                            <td><input type="text" placeholder="Notes supplémentaires"></td>
-                        </tr>
-                    </tbody>
-                </table>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" placeholder="Ex: En cas d'incendie, inondation, etc."></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du point"></td>
-                            <td><input type="text" placeholder="Coordonnées/Description"></td>
-                            <td><input type="text" placeholder="Ex: En cas d'incendie, inondation, etc."></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du point"></td>
-                            <td><input type="text" placeholder="Coordonnées/Description"></td>
-                            <td><input type="text" placeholder="Ex: En cas d'incendie, inondation, etc."></td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <h3 style="margin-top: 2rem;">CONSEILS DE SURVIE</h3>
-                <ul class="tips-list">
-                    <li>Toujours prévenir un membre de l'équipe avant de partir en mission</li>
-                    <li>Garder une marge de sécurité de 25% de carburant pour le retour</li>
-                    <li>Ne jamais s'aventurer seul dans une zone non explorée</li>
-                    <li>En cas de morsure, isoler immédiatement le membre concerné</li>
-                    <li>Maintenir une distance de sécurité avec les zombies - frapper et reculer</li>
-                    <li>Toujours emporter une arme secondaire silencieuse</li>
-                    <li>Éviter de courir sauf en cas d'urgence absolue</li>
-                </ul>
-            </div>
-        </section>
-        
-        <section id="skills" class="section fade-in">
-            <div class="section-header">
-                <h2>🧠 COMPÉTENCES ET FORMATIONS</h2>
-                <button onclick="toggleSection('skills-content')">-</button>
-            </div>
-            <div class="section-content" id="skills-content">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>COMPÉTENCE</th>
-                            <th>NIVEAU DANS L'ÉQUIPE</th>
-                            <th>EXPERT</th>
-                            <th>PRIORITÉ DE FORMATION</th>
-                        </tr>
-                    </thead>="Nom du point"></td>
-                            <td><input type="text" placeholder="Coordonnées/Description"></td>
-                            <td><input type="text" placeholder
-        </section>
-        
-        <section id="construction" class="section fade-in">
-            <div class="section-header">
-                <h2>🔧 PROJETS DE CONSTRUCTION</h2>
-                <button onclick="toggleSection('construction-content')">-</button>
-            </div>
-            <div class="section-content" id="construction-content">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>PROJET</th>
-                            <th>MATÉRIAUX REQUIS</th>
-                            <th>ÉTAT</th>
-                            <th>RESPONSABLE</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du projet"></td>
-                            <td><textarea placeholder="Liste des matériaux nécessaires"></textarea></td>
-                            <td>
-                                <select>
-                                    <option value="planning">Planification</option>
-                                    <option value="gathering">Collecte</option>
-                                    <option value="building">En construction</option>
-                                    <option value="finished">Terminé</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du projet"></td>
-                            <td><textarea placeholder="Liste des matériaux nécessaires"></textarea></td>
-                            <td>
-                                <select>
-                                    <option value="planning">Planification</option>
-                                    <option value="gathering">Collecte</option>
-                                    <option value="building">En construction</option>
-                                    <option value="finished">Terminé</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du projet"></td>
-                            <td><textarea placeholder="Liste des matériaux nécessaires"></textarea></td>
-                            <td>
-                                <select>
-                                    <option value="planning">Planification</option>
-                                    <option value="gathering">Collecte</option>
-                                    <option value="building">En construction</option>
-                                    <option value="finished">Terminé</option>
-                                </select>
-                            </td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                </select>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <button style="margin-top: 1rem;">+ Ajouter un projet</button>
-            </div>
-        </section>
-        
-        <section id="vehicles" class="section fade-in">
-            <div class="section-header">
-                <h2>🚙 VÉHICULES</h2>
-                <button onclick="toggleSection('vehicles-content')">-</button>
-            </div>
-            <div class="section-content" id="vehicles-content">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>VÉHICULE</th>
-                            <th>ÉTAT</th>
-                            <th>CARBURANT</th>
-                            <th>LOCALISATION</th>
-                            <th>CLÉS AVEC</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><input type="text" placeholder="Type/Couleur du véhicule"></td>
-                            <td>
-                                <select>
-                                    <option value="excellent">Excellent</option>
-                                    <option value="good">Bon</option>
-                                    <option value="damaged">Endommagé</option>
-                                    <option value="critical">Critique</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="range" min="0" max="100" value="50">
-                                <div style="text-align: center;"><span>50%</span></div>
-                            </td>
-                            <td><input type="text" placeholder="Où est garé le véhicule"></td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                    <option value="garage">Au garage</option>
-                                    <option value="lost">Perdues</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Type/Couleur du véhicule"></td>
-                            <td>
-                                <select>
-                                    <option value="excellent">Excellent</option>
-                                    <option value="good">Bon</option>
-                                    <option value="damaged">Endommagé</option>
-                                    <option value="critical">Critique</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="range" min="0" max="100" value="25">
-                                <div style="text-align: center;"><span>25%</span></div>
-                            </td>
-                            <td><input type="text" placeholder="Où est garé le véhicule"></td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                    <option value="garage">Au garage</option>
-                                    <option value="lost">Perdues</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Type/Couleur du véhicule"></td>
-                            <td>
-                                <select>
-                                    <option value="excellent">Excellent</option>
-                                    <option value="good">Bon</option>
-                                    <option value="damaged">Endommagé</option>
-                                    <option value="critical">Critique</option>
-                                </select>
-                            </td>
-                            <td>
-                                <input type="range" min="0" max="100" value="75">
-                                <div style="text-align: center;"><span>75%</span></div>
-                            </td>
-                            <td><input type="text" placeholder="Où est garé le véhicule"></td>
-                            <td>
-                                <select>
-                                    <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
-                                    <option value="garage">Au garage</option>
-                                    <option value="lost">Perdues</option>
-                                </select>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                
-                <button style="margin-top: 1rem;">+ Ajouter un véhicule</button>
-            </div>
-           <!-- Remplacement complet de la section map-content -->
-<div class="section-content" id="map-content">
-    <div class="map-container">
-        <div id="pz-map-wrapper">
-            <div id="pz-map-controls">
-                <div class="map-locations">
-                    <select id="map-location-select">
-                        <option value="muldraugh">Muldraugh</option>
-                        <option value="westpoint">West Point</option>
-                        <option value="rosewood">Rosewood</option>
-                        <option value="riverside">Riverside</option>
-                        <option value="louisville">Louisville</option>
-                    </select>
-                    <button id="go-to-location" class="map-button">Aller à</button>
-                </div>
-                <div class="map-tools">
-                    <span class="tool-label">Carte officielle Project Zomboid</span>
-                </div>
-            </div>
-            
-            <div id="pz-map" class="pz-map">
-                <!-- Utilisation d'un iframe vers la carte officielle -->
-                <iframe id="pz-map-iframe" src="https://map.projectzomboid.com/#muldraugh,0,6,0" width="100%" height="600px" frameborder="0" style="border: none;"></iframe>
-            </div>
-            
-            <div class="map-legend">
-                <h4>Comment utiliser la carte</h4>
-                <ul class="map-instructions">
-                    <li>Déplacez-vous en glissant la carte</li>
-                    <li>Zoomez avec la molette de souris</li>
-                    <li>Changez de ville avec le menu déroulant</li>
-                    <li>Utilisez les contrôles intégrés à la carte pour plus d'options</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    
-    <div class="map-saved-locations">
-        <h3>Emplacements Importants</h3>
-        <div class="saved-locations-list" id="saved-locations">
-            <div class="location-grid">
-                <div class="saved-location-item">
-                    <div class="saved-location-name">🏠 Base Principale</div>
-                    <div class="saved-location-coords">
-                        <input type="text" class="location-input" placeholder="Coordonnées (ex: 10700,9800)">
-                        <button class="copy-coords">Copier</button>
-                    </div>
-                    <textarea class="location-notes" placeholder="Notes sur cet emplacement..."></textarea>
-                </div>
-                
-                <div class="saved-location-item">
-                    <div class="saved-location-name">🏥 Hôpital/Pharmacie</div>
-                    <div class="saved-location-coords">
-                        <input type="text" class="location-input" placeholder="Coordonnées (ex: 10700,9800)">
-                        <button class="copy-coords">Copier</button>
-                    </div>
-                    <textarea class="location-notes" placeholder="Notes sur cet emplacement..."></textarea>
-                </div>
-                
-                <div class="saved-location-item">
-                    <div class="saved-location-name">🔫 Armurerie</div>
-                    <div class="saved-location-coords">
-                        <input type="text" class="location-input" placeholder="Coordonnées (ex: 10700,9800)">
-                        <button class="copy-coords">Copier</button>
-                    </div>
-                    <textarea class="location-notes" placeholder="Notes sur cet emplacement..."></textarea>
-                </div>
-                
-                <div class="saved-location-item">
-                    <div class="saved-location-name">🛒 Supermarché</div>
-                    <div class="saved-location-coords">
-                        <input type="text" class="location-input" placeholder="Coordonnées (ex: 10700,9800)">
-                        <button class="copy-coords">Copier</button>
-                    </div>
-                    <textarea class="location-notes" placeholder="Notes sur cet emplacement..."></textarea>
-                </div>
-                
-                <div class="saved-location-item">
-                    <div class="saved-location-name">⚠️ Zone dangereuse</div>
-                    <div class="saved-location-coords">
-                        <input type="text" class="location-input" placeholder="Coordonnées (ex: 10700,9800)">
-                        <button class="copy-coords">Copier</button>
-                    </div>
-                    <textarea class="location-notes" placeholder="Notes sur cet emplacement..."></textarea>
-                </div>
-                
-                <div class="saved-location-item">
-                    <div class="saved-location-name">🚗 Garage/Station-service</div>
-                    <div class="saved-location-coords">
-                        <input type="text" class="location-input" placeholder="Coordonnées (ex: 10700,9800)">
-                        <button class="copy-coords">Copier</button>
-                    </div>
-                    <textarea class="location-notes" placeholder="Notes sur cet emplacement..."></textarea>
-                </div>
-            </div>
-            
-            <button id="add-location" class="add-location-btn">+ Ajouter un emplacement</button>
-        </div>
-    </div>
-    
-    <!-- Reprise de la section des zones dangereuses -->
-    <h3 style="margin-top: 2rem;">ZONES DANGEREUSES</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>LIEU</th>
-                <th>DENSITÉ ZOMBIE</th>
-                <th>NOTES</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><input type="text" placeholder="Nom du lieu"></td>
-                <td>
-                    <select>
-                        <option value="1">⭐ Faible</option>
-                        <option value="2">⭐⭐ Modérée</option>
-                        <option value="3">⭐⭐⭐ Élevée</option>
-                        <option value="4">⭐⭐⭐⭐ Très élevée</option>
-                        <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
-                    </select>
-                </td>
-                <td><input type="text" placeholder="Informations supplémentaires"></td>
-            </tr>
-            <tr>
-                <td><input type="text" placeholder="Nom du lieu"></td>
-                <td>
-                    <select>
-                        <option value="1">⭐ Faible</option>
-                        <option value="2">⭐⭐ Modérée</option>
-                        <option value="3">⭐⭐⭐ Élevée</option>
-                        <option value="4">⭐⭐⭐⭐ Très élevée</option>
-                        <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
-                    </select>
-                </td>
-                <td><input type="text" placeholder="Informations supplémentaires"></td>
-            </tr>
-            <tr>
-                <td><input type="text" placeholder="Nom du lieu"></td>
-                <td>
-                    <select>
-                        <option value="1">⭐ Faible</option>
-                        <option value="2">⭐⭐ Modérée</option>
-                        <option value="3">⭐⭐⭐ Élevée</option>
-                        <option value="4">⭐⭐⭐⭐ Très élevée</option>
-                        <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
-                    </select>
-                </td>
-                <td><input type="text" placeholder="Informations supplémentaires"></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-
-<!-- Ajoutez ces styles à votre CSS existant -->
-<style>
-    .map-container {
-        width: 100%;
-        margin-bottom: 2rem;
-        background-color: var(--medium-bg);
-        border-radius: 8px;
-        border: 1px solid var(--border);
-        overflow: hidden;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    }
-    
-    #pz-map-wrapper {
-        position: relative;
-    }
-    
-    #pz-map {
-        width: 100%;
-        height: 600px;
-        position: relative;
-        overflow: hidden;
-        background-color: var(--dark-bg);
-        box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
-    }
-    
-    #pz-map-iframe {
-        border: none;
-        width: 100%;
-        height: 100%;
-    }
-    
-    #pz-map-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem;
-        background-color: var(--light-bg);
-        border-bottom: 1px solid var(--border);
-    }
-    
-    .map-locations {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    
-    .map-locations select {
-        background-color: var(--medium-bg);
-        border: 1px solid var(--border);
-        color: var(--text);
-        padding: 0.5rem;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-    
-    .map-button {
-        background-color: var(--accent);
-        color: #000;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 5px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-    
-    .map-button:hover {
-        background-color: var(--accent-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    }
-    
-    .tool-label {
-        color: var(--accent);
-        font-weight: bold;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-    }
-    
-    .map-legend {
-        padding: 0.75rem;
-        background-color: var(--medium-bg);
-        border-top: 1px solid var(--border);
-    }
-    
-    .map-legend h4 {
-        margin: 0 0 0.5rem 0;
-        color: var(--accent);
-    }
-    
-    .map-instructions {
-        list-style-type: none;
-        padding: 0;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-    }
-    
-    .map-instructions li {
-        padding-left: 1.2rem;
-        position: relative;
-        flex: 1 0 200px;
-    }
-    
-    .map-instructions li::before {
-        content: "▶";
-        color: var(--accent);
-        position: absolute;
-        left: 0;
-    }
-    
-    .map-saved-locations {
-        margin-top: 1rem;
-        background-color: var(--medium-bg);
-        padding: 1rem;
-        border-radius: 5px;
-        border: 1px solid var(--border);
-    }
-    
-    .location-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .saved-location-item {
-        background-color: var(--light-bg);
-        border: 1px solid var(--border);
-        border-radius: 5px;
-        padding: 1rem;
-        transition: all 0.3s ease;
-    }
-    
-    .saved-location-item:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-    }
-    
-    .saved-location-name {
-        font-weight: bold;
-        color: var(--accent);
-        margin-bottom: 0.5rem;
-        font-size: 1.1rem;
-    }
-    
-    .saved-location-coords {
-        display: flex;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .location-input {
-        flex: 1;
-    }
-    
-    .copy-coords {
-        padding: 0.3rem 0.6rem;
-        font-size: 0.8rem;
-    }
-    
-    .location-notes {
-        width: 100%;
-        min-height: 60px;
-        resize: vertical;
-    }
-    
-    .add-location-btn {
-        width: 100%;
-        margin-top: 0.5rem;
-        background-color: var(--light-bg);
-        color: var(--text);
-        border: 1px dashed var(--border);
-        padding: 0.8rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .add-location-btn:hover {
-        background-color: var(--accent);
-        color: #000;
-        border-style: solid;
-    }
-</style>
-
-<!-- Script pour le fonctionnement de base -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Sélection des éléments
-    const mapIframe = document.getElementById('pz-map-iframe');
-    const locationSelect = document.getElementById('map-location-select');
-    const goToLocationBtn = document.getElementById('go-to-location');
-    const addLocationBtn = document.getElementById('add-location');
-    const copyBtns = document.querySelectorAll('.copy-coords');
-    
-    // Fonction pour naviguer vers une ville
-    function navigateToLocation(location) {
-        let mapUrl = "https://map.projectzomboid.com/";
-        switch(location) {
-            case 'muldraugh':
-                mapUrl += "#muldraugh,0,6,0";
-                break;
-            case 'westpoint':
-                mapUrl += "#westpoint,0,6,0";
-                break;
-            case 'rosewood':
-                mapUrl += "#rosewood,0,6,0";
-                break;
-            case 'riverside':
-                mapUrl += "#riverside,0,6,0";
-                break;
-            case 'louisville':
-                mapUrl += "#louisville,0,6,0";
-                break;
-            default:
-                mapUrl += "#muldraugh,0,6,0";
-        }
-        
-        mapIframe.src = mapUrl;
-        showNotification(`🧭 Carte centrée sur ${location}`);
-    }
-    
-    // Fonction pour copier les coordonnées
-    function copyCoordinates(input) {
-        if (input.value) {
-            navigator.clipboard.writeText(input.value)
-                .then(() => showNotification("📋 Coordonnées copiées dans le presse-papier"))
-                .catch(err => console.error('Erreur lors de la copie:', err));
-        } else {
-            showNotification("⚠️ Aucune coordonnée à copier");
-        }
-    }
-    
-    // Fonction pour ajouter un nouvel emplacement
-    function addNewLocation() {
-        const locationGrid = document.querySelector('.location-grid');
-        const newLocation = document.createElement('div');
-        newLocation.className = 'saved-location-item';
-        
-        newLocation.innerHTML = `
-            <div class="saved-location-name">
-                <input type="text" placeholder="Nom de l'emplacement" style="width: 100%; margin-bottom: 0.5rem;">
-            </div>
-            <div class="saved-location-coords">
-                <input type="text" class="location-input" placeholder="Coordonnées (ex: 10700,9800)">
-                <button class="copy-coords">Copier</button>
-            </div>
-            <textarea class="location-notes" placeholder="Notes sur cet emplacement..."></textarea>
-            <button class="remove-location" style="margin-top: 0.5rem; width: 100%; background-color: var(--danger);">Supprimer</button>
-        `;
-        
-        // Ajouter l'événement de copie
-        newLocation.querySelector('.copy-coords').addEventListener('click', function() {
-            copyCoordinates(this.previousElementSibling);
-        });
-        
-        // Ajouter l'événement de suppression
-        newLocation.querySelector('.remove-location').addEventListener('click', function() {
-            locationGrid.removeChild(newLocation);
-            saveLocations();
-            showNotification("🗑️ Emplacement supprimé");
-        });
-        
-        locationGrid.appendChild(newLocation);
-        saveLocations();
-        showNotification("✅ Nouvel emplacement ajouté");
-    }
-    
-    // Fonction pour sauvegarder les emplacements
-    function saveLocations() {
-        // Implémentation simplifiée - à compléter avec localStorage
-        console.log("Emplacements sauvegardés");
-    }
-    
-    // Fonction pour afficher une notification
-    function showNotification(message) {
-        // Vérifier si la fonction showNotification existe déjà dans le code global
-        if (typeof window.showNotification === 'function') {
-            window.showNotification(message);
-        } else {
-            // Utiliser une implémentation basique si la fonction n'existe pas
-            console.log(message);
-            
-            // Créer un élément de notification si la structure existe
-            const notificationArea = document.querySelector('.notification-area');
-            if (notificationArea) {
-                const notification = document.createElement('div');
-                notification.className = 'notification';
-                notification.textContent = message;
-                notificationArea.appendChild(notification);
-                
-                // Supprimer la notification après 5.5 secondes
-                setTimeout(() => {
-                    notification.remove();
-                }, 5500);
-            }
-        }
-    }
-    
-    // Événements
-    goToLocationBtn.addEventListener('click', function() {
-        navigateToLocation(locationSelect.value);
-    });
-    
-    locationSelect.addEventListener('change', function() {
-        navigateToLocation(this.value);
-    });
-    
-    addLocationBtn.addEventListener('click', addNewLocation);
-    
-    copyBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            copyCoordinates(this.previousElementSibling);
-        });
-    });
-    
-    // Charger la carte initiale
-    navigateToLocation('muldraugh');
-});
-</script>
-                            <td><input type="text" placeholder="Nom du lieu"></td>
-                            <td>
-                                <select>
-                                    <option value="1">⭐ Faible</option>
-                                    <option value="2">⭐⭐ Modérée</option>
-                                    <option value="3">⭐⭐⭐ Élevée</option>
-                                    <option value="4">⭐⭐⭐⭐ Très élevée</option>
-                                    <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Informations supplémentaires"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du lieu"></td>
-                            <td>
-                                <select>
-                                    <option value="1">⭐ Faible</option>
-                                    <option value="2">⭐⭐ Modérée</option>
-                                    <option value="3">⭐⭐⭐ Élevée</option>
-                                    <option value="4">⭐⭐⭐⭐ Très élevée</option>
-                                    <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Informations supplémentaires"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" placeholder="Nom du lieu"></td>
-                            <td>
-                                <select>
-                                    <option value="1">⭐ Faible</option>
-                                    <option value="2">⭐⭐ Modérée</option>
-                                    <option value="3">⭐⭐⭐ Élevée</option>
-                                    <option value="4">⭐⭐⭐⭐ Très élevée</option>
-                                    <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
-                                </select>
-                            </td>
-                            <td><input type="text" placeholder="Informations supplémentaires"></td>
-                        </tr>
-                    </tbody>
