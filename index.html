@@ -230,6 +230,11 @@ td {
 </head>
 <body>
 
+  <audio id="background-sound" autoplay loop volume="0.3">
+    <source src="https://cdn.pixabay.com/download/audio/2022/03/22/audio_52c99e24c0.mp3?filename=ambient-dark-ambient-loop-114870.mp3" type="audio/mpeg">
+    Ton navigateur ne supporte pas l'audio HTML5.
+  </audio>
+
 <div id="welcome-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#0f0;font-family:'Courier New', monospace;">
   <h1 style="margin-bottom:2rem;">☣️ Terminal DeadHope ☣️</h1>
   <div id="terminal-lines" style="margin-bottom: 1rem; max-width: 80%; text-align: left;"></div>
@@ -814,6 +819,7 @@ function startDashboard() {
   setTimeout(() => {
     document.getElementById("welcome-screen").style.display = "none";
   }, 2000);
+  document.getElementById("background-sound").play().catch(() => {});
 }
 
 function getPseudo() {
