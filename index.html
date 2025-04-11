@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inventaire Project Zomboid</title>
 
-  <!-- STYLE -->
+  <!-- LIBRAIRIES -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css">
   <style>
     :root {
       --primary: #c62828;
@@ -95,18 +97,12 @@
     .toast.show {
       display: flex;
     }
+
+    .loader {
+      display: none;
+    }
   </style>
-
-  <!-- LIBRAIRIES -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 </head>
-
 <body data-theme="dark">
   <header>
     <h1>Inventaire Zomboid</h1>
@@ -141,17 +137,26 @@
     <div id="toast-message"></div>
   </div>
 
-  <!-- SCRIPT JS -->
+  <!-- LIBRAIRIES JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+
+  <!-- SCRIPT PRINCIPAL -->
   <script>
-    // Configuration Firebase
+    // Configuration Firebase (remplace par tes infos si besoin)
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
+      apiKey: "AIzaSyASp6Gfi4Fz8Nduap0on89oAZzCkPLKpFc",
+      authDomain: "lions-890e9.firebaseapp.com",
+      databaseURL: "https://lions-890e9-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "lions-890e9",
+      storageBucket: "lions-890e9.appspot.com",
+      messagingSenderId: "560777699926",
+      appId: "1:560777699926:web:2e256d3d1d337513be91f7",
+      measurementId: "G-ZX3N3XWJ4K"
     };
 
     // Initialiser Firebase
@@ -172,7 +177,14 @@
     let storagePhotosRef = null;
     let mapMarkersRef = null;
     let inventoryHistoryRef = null;
-    let categoryIcons = {
+
+    let zomboidMap = null;
+    let resourcesChart = null;
+    let categoriesChart = null;
+    let usersChart = null;
+    let db = null;
+
+    const categoryIcons = {
       weapons: "fa-crosshairs",
       food: "fa-apple-alt",
       medicine: "fa-plus-square",
@@ -186,7 +198,8 @@
       containers: "fa-box-open",
       other: "fa-question-circle"
     };
-    let categoryNames = {
+
+    const categoryNames = {
       weapons: "Armes",
       food: "Nourriture",
       medicine: "Médicaments",
@@ -201,42 +214,34 @@
       other: "Autres"
     };
 
-    // Fonction pour afficher un toast
+    // Fonction Toast Notification
     function showToast(title, message, type = "success") {
       const toast = document.getElementById('toast');
       const toastMessage = document.getElementById('toast-message');
-
       if (!toast || !toastMessage) return;
 
-      const toastTitle = toast.querySelector('.toast-title');
-      if (toastTitle) toastTitle.textContent = title;
       toastMessage.textContent = message;
-
-      toast.className = "toast show";
-      if (type === "success") {
-        toast.classList.add("success");
-        const icon = toast.querySelector('i');
-        if (icon) icon.className = "fas fa-check-circle fa-lg";
-      } else if (type === "error") {
-        toast.classList.add("error");
-        const icon = toast.querySelector('i');
-        if (icon) icon.className = "fas fa-exclamation-circle fa-lg";
-      } else if (type === "info") {
-        toast.classList.add("info");
-        const icon = toast.querySelector('i');
-        if (icon) icon.className = "fas fa-info-circle fa-lg";
+      const icon = toast.querySelector('i');
+      if (icon) {
+        icon.className = "fas fa-info-circle fa-lg";
+        if (type === "success") icon.className = "fas fa-check-circle fa-lg";
+        if (type === "error") icon.className = "fas fa-exclamation-circle fa-lg";
       }
 
-      toast.classList.add("show");
-      setTimeout(() => toast.classList.remove("show"), 3000);
+      toast.classList.remove("success", "error", "info");
+      toast.classList.add("show", type);
+
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3000);
     }
 
-    // Fonction pour basculer le thème
+    // Thème : toggle dark/light
     function toggleTheme() {
       const currentTheme = document.body.getAttribute('data-theme') || 'dark';
       const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
       document.body.setAttribute('data-theme', newTheme);
+
       const themeToggleBtn = document.getElementById('theme-toggle-btn');
       if (themeToggleBtn) {
         themeToggleBtn.innerHTML = newTheme === 'dark'
@@ -248,8 +253,8 @@
       showToast("Thème", `Thème ${newTheme === 'dark' ? 'sombre' : 'clair'} activé`, "success");
     }
 
-    // Appliquer le thème au chargement
     document.addEventListener('DOMContentLoaded', () => {
+      // Appliquer le thème sauvegardé
       const savedTheme = localStorage.getItem('theme') || 'dark';
       document.body.setAttribute('data-theme', savedTheme);
 
@@ -262,96 +267,160 @@
       }
     });
 
-    // Fonction pour rendre l'inventaire à partir des données
-    function renderInventory(data) {
-      const container = document.getElementById('inventory');
-      if (!container || !data || !data[currentStorage]) return;
+    // Affiche l'inventaire à l'écran
+    function renderInventory(inventoryData) {
+      const inventoryElement = document.getElementById('inventory');
+      if (!inventoryElement || !inventoryData || !inventoryData[currentStorage]) return;
 
-      container.innerHTML = '';
-      const storage = data[currentStorage];
+      inventoryElement.innerHTML = '';
+      const inventory = inventoryData[currentStorage];
+      let hasItems = false;
 
-      for (const category in storage) {
-        const items = storage[category];
-        if (!items || items.length === 0) continue;
+      for (const category in inventory) {
+        const items = inventory[category] || [];
 
-        const section = document.createElement('section');
-        section.className = 'inventory-category';
+        if (activeFilter !== 'all' && category !== activeFilter) continue;
 
-        const title = document.createElement('h3');
-        title.innerHTML = `<i class="fas ${categoryIcons[category]}"></i> ${categoryNames[category]}`;
-        section.appendChild(title);
+        const filteredItems = items.filter(item =>
+          item && item.name &&
+          (item.name.toLowerCase().includes(searchQuery) ||
+          (item.description && item.description.toLowerCase().includes(searchQuery)))
+        );
 
-        const list = document.createElement('ul');
-        list.className = 'inventory-list';
+        if (filteredItems.length === 0) continue;
+        hasItems = true;
 
-        items.forEach((item, index) => {
-          const li = document.createElement('li');
-          li.className = 'inventory-item';
-          li.innerHTML = `
-            <strong>${item.name}</strong> (${item.count})
-            <div class="actions">
-              <button onclick="decreaseCount('${category}', ${index})"><i class="fas fa-minus"></i></button>
-              <button onclick="increaseCount('${category}', ${index})"><i class="fas fa-plus"></i></button>
-              <button onclick="removeItem('${category}', ${index})"><i class="fas fa-trash"></i></button>
-            </div>
+        const categorySection = document.createElement('div');
+        categorySection.className = 'category-section';
+        categorySection.dataset.category = category;
+
+        const categoryHeader = document.createElement('div');
+        categoryHeader.className = 'category-header';
+        categoryHeader.innerHTML = `
+          <div>
+            <i class="fas ${categoryIcons[category]} category-icon"></i>
+            ${categoryNames[category]}
+            <span class="badge badge-primary">${filteredItems.length}</span>
+          </div>
+          <i class="fas fa-chevron-down toggle-collapse"></i>
+        `;
+        categoryHeader.onclick = () => toggleCategoryCollapse(categorySection);
+        categorySection.appendChild(categoryHeader);
+
+        const categoryContent = document.createElement('div');
+        categoryContent.className = 'category-content';
+
+        const table = document.createElement('table');
+        table.className = 'inventory-table';
+
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Objet</th>
+              <th>Quantité</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+        `;
+
+        const tbody = document.createElement('tbody');
+
+        filteredItems.forEach((item, index) => {
+          if (!item) return;
+          const actualIndex = items.indexOf(item);
+          const tr = document.createElement('tr');
+          if (item.priority) tr.className = `priority-${item.priority}`;
+
+          tr.innerHTML = `
+            <td class="item-name">
+              <i class="fas ${categoryIcons[category]} item-icon"></i>
+              ${item.name}
+              ${item.description ? `<div class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">${item.description}</span></div>` : ''}
+            </td>
+            <td><span class="counter-display">${item.count}</span></td>
+            <td class="item-actions">
+              <button class="action-btn" onclick="decreaseCount('${category}', ${actualIndex})"><i class="fas fa-minus"></i></button>
+              <button class="action-btn add" onclick="increaseCount('${category}', ${actualIndex})"><i class="fas fa-plus"></i></button>
+              <button class="action-btn delete" onclick="removeItem('${category}', ${actualIndex})"><i class="fas fa-trash"></i></button>
+            </td>
           `;
-          list.appendChild(li);
+          tbody.appendChild(tr);
         });
 
-        section.appendChild(list);
-        container.appendChild(section);
+        table.appendChild(tbody);
+        categoryContent.appendChild(table);
+        categorySection.appendChild(categoryContent);
+        inventoryElement.appendChild(categorySection);
+      }
+
+      if (!hasItems) {
+        const emptyState = document.createElement('div');
+        emptyState.className = 'empty-state';
+        emptyState.innerHTML = `
+          <i class="fas fa-box-open"></i>
+          <p>Votre inventaire est vide ou aucun objet ne correspond à la recherche.</p>
+        `;
+        inventoryElement.appendChild(emptyState);
       }
     }
 
-    // Ajouter un objet à l'inventaire
-    function addItem(name, category, count, description = '', priority = 'normal') {
-      if (!inventoryRef || !name || !category) return;
+    // Ajouter un objet
+    function addItem() {
+      const name = document.getElementById('item-name').value.trim();
+      const category = document.getElementById('item-category').value;
+      const count = parseInt(document.getElementById('item-count').value);
+      const description = document.getElementById('item-description').value.trim();
+      const priority = document.getElementById('item-priority').value;
 
-      const item = {
-        name,
-        count,
-        description,
-        priority,
-        addedOn: firebase.database.ServerValue.TIMESTAMP
-      };
+      if (!name) return showToast("Erreur", "Nom d'objet requis", "error");
+      if (isNaN(count) || count < 1) return showToast("Erreur", "Quantité invalide", "error");
+      if (!inventoryRef) return showToast("Erreur", "Base de données non connectée", "error");
 
       const categoryRef = inventoryRef.child(`${currentStorage}/${category}`);
+
       categoryRef.once('value', snapshot => {
         const items = snapshot.val() || [];
-        const existingIndex = items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
+        const existingIndex = items.findIndex(item => item.name.toLowerCase() === name.toLowerCase());
 
         if (existingIndex !== -1) {
-          items[existingIndex].count += count;
+          const newCount = items[existingIndex].count + count;
+          categoryRef.child(existingIndex).update({ count: newCount });
+          showToast("Mise à jour", `Quantité de ${name} augmentée`, "success");
         } else {
-          items.push(item);
+          const newItem = {
+            name, count, description, priority,
+            addedOn: firebase.database.ServerValue.TIMESTAMP
+          };
+          items.push(newItem);
+          categoryRef.set(items);
+          showToast("Ajouté", `${count} ${name} ajouté`, "success");
         }
 
-        categoryRef.set(items).then(() => {
-          showToast("Ajouté", `${count} x ${name} ajouté`, "success");
-        });
+        document.getElementById('item-name').value = '';
+        document.getElementById('item-count').value = '1';
+        document.getElementById('item-description').value = '';
+        document.getElementById('item-priority').value = 'normal';
       });
     }
 
     // Supprimer un objet
     function removeItem(category, index) {
-      if (!inventoryRef) return;
-      const categoryRef = inventoryRef.child(`${currentStorage}/${category}`);
-      categoryRef.once('value', snapshot => {
+      const ref = inventoryRef.child(`${currentStorage}/${category}`);
+      ref.once('value', snapshot => {
         const items = snapshot.val() || [];
         if (index >= 0 && index < items.length) {
           items.splice(index, 1);
-          categoryRef.set(items);
-          showToast("Supprimé", `Objet supprimé`, "success");
+          ref.set(items);
+          showToast("Supprimé", "Objet supprimé", "success");
         }
       });
     }
 
-    // Augmenter la quantité
+    // Incrémenter/décrémenter la quantité
     function increaseCount(category, index) {
-      updateCount(category, index, 1);
+      updateCount(category, index, +1);
     }
 
-    // Diminuer la quantité
     function decreaseCount(category, index) {
       updateCount(category, index, -1);
     }
@@ -361,7 +430,8 @@
       ref.once('value', snapshot => {
         const item = snapshot.val();
         if (!item) return;
-        const newCount = (item.count || 0) + delta;
+
+        const newCount = item.count + delta;
         if (newCount <= 0) {
           removeItem(category, index);
         } else {
@@ -370,21 +440,73 @@
       });
     }
 
-    // Mettre à jour les stats (totaux visibles)
+    // Met à jour les statistiques globales
     function updateStats(data) {
       if (!data || !data[currentStorage]) return;
-      const storage = data[currentStorage];
-      let total = 0;
-      for (const category in storage) {
-        storage[category].forEach(item => {
-          total += item.count;
-        });
+      const statsElement = document.getElementById('stats');
+      if (!statsElement) return;
+
+      const inventory = data[currentStorage];
+      let totalItems = 0;
+      let totalCategories = 0;
+
+      for (const category in inventory) {
+        const items = inventory[category] || [];
+        const total = items.reduce((acc, item) => acc + (item.count || 0), 0);
+        if (total > 0) totalCategories++;
+        totalItems += total;
       }
-      const el = document.getElementById('total-items');
-      if (el) el.textContent = total;
+
+      statsElement.innerHTML = `
+        <div class="stat-box"><i class="fas fa-layer-group"></i><span>${totalCategories}</span><p>Catégories</p></div>
+        <div class="stat-box"><i class="fas fa-cubes"></i><span>${totalItems}</span><p>Objets</p></div>
+      `;
     }
 
-    // Fonction pour générer un QR Code
+    // Gère la recherche dans l'inventaire
+    document.addEventListener('DOMContentLoaded', () => {
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', e => {
+          searchQuery = e.target.value.toLowerCase();
+          inventoryRef.once('value', snapshot => {
+            renderInventory(snapshot.val());
+          });
+        });
+      }
+    });
+
+    // Changement de filtre (catégorie)
+    function changeFilter(category) {
+      activeFilter = category;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      const btn = document.querySelector(`.filter-btn[data-category="${category}"]`);
+      if (btn) btn.classList.add('active');
+
+      inventoryRef.once('value', snapshot => {
+        renderInventory(snapshot.val());
+      });
+    }
+
+    // Reset filtre et recherche
+    function resetFilters() {
+      searchQuery = '';
+      activeFilter = 'all';
+      const input = document.getElementById('search-input');
+      if (input) input.value = '';
+      changeFilter('all');
+    }
+
+    // Collapse / Expand une catégorie
+    function toggleCategoryCollapse(categorySection) {
+      const content = categorySection.querySelector('.category-content');
+      const icon = categorySection.querySelector('.fa-chevron-down');
+      if (!content || !icon) return;
+      content.style.display = content.style.display === 'none' ? 'block' : 'none';
+      icon.classList.toggle('rotated');
+    }
+
+    // Génération du QR Code de partage
     function generateQRCode() {
       const container = document.getElementById('qrcode');
       if (!container || !currentRoomId) return;
@@ -400,162 +522,15 @@
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
       });
+
+      showToast("QR Code", "QR Code généré avec succès", "success");
     }
 
-    // Rafraîchir l’inventaire depuis la BDD
-    function refreshInventory() {
-      if (!inventoryRef) return;
-      inventoryRef.once('value').then(snapshot => {
-        const data = snapshot.val();
-        renderInventory(data);
-        updateStats(data);
-      });
-    }
-
-    // Initialisation complète
+    // Lier le bouton de génération
     document.addEventListener('DOMContentLoaded', () => {
-      if (!firebase || !firebase.database) return;
-
-      // Exemple de setup basique (à adapter plus tard)
-      currentRoomId = 'demo-room';
-      inventoryRef = database.ref(`rooms/${currentRoomId}/inventory`);
-      inventoryRef.once('value', snapshot => {
-        if (!snapshot.exists()) {
-          // créer inventaire vide
-          const defaultInv = {
-            weapons: [], food: [], medicine: [], tools: [], clothing: [],
-            materials: [], ammunition: [], fuel: [], electronics: [],
-            books: [], containers: [], other: []
-          };
-          inventoryRef.child(currentStorage).set(defaultInv);
-        } else {
-          renderInventory(snapshot.val());
-          updateStats(snapshot.val());
-        }
-      });
+      const qrBtn = document.getElementById('generate-qrcode-btn');
+      if (qrBtn) {
+        qrBtn.addEventListener('click', generateQRCode);
+      }
     });
-    // Initialisation de la carte avec Leaflet
-    let zomboidMap = null;
-    function initMap() {
-      const mapElement = document.getElementById('resource-map');
-      if (!mapElement) return;
 
-      zomboidMap = L.map(mapElement).setView([0, 0], 2);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap',
-        maxZoom: 19
-      }).addTo(zomboidMap);
-
-      loadMapMarkers();
-    }
-
-    // Chargement des marqueurs depuis Firebase
-    function loadMapMarkers() {
-      if (!mapMarkersRef || !zomboidMap) return;
-
-      mapMarkersRef.child(currentStorage).on('value', snapshot => {
-        const markers = snapshot.val() || {};
-
-        // Supprimer les anciens marqueurs
-        zomboidMap.eachLayer(layer => {
-          if (layer instanceof L.Marker) {
-            zomboidMap.removeLayer(layer);
-          }
-        });
-
-        for (const key in markers) {
-          const marker = markers[key];
-          const leafletMarker = L.marker([marker.lat, marker.lng])
-            .addTo(zomboidMap)
-            .bindPopup(`<strong>${marker.type}</strong><br>${marker.description}`);
-        }
-      });
-    }
-
-    // Ajouter un nouveau marqueur (clic utilisateur)
-    function showMapMarkerForm(latlng) {
-      const type = prompt("Type de marqueur (ex: food, danger, shelter):");
-      const desc = prompt("Description de l'endroit:");
-
-      if (!type || !desc) return;
-
-      const markerData = {
-        lat: latlng.lat,
-        lng: latlng.lng,
-        type,
-        description: desc,
-        addedBy: userName,
-        addedOn: firebase.database.ServerValue.TIMESTAMP
-      };
-
-      mapMarkersRef.child(currentStorage).push(markerData);
-      showToast("Carte", "Marqueur ajouté avec succès", "success");
-    }
-
-    // Écouteur de clic sur la carte
-    function enableMapClick() {
-      if (!zomboidMap) return;
-      zomboidMap.on('click', function(e) {
-        showMapMarkerForm(e.latlng);
-      });
-    }
-
-    // Initialiser les graphiques statistiques
-    let resourcesChart = null;
-    function initStatsCharts() {
-      const ctx = document.getElementById('resources-chart');
-      if (!ctx) return;
-
-      resourcesChart = new Chart(ctx.getContext('2d'), {
-        type: 'bar',
-        data: {
-          labels: ["Armes", "Nourriture", "Médicaments"],
-          datasets: [{
-            label: 'Ressources',
-            data: [0, 0, 0],
-            backgroundColor: ['#c62828', '#43a047', '#1e88e5']
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: {
-              beginAtZero: true
-            }
-          }
-        }
-      });
-
-      updateStatsCharts();
-    }
-
-    // Mettre à jour les données du graphique
-    function updateStatsCharts() {
-      if (!resourcesChart || !inventoryRef) return;
-
-      inventoryRef.once('value', snapshot => {
-        const data = snapshot.val() || {};
-        let weapons = 0, food = 0, meds = 0;
-
-        const storage = data[currentStorage];
-        if (!storage) return;
-
-        storage.weapons?.forEach(item => weapons += item.count || 0);
-        storage.food?.forEach(item => food += item.count || 0);
-        storage.medicine?.forEach(item => meds += item.count || 0);
-
-        resourcesChart.data.datasets[0].data = [weapons, food, meds];
-        resourcesChart.update();
-      });
-    }
-
-    // Lancer la carte et les graphes quand la page est prête
-    document.addEventListener('DOMContentLoaded', () => {
-      initMap();
-      enableMapClick();
-      initStatsCharts();
-    });
-  </script>
-</body>
-</html>
