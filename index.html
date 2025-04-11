@@ -573,7 +573,7 @@
         
         .notification {
             background-color: var(--light-bg);
-            border-left: 4px solid var(--danger);
+            border-left: 4px solid var(--accent);
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 5px;
@@ -589,6 +589,31 @@
         
         @keyframes fadeOut {
             to { opacity: 0; transform: translateX(120%); }
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 65, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0); }
+        }
+        
+        /* Styles pour la date actuelle */
+        .current-date {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background-color: var(--medium-bg);
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border);
+        }
+        
+        /* Curseur pointer pour les éléments cliquables */
+        .code, .star-toggle, button {
+            cursor: pointer;
         }
         
         @media (max-width: 768px) {
@@ -708,7 +733,535 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><input type="text" placeholder="Nom du groupe"></td>
+                            <td><input type="text" placeholder="Nom de la compétence"></td>
+                <td>
+                    <select>
+                        <option value="beginner">Débutant</option>
+                        <option value="intermediate">Intermédiaire</option>
+                        <option value="advanced">Avancé</option>
+                        <option value="expert">Expert</option>
+                        <option value="master">Maître</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option value="high">⭐⭐⭐ Haute</option>
+                        <option value="medium">⭐⭐ Moyenne</option>
+                        <option value="low">⭐ Basse</option>
+                    </select>
+                </td>
+            `;
+            table.appendChild(newRow);
+            showNotification('Compétence ajoutée');
+        }
+        
+        function addRecurringTask() {
+            const table = document.querySelector('#calendar-content table:nth-of-type(2) tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Description de la tâche"></td>
+                <td>
+                    <select>
+                        <option value="daily">Quotidienne</option>
+                        <option value="weekly">Hebdomadaire</option>
+                        <option value="monthly">Mensuelle</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                    </select>
+                </td>
+                <td><input type="date"></td>
+            `;
+            table.appendChild(newRow);
+            showNotification('Tâche récurrente ajoutée');
+        }
+        
+        function addGroup() {
+            const table = document.querySelector('#relations-content tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Nom du groupe"></td>
+                <td><input type="text" placeholder="Localisation"></td>
+                <td>
+                    <select>
+                        <option value="ally">Allié</option>
+                        <option value="friendly">Amical</option>
+                        <option value="neutral">Neutre</option>
+                        <option value="hostile">Hostile</option>
+                        <option value="enemy">Ennemi</option>
+                    </select>
+                </td>
+                <td><input type="text" placeholder="Nom du contact"></td>
+                <td><input type="text" placeholder="Informations importantes"></td>
+            `;
+            table.appendChild(newRow);
+            showNotification('Groupe ajouté');
+        }
+        
+        // Journal de bord
+        function saveJournalEntry() {
+            const date = document.querySelector('#journal-content input[type="date"]').value;
+            const title = document.querySelector('#journal-content input[type="text"]').value;
+            const content = document.querySelector('#journal-content textarea').value;
+            
+            if (!date || !title || !content) {
+                showNotification('⚠️ Veuillez remplir tous les champs!', 'warning');
+                return;
+            }
+            
+            const table = document.querySelector('#journal-content tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${date}</td>
+                <td>
+                    <select>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                    </select>
+                </td>
+                <td><input type="text" value="${title}"></td>
+                <td>
+                    <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;" onclick="viewJournalEntry(${table.rows.length})">Voir</button>
+                    <button style="padding: 0.3rem 0.6rem;" onclick="deleteJournalEntry(${table.rows.length})">Supprimer</button>
+                </td>
+            `;
+            table.insertBefore(newRow, table.firstChild);
+            
+            // Clear the form
+            document.querySelector('#journal-content input[type="date"]').value = '';
+            document.querySelector('#journal-content input[type="text"]').value = '';
+            document.querySelector('#journal-content textarea').value = '';
+            
+            // Store the content in local storage
+            const journalEntries = JSON.parse(localStorage.getItem('deadhope-journal') || '[]');
+            journalEntries.push({
+                date: date,
+                title: title,
+                content: content,
+                author: 'player1'
+            });
+            localStorage.setItem('deadhope-journal', JSON.stringify(journalEntries));
+            
+            showNotification('✅ Entrée de journal enregistrée!');
+        }
+        
+        function viewJournalEntry(index) {
+            const journalEntries = JSON.parse(localStorage.getItem('deadhope-journal') || '[]');
+            if (journalEntries.length <= index) {
+                showEntryModal('Journal', 'Ceci est une entrée de journal de démonstration.');
+                return;
+            }
+            
+            const entry = journalEntries[index];
+            showEntryModal(entry.title, entry.content);
+        }
+        
+        function deleteJournalEntry(index) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette entrée?')) {
+                const table = document.querySelector('#journal-content tbody');
+                if (table.rows.length > index) {
+                    table.deleteRow(index);
+                }
+                
+                // Also remove from storage
+                const journalEntries = JSON.parse(localStorage.getItem('deadhope-journal') || '[]');
+                if (journalEntries.length > index) {
+                    journalEntries.splice(index, 1);
+                    localStorage.setItem('deadhope-journal', JSON.stringify(journalEntries));
+                }
+                
+                showNotification('🗑️ Entrée supprimée!');
+            }
+        }
+        
+        function showEntryModal(title, content) {
+            // Create modal
+            const modal = document.createElement('div');
+            modal.style.position = 'fixed';
+            modal.style.top = '0';
+            modal.style.left = '0';
+            modal.style.width = '100%';
+            modal.style.height = '100%';
+            modal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            modal.style.zIndex = '1000';
+            modal.style.display = 'flex';
+            modal.style.justifyContent = 'center';
+            modal.style.alignItems = 'center';
+            
+            const modalContent = document.createElement('div');
+            modalContent.style.backgroundColor = 'var(--medium-bg)';
+            modalContent.style.padding = '2rem';
+            modalContent.style.borderRadius = '8px';
+            modalContent.style.width = '80%';
+            modalContent.style.maxWidth = '800px';
+            modalContent.style.maxHeight = '80%';
+            modalContent.style.overflowY = 'auto';
+            modalContent.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
+            
+            const modalTitle = document.createElement('h2');
+            modalTitle.style.color = 'var(--accent)';
+            modalTitle.style.marginBottom = '1rem';
+            modalTitle.textContent = title;
+            
+            const modalText = document.createElement('div');
+            modalText.style.whiteSpace = 'pre-wrap';
+            modalText.style.lineHeight = '1.6';
+            modalText.textContent = content;
+            
+            const closeButton = document.createElement('button');
+            closeButton.textContent = 'Fermer';
+            closeButton.style.marginTop = '1.5rem';
+            closeButton.onclick = function() {
+                document.body.removeChild(modal);
+            };
+            
+            modalContent.appendChild(modalTitle);
+            modalContent.appendChild(modalText);
+            modalContent.appendChild(closeButton);
+            modal.appendChild(modalContent);
+            
+            document.body.appendChild(modal);
+        }
+        
+        // Fonction pour activer les codes d'urgence
+        function activateEmergencyCode(code) {
+            // Simuler une alerte d'urgence
+            const allSections = document.querySelectorAll('.section');
+            allSections.forEach(section => {
+                section.style.transition = 'box-shadow 0.5s ease';
+                
+                // Différentes couleurs selon le code
+                let color;
+                switch(code) {
+                    case 'red': color = 'rgba(255, 0, 0, 0.8)'; break;
+                    case 'orange': color = 'rgba(255, 165, 0, 0.8)'; break;
+                    case 'yellow': color = 'rgba(255, 255, 0, 0.8)'; break;
+                    case 'green': color = 'rgba(0, 128, 0, 0.8)'; break;
+                    case 'blue': color = 'rgba(0, 0, 255, 0.8)'; break;
+                    case 'black': color = 'rgba(0, 0, 0, 0.8)'; break;
+                    default: color = 'rgba(255, 0, 0, 0.8)';
+                }
+                
+                // Animation de pulsation
+                let pulseCount = 0;
+                const pulseInterval = setInterval(() => {
+                    if (pulseCount % 2 === 0) {
+                        section.style.boxShadow = `0 0 20px ${color}`;
+                    } else {
+                        section.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+                    }
+                    
+                    pulseCount++;
+                    if (pulseCount >= 10) {
+                        clearInterval(pulseInterval);
+                        section.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+                    }
+                }, 300);
+            });
+            
+            // Notification d'urgence
+            let codeText;
+            switch(code) {
+                case 'red': codeText = 'CODE ROUGE: Attaque massive de zombies!'; break;
+                case 'orange': codeText = 'CODE ORANGE: Intrusion humaine hostile!'; break;
+                case 'yellow': codeText = 'CODE JAUNE: Alerte médicale!'; break;
+                case 'green': codeText = 'CODE VERT: Évacuation immédiate!'; break;
+                case 'blue': codeText = 'CODE BLEU: Ressources critiques!'; break;
+                case 'black': codeText = 'CODE NOIR: Dernier recours!'; break;
+                default: codeText = 'CODE D\'URGENCE ACTIVÉ!';
+            }
+            
+            showNotification(`🚨 ${codeText.toUpperCase()} 🚨`, 'emergency');
+        }
+        
+        // Fonction pour mettre à jour la barre de ressource
+        function updateResourceBar(barId, value) {
+            const bar = document.getElementById(barId);
+            const resourceName = barId.split('-')[0];
+            const warningElement = document.getElementById(resourceName + '-warning');
+            
+            // Limiter la valeur entre 0 et 100
+            const level = Math.max(0, Math.min(100, value));
+            
+            // Mettre à jour la largeur de la barre
+            bar.style.width = level + '%';
+            
+            // Mettre à jour le texte du niveau
+            bar.parentElement.querySelector('.resource-level-text').textContent = level + '%';
+            
+            // Déterminer la couleur de la barre en fonction du niveau
+            bar.classList.remove('high', 'medium', 'low');
+            if (level >= 70) {
+                bar.classList.add('high');
+                warningElement.style.display = 'none';
+            } else if (level >= 40) {
+                bar.classList.add('medium');
+                warningElement.style.display = 'none';
+            } else {
+                bar.classList.add('low');
+                warningElement.style.display = 'block';
+                
+                // Afficher une notification si le niveau est critique
+                if (level < 30) {
+                    showNotification('⚠️ ' + resourceName.toUpperCase() + ' en niveau critique (' + level + '%) !');
+                }
+            }
+        }
+        
+        // Fonction pour basculer les étoiles de priorité
+        function toggleStar(element, index, resourceName) {
+            const stars = element.parentElement.querySelectorAll('.star-toggle');
+            
+            if (index === 0 && !element.classList.contains('active')) {
+                // Activer la première étoile si elle est désactivée
+                element.classList.add('active');
+            } else if (index === stars.length - 1 && element.classList.contains('active')) {
+                // Désactiver la dernière étoile si elle est activée
+                element.classList.remove('active');
+            } else if (element.classList.contains('active')) {
+                // Si l'étoile actuelle est active, désactiver toutes les étoiles après
+                for (let i = index; i < stars.length; i++) {
+                    stars[i].classList.remove('active');
+                }
+            } else {
+                // Si l'étoile actuelle est inactive, activer toutes les étoiles avant
+                for (let i = 0; i <= index; i++) {
+                    stars[i].classList.add('active');
+                }
+            }
+            
+            // Compter le nombre d'étoiles actives
+            const activeStars = element.parentElement.querySelectorAll('.star-toggle.active').length;
+            const resourceDisplayName = {
+                'food': 'Nourriture',
+                'meds': 'Médicaments',
+                'ammo': 'Munitions',
+                'fuel': 'Carburant',
+                'custom': 'Ressource'
+            }[resourceName] || resourceName;
+            
+            showNotification('⭐ Priorité de ' + resourceDisplayName + ' mise à jour : ' + activeStars + ' étoiles');
+        }
+        
+        // Fonction pour sauvegarder les données
+        function saveData() {
+            const inputs = document.querySelectorAll('input, textarea, select');
+            const data = {};
+            
+            inputs.forEach((input, index) => {
+                if (input.type === 'checkbox') {
+                    data[`input-${index}`] = input.checked;
+                } else if (input.type === 'select-multiple') {
+                    const selectedOptions = Array.from(input.selectedOptions).map(option => option.value);
+                    data[`input-${index}`] = selectedOptions;
+                } else {
+                    data[`input-${index}`] = input.value;
+                }
+            });
+            
+            // Sauvegarder également l'état des barres de ressources
+            const resources = ['food', 'meds', 'ammo', 'fuel'];
+            resources.forEach(resource => {
+                const bar = document.getElementById(resource + '-bar');
+                if (bar) {
+                    data[resource + '-width'] = bar.style.width;
+                    data[resource + '-class'] = Array.from(bar.classList).filter(c => c !== 'resource-bar-fill').join(' ');
+                }
+                
+                // Sauvegarde des étoiles de priorité
+                const stars = document.querySelectorAll(`.priority-selector button[onclick*="${resource}"]`);
+                if (stars.length > 0) {
+                    data[resource + '-stars'] = Array.from(stars).map(star => star.classList.contains('active')).join(',');
+                }
+            });
+            
+            localStorage.setItem('deadhope-data', JSON.stringify(data));
+            showNotification('✅ Données sauvegardées avec succès !');
+        }
+        
+        // Fonction pour charger les données
+        function loadData() {
+            const saved = localStorage.getItem('deadhope-data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                const inputs = document.querySelectorAll('input, textarea, select');
+                
+                inputs.forEach((input, index) => {
+                    const value = data[`input-${index}`];
+                    if (value !== undefined) {
+                        if (input.type === 'checkbox') {
+                            input.checked = value;
+                        } else if (input.type === 'select-multiple') {
+                            if (Array.isArray(value)) {
+                                value.forEach(val => {
+                                    for (let i = 0; i < input.options.length; i++) {
+                                        if (input.options[i].value === val) {
+                                            input.options[i].selected = true;
+                                        }
+                                    }
+                                });
+                            }
+                        } else {
+                            input.value = value;
+                        }
+                    }
+                });
+                
+                // Charger l'état des barres de ressources
+                const resources = ['food', 'meds', 'ammo', 'fuel'];
+                resources.forEach(resource => {
+                    const bar = document.getElementById(resource + '-bar');
+                    if (bar && data[resource + '-width']) {
+                        bar.style.width = data[resource + '-width'];
+                        
+                        // Restaurer la classe (couleur)
+                        bar.classList.remove('high', 'medium', 'low');
+                        if (data[resource + '-class']) {
+                            data[resource + '-class'].split(' ').forEach(cls => {
+                                if (cls) bar.classList.add(cls);
+                            });
+                        }
+                        
+                        // Mettre à jour le texte
+                        const textElement = bar.parentElement.querySelector('.resource-level-text');
+                        if (textElement) {
+                            textElement.textContent = data[resource + '-width'];
+                        }
+                        
+                        // Afficher/masquer les avertissements
+                        const warningElement = document.getElementById(resource + '-warning');
+                        if (warningElement) {
+                            const level = parseInt(data[resource + '-width']);
+                            warningElement.style.display = level < 40 ? 'block' : 'none';
+                        }
+                    }
+                    
+                    // Restaurer les étoiles de priorité
+                    if (data[resource + '-stars']) {
+                        const starStates = data[resource + '-stars'].split(',').map(s => s === 'true');
+                        const stars = document.querySelectorAll(`.priority-selector button[onclick*="${resource}"]`);
+                        stars.forEach((star, i) => {
+                            if (starStates[i]) {
+                                star.classList.add('active');
+                            } else {
+                                star.classList.remove('active');
+                            }
+                        });
+                    }
+                });
+                
+                showNotification('📂 Données chargées avec succès !');
+            } else {
+                showNotification('⚠️ Aucune donnée sauvegardée trouvée !');
+            }
+        }
+        
+        // Fonction pour afficher une notification
+        function showNotification(message, type = 'info') {
+            const notificationArea = document.querySelector('.notification-area');
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            
+            // Différents styles selon le type
+            if (type === 'warning') {
+                notification.style.borderLeftColor = 'var(--warning)';
+                notification.style.backgroundColor = 'rgba(255, 204, 0, 0.1)';
+            } else if (type === 'emergency') {
+                notification.style.borderLeftColor = 'var(--danger)';
+                notification.style.backgroundColor = 'rgba(255, 65, 54, 0.2)';
+                notification.style.color = 'var(--danger)';
+                notification.style.fontWeight = 'bold';
+                notification.style.fontSize = '1.1rem';
+                notification.style.padding = '20px';
+                notification.style.animation = 'pulse 1s infinite';
+            }
+            
+            notification.textContent = message;
+            notificationArea.appendChild(notification);
+            
+            // Supprimer la notification après 5.5 secondes
+            setTimeout(() => {
+                notification.remove();
+            }, type === 'emergency' ? 10000 : 5500);
+        }
+        
+        // Ajouter des boutons de sauvegarde et de chargement au menu
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ajouter des événements click aux codes d'urgence
+            const emergencyCodes = document.querySelectorAll('.emergency-codes .code');
+            emergencyCodes.forEach(code => {
+                code.style.cursor = 'pointer';
+                code.addEventListener('click', function() {
+                    const codeType = this.className.split(' ')[1].split('-')[1]; // Ex: code-red -> red
+                    activateEmergencyCode(codeType);
+                });
+            });
+            
+            // Gérer les barres de progression des véhicules
+            const fuelRanges = document.querySelectorAll('#vehicles-content input[type="range"]');
+            fuelRanges.forEach(range => {
+                // Mettre à jour l'affichage avec la valeur actuelle
+                range.nextElementSibling.querySelector('span').textContent = range.value + '%';
+                
+                // Ajouter un écouteur pour les changements
+                range.addEventListener('input', function() {
+                    this.nextElementSibling.querySelector('span').textContent = this.value + '%';
+                });
+            });
+            
+            // Vérifier tous les niveaux de ressources au chargement
+            const resources = ['food', 'meds', 'ammo', 'fuel'];
+            resources.forEach(resource => {
+                const quantityInput = document.getElementById(resource + '-quantity');
+                if (quantityInput) {
+                    updateResourceBar(resource + '-bar', quantityInput.value);
+                }
+            });
+            
+            // Ajouter les boutons au menu
+            const nav = document.getElementById('main-nav');
+            if (nav) {
+                const saveButton = document.createElement('a');
+                saveButton.href = '#';
+                saveButton.textContent = '💾 Sauvegarder';
+                saveButton.style.backgroundColor = '#2ecc40';
+                saveButton.onclick = function(e) {
+                    e.preventDefault();
+                    saveData();
+                };
+                
+                const loadButton = document.createElement('a');
+                loadButton.href = '#';
+                loadButton.textContent = '📂 Charger';
+                loadButton.style.backgroundColor = '#3498db';
+                loadButton.onclick = function(e) {
+                    e.preventDefault();
+                    loadData();
+                };
+                
+                nav.appendChild(saveButton);
+                nav.appendChild(loadButton);
+            }
+            
+            // Afficher un message de bienvenue
+            setTimeout(() => {
+                showNotification('🧟‍♂️ Bienvenue sur le Tableau de Bord DeadHope !');
+            }, 1000);
+        }); du groupe"></td>
                             <td><input type="text" placeholder="Localisation"></td>
                             <td>
                                 <select>
@@ -825,16 +1378,16 @@
                     </tbody>
                 </table>
                 
-                <button style="margin-top: 1rem;">+ Ajouter un groupe</button>
+                <button style="margin-top: 1rem;" onclick="addGroup()">+ Ajouter un groupe</button>
             </div>
         </section>
         
     </main>
     
     <footer>
-        <p>DeadHope - Tableau de Bord de Survie | V1.0</p>
+        <p>DeadHope - Tableau de Bord de Survie | V1.2</p>
         <div class="footer-logo">DEADHOPE</div>
-        <p style="margin-top: 1rem;">&copy; 2023 - Tous droits réservés</p>
+        <p style="margin-top: 1rem;">&copy; 2025 - Tous droits réservés</p>
     </footer>
     
     <div class="notification-area"></div>
@@ -859,6 +1412,177 @@
                 button.textContent = '+';
             }
         }
+        
+        // Fonctions pour ajouter des éléments
+        function addInterestPoint() {
+            const table = document.querySelector('#map-content table:nth-of-type(2) tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Nom du lieu"></td>
+                <td><input type="text" placeholder="Ressources attendues"></td>
+                <td>
+                    <select>
+                        <option value="high">Haute</option>
+                        <option value="medium">Moyenne</option>
+                        <option value="low">Basse</option>
+                    </select>
+                </td>
+            `;
+            table.appendChild(newRow);
+            showNotification('Point d\'intérêt ajouté');
+        }
+        
+        function addTeamMember() {
+            const table = document.querySelector('#team-content tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Nom du joueur"></td>
+                <td>
+                    <select>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="medic">Médecin</option>
+                        <option value="builder">Constructeur</option>
+                        <option value="farmer">Fermier</option>
+                        <option value="scavenger">Éclaireur</option>
+                        <option value="mechanic">Mécanicien</option>
+                        <option value="guard">Garde</option>
+                        <option value="cook">Cuisinier</option>
+                        <option value="leader">Chef</option>
+                    </select>
+                </td>
+                <td><input type="text" placeholder="Ex: Menuiserie, Tir, etc."></td>
+                <td><input type="text" placeholder="Lieu avant déconnexion"></td>
+            `;
+            table.appendChild(newRow);
+            showNotification('Membre d\'équipe ajouté');
+        }
+        
+        function addMission() {
+            const container = document.querySelector('#missions-content');
+            const missionItems = container.querySelectorAll('.mission-item');
+            const lastMission = missionItems[missionItems.length - 1];
+            
+            const newMission = document.createElement('div');
+            newMission.className = 'mission-item';
+            newMission.innerHTML = `
+                <input type="checkbox">
+                <input type="text" placeholder="Description de la mission" style="flex-grow: 1; margin-bottom: 0;">
+                <select style="width: 150px; margin: 0 0.5rem;">
+                    <option value="">-- Responsable --</option>
+                    <option value="player1">Joueur 1</option>
+                    <option value="player2">Joueur 2</option>
+                    <option value="player3">Joueur 3</option>
+                </select>
+                <input type="date" style="width: 150px; margin: 0;">
+            `;
+            
+            container.insertBefore(newMission, lastMission.nextSibling);
+            showNotification('Mission ajoutée');
+        }
+        
+        function addResource() {
+            const grid = document.querySelector('#resources-content .grid');
+            const newCard = document.createElement('div');
+            newCard.className = 'card';
+            
+            const resourceId = 'custom-' + Date.now();
+            
+            newCard.innerHTML = `
+                <h3><input type="text" placeholder="NOM DE LA RESSOURCE" style="margin-bottom: 0.5rem;"></h3>
+                <div class="resource-bar">
+                    <div class="resource-bar-fill medium" style="width: 50%;" id="${resourceId}-bar"></div>
+                    <div class="resource-level-text">50%</div>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Quantité:</span>
+                    <input type="number" style="width: 100px;" placeholder="0" id="${resourceId}-quantity" value="50" onchange="updateResourceBar('${resourceId}-bar', this.value)">
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                    <span>Stockage:</span>
+                    <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                </div>
+                <div class="resource-priority">
+                    <span>Priorité: </span>
+                    <div class="priority-selector">
+                        <button class="star-toggle active" onclick="toggleStar(this, 0, '${resourceId}')">★</button>
+                        <button class="star-toggle active" onclick="toggleStar(this, 1, '${resourceId}')">★</button>
+                        <button class="star-toggle" onclick="toggleStar(this, 2, '${resourceId}')">★</button>
+                    </div>
+                </div>
+                <div class="low-resource-warning" id="${resourceId}-warning">
+                    ⚠️ NIVEAU CRITIQUE ! PRIORITÉ DE COLLECTE
+                </div>
+            `;
+            
+            grid.appendChild(newCard);
+            showNotification('Ressource ajoutée');
+        }
+        
+        function addConstruction() {
+            const table = document.querySelector('#construction-content tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Nom du projet"></td>
+                <td><textarea placeholder="Liste des matériaux nécessaires"></textarea></td>
+                <td>
+                    <select>
+                        <option value="planning">Planification</option>
+                        <option value="gathering">Collecte</option>
+                        <option value="building">En construction</option>
+                        <option value="finished">Terminé</option>
+                    </select>
+                </td>
+                <td>
+                    <select>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                    </select>
+                </td>
+            `;
+            table.appendChild(newRow);
+            showNotification('Projet de construction ajouté');
+        }
+        
+        function addVehicle() {
+            const table = document.querySelector('#vehicles-content tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Type/Couleur du véhicule"></td>
+                <td>
+                    <select>
+                        <option value="excellent">Excellent</option>
+                        <option value="good">Bon</option>
+                        <option value="damaged">Endommagé</option>
+                        <option value="critical">Critique</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="range" min="0" max="100" value="50">
+                    <div style="text-align: center;"><span>50%</span></div>
+                </td>
+                <td><input type="text" placeholder="Où est garé le véhicule"></td>
+                <td>
+                    <select>
+                        <option value="">-- Sélectionner --</option>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                        <option value="garage">Au garage</option>
+                        <option value="lost">Perdues</option>
+                    </select>
+                </td>
+            `;
+            table.appendChild(newRow);
+            showNotification('Véhicule ajouté');
+        }
+        
+        function addSkill() {
+            const table = document.querySelector('#skills-content tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="Nom
         
         // Fonction pour mettre à jour la barre de ressource
         function updateResourceBar(barId, value) {
@@ -1245,54 +1969,54 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>2023-04-12</td>
+                            <td>2025-11-03</td>
                             <td>
                                 <select>
-                                    <option value="player1">Joueur 1</option>
+                                    <option value="player1" selected>Joueur 1</option>
                                     <option value="player2">Joueur 2</option>
                                     <option value="player3">Joueur 3</option>
                                 </select>
                             </td>
                             <td><input type="text" value="Premier jour à la base"></td>
                             <td>
-                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">Voir</button>
-                                <button style="padding: 0.3rem 0.6rem;">Supprimer</button>
+                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;" onclick="viewJournalEntry(0)">Voir</button>
+                                <button style="padding: 0.3rem 0.6rem;" onclick="deleteJournalEntry(0)">Supprimer</button>
                             </td>
                         </tr>
                         <tr>
-                            <td>2023-04-11</td>
+                            <td>2025-11-02</td>
                             <td>
                                 <select>
                                     <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
+                                    <option value="player2" selected>Joueur 2</option>
                                     <option value="player3">Joueur 3</option>
                                 </select>
                             </td>
                             <td><input type="text" value="Exploration du magasin"></td>
                             <td>
-                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">Voir</button>
-                                <button style="padding: 0.3rem 0.6rem;">Supprimer</button>
+                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;" onclick="viewJournalEntry(1)">Voir</button>
+                                <button style="padding: 0.3rem 0.6rem;" onclick="deleteJournalEntry(1)">Supprimer</button>
                             </td>
                         </tr>
                         <tr>
-                            <td>2023-04-10</td>
+                            <td>2025-11-01</td>
                             <td>
                                 <select>
                                     <option value="player1">Joueur 1</option>
                                     <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
+                                    <option value="player3" selected>Joueur 3</option>
                                 </select>
                             </td>
                             <td><input type="text" value="Construction de la palissade sud"></td>
                             <td>
-                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;">Voir</button>
-                                <button style="padding: 0.3rem 0.6rem;">Supprimer</button>
+                                <button style="padding: 0.3rem 0.6rem; margin-right: 0.5rem;" onclick="viewJournalEntry(2)">Voir</button>
+                                <button style="padding: 0.3rem 0.6rem;" onclick="deleteJournalEntry(2)">Supprimer</button>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 
-                <button style="margin-top: 1rem;">Enregistrer l'entrée</button>
+                <button style="margin-top: 1rem;" onclick="saveJournalEntry()">Enregistrer l'entrée</button>
             </div>
         </section>
                 
@@ -1368,9 +2092,9 @@
                 </table>
                     <tbody>
                         <tr>
-                            <td>Combat</td>
+                            <td><input type="text" value="Combat" placeholder="Nom de la compétence"></td>
                             <td>
-                                <select multiple>
+                                <select>
                                     <option value="beginner">Débutant</option>
                                     <option value="intermediate" selected>Intermédiaire</option>
                                     <option value="advanced">Avancé</option>
@@ -1382,7 +2106,7 @@
                                 <select>
                                     <option value="">-- Sélectionner --</option>
                                     <option value="player1">Joueur 1</option>
-                                    <option value="player2">Joueur 2</option>
+                                    <option value="player2" selected>Joueur 2</option>
                                     <option value="player3">Joueur 3</option>
                                 </select>
                             </td>
@@ -1395,9 +2119,9 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Premiers soins</td>
+                            <td><input type="text" value="Premiers soins" placeholder="Nom de la compétence"></td>
                             <td>
-                                <select multiple>
+                                <select>
                                     <option value="beginner">Débutant</option>
                                     <option value="intermediate">Intermédiaire</option>
                                     <option value="advanced" selected>Avancé</option>
@@ -1408,7 +2132,7 @@
                             <td>
                                 <select>
                                     <option value="">-- Sélectionner --</option>
-                                    <option value="player1">Joueur 1</option>
+                                    <option value="player1" selected>Joueur 1</option>
                                     <option value="player2">Joueur 2</option>
                                     <option value="player3">Joueur 3</option>
                                 </select>
@@ -1422,9 +2146,9 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Agriculture</td>
+                            <td><input type="text" value="Agriculture" placeholder="Nom de la compétence"></td>
                             <td>
-                                <select multiple>
+                                <select>
                                     <option value="beginner" selected>Débutant</option>
                                     <option value="intermediate">Intermédiaire</option>
                                     <option value="advanced">Avancé</option>
@@ -1437,7 +2161,7 @@
                                     <option value="">-- Sélectionner --</option>
                                     <option value="player1">Joueur 1</option>
                                     <option value="player2">Joueur 2</option>
-                                    <option value="player3">Joueur 3</option>
+                                    <option value="player3" selected>Joueur 3</option>
                                 </select>
                             </td>
                             <td>
@@ -1522,7 +2246,7 @@
                     </tbody>
                 </table>
                 
-                <button style="margin-top: 1rem;">+ Ajouter une tâche récurrente</button>
+                <button style="margin-top: 1rem;" onclick="addRecurringTask()">+ Ajouter une tâche récurrente</button>
             </div>
         </section>
         
@@ -1543,7 +2267,7 @@
                         </tr>
                     </thead>
                 
-                <button style="margin-top: 1rem;">+ Ajouter une compétence</button>
+                <button style="margin-top: 1rem;" onclick="addSkill()">+ Ajouter une compétence</button>
             </div>
         </section>
         
@@ -1708,7 +2432,7 @@
                     </tbody>
                 </table>
                 
-                <button style="margin-top: 1rem;">+ Ajouter un projet</button>
+                <button style="margin-top: 1rem;" onclick="addConstruction()">+ Ajouter un projet</button>
             </div>
         </section>
         
@@ -1810,7 +2534,7 @@
                     </tbody>
                 </table>
                 
-                <button style="margin-top: 1rem;">+ Ajouter un véhicule</button>
+                <button style="margin-top: 1rem;" onclick="addVehicle()">+ Ajouter un véhicule</button>
             </div>
             <div class="section-content" id="map-content">
                 <div class="grid">
