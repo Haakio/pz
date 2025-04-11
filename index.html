@@ -1812,16 +1812,17 @@
                 
                 <button style="margin-top: 1rem;">+ Ajouter un véhicule</button>
             </div>
-            <div class="section-content" id="map-content">
+            <!-- Dans la section "map-content" de votre HTML existant -->
+<div class="section-content" id="map-content">
     <div class="map-container">
         <div id="pz-map-wrapper">
             <div id="pz-map-controls">
                 <div class="map-tools">
-                    <button id="tool-marker" title="Ajouter un marqueur"><i class="marker-icon">📍</i></button>
-                    <button id="tool-area" title="Dessiner une zone"><i class="area-icon">⬚</i></button>
-                    <button id="tool-path" title="Tracer un chemin"><i class="path-icon">➰</i></button>
-                    <button id="tool-text" title="Ajouter du texte"><i class="text-icon">A</i></button>
-                    <button id="tool-delete" title="Supprimer un élément"><i class="delete-icon">🗑️</i></button>
+                    <button id="tool-marker" title="Ajouter un marqueur" class="map-tool-btn"><i class="marker-icon">📍</i></button>
+                    <button id="tool-area" title="Dessiner une zone" class="map-tool-btn"><i class="area-icon">⬚</i></button>
+                    <button id="tool-path" title="Tracer un chemin" class="map-tool-btn"><i class="path-icon">➰</i></button>
+                    <button id="tool-text" title="Ajouter du texte" class="map-tool-btn"><i class="text-icon">A</i></button>
+                    <button id="tool-delete" title="Supprimer un élément" class="map-tool-btn"><i class="delete-icon">🗑️</i></button>
                 </div>
                 <div class="map-options">
                     <select id="marker-type">
@@ -1851,8 +1852,7 @@
                 </div>
             </div>
             <div id="pz-map" class="pz-map">
-                <!-- La carte sera chargée ici -->
-                <img src="https://map.projectzomboid.com/vanilla/#muldraugh" id="map-base-image" style="display: none;">
+                <!-- Remplacé l'image par un canvas uniquement -->
                 <canvas id="map-canvas"></canvas>
                 <div id="map-elements"></div>
             </div>
@@ -1892,7 +1892,54 @@
     <!-- Reste de votre contenu map-content existant -->
     <h3 style="margin-top: 2rem;">ZONES DANGEREUSES</h3>
     <table>
-        <!-- ... (votre table existante) ... -->
+        <thead>
+            <tr>
+                <th>LIEU</th>
+                <th>DENSITÉ ZOMBIE</th>
+                <th>NOTES</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><input type="text" placeholder="Nom du lieu"></td>
+                <td>
+                    <select>
+                        <option value="1">⭐ Faible</option>
+                        <option value="2">⭐⭐ Modérée</option>
+                        <option value="3">⭐⭐⭐ Élevée</option>
+                        <option value="4">⭐⭐⭐⭐ Très élevée</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
+                    </select>
+                </td>
+                <td><input type="text" placeholder="Informations supplémentaires"></td>
+            </tr>
+            <tr>
+                <td><input type="text" placeholder="Nom du lieu"></td>
+                <td>
+                    <select>
+                        <option value="1">⭐ Faible</option>
+                        <option value="2">⭐⭐ Modérée</option>
+                        <option value="3">⭐⭐⭐ Élevée</option>
+                        <option value="4">⭐⭐⭐⭐ Très élevée</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
+                    </select>
+                </td>
+                <td><input type="text" placeholder="Informations supplémentaires"></td>
+            </tr>
+            <tr>
+                <td><input type="text" placeholder="Nom du lieu"></td>
+                <td>
+                    <select>
+                        <option value="1">⭐ Faible</option>
+                        <option value="2">⭐⭐ Modérée</option>
+                        <option value="3">⭐⭐⭐ Élevée</option>
+                        <option value="4">⭐⭐⭐⭐ Très élevée</option>
+                        <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
+                    </select>
+                </td>
+                <td><input type="text" placeholder="Informations supplémentaires"></td>
+            </tr>
+        </tbody>
     </table>
 </div>
 
@@ -1905,6 +1952,7 @@
         border-radius: 8px;
         border: 1px solid var(--border);
         overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
     
     #pz-map-wrapper {
@@ -1917,6 +1965,7 @@
         position: relative;
         overflow: hidden;
         background-color: var(--dark-bg);
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="%230d1117"/><path d="M0 10L100 10M0 30L100 30M0 50L100 50M0 70L100 70M0 90L100 90M10 0L10 100M30 0L30 100M50 0L50 100M70 0L70 100M90 0L90 100" stroke="%23242a33" stroke-width="0.5"/></svg>');
         box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
     }
     
@@ -1953,28 +2002,37 @@
         gap: 0.5rem;
     }
     
-    .map-tools button {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: var(--medium-bg);
-        border: 1px solid var(--border);
-        border-radius: 5px;
-        cursor: pointer;
-        color: var(--text);
-        transition: all 0.3s ease;
+    .map-tool-btn {
+        width: 40px !important;
+        height: 40px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background-color: var(--medium-bg) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 5px !important;
+        cursor: pointer !important;
+        color: var(--text) !important;
+        transition: all 0.3s ease !important;
+        padding: 0 !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
     }
     
-    .map-tools button:hover {
-        background-color: var(--light-bg);
-        color: var(--accent);
+    .map-tool-btn:hover {
+        background-color: var(--light-bg) !important;
+        color: var(--accent) !important;
+        transform: translateY(-2px) !important;
     }
     
-    .map-tools button.active {
-        background-color: var(--accent);
-        color: black;
+    .map-tool-btn.active {
+        background-color: var(--accent) !important;
+        color: black !important;
+        box-shadow: 0 0 8px rgba(255, 69, 0, 0.5) !important;
+    }
+    
+    .map-tool-btn i {
+        font-size: 18px !important;
+        font-style: normal !important;
     }
     
     .map-options {
@@ -1990,6 +2048,7 @@
         color: var(--text);
         padding: 0.5rem;
         border-radius: 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     
     .color-selector {
@@ -2004,6 +2063,7 @@
         border: none;
         border-radius: 5px;
         background: none;
+        cursor: pointer;
     }
     
     .map-legend {
@@ -2033,6 +2093,7 @@
         height: 15px;
         border-radius: 50%;
         display: inline-block;
+        box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
     }
     
     .map-coordinates {
@@ -2136,6 +2197,12 @@
         border-radius: 3px;
         white-space: nowrap;
     }
+    
+    .small-button {
+        padding: 0.3rem 0.6rem;
+        margin-top: 0.5rem;
+        font-size: 0.8rem;
+    }
 </style>
 
 <!-- Ajouter ce script à la fin de votre body ou dans la section script -->
@@ -2164,7 +2231,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Récupérer les éléments DOM
     const mapCanvas = document.getElementById('map-canvas');
     const mapElements = document.getElementById('map-elements');
-    const toolButtons = document.querySelectorAll('.map-tools button');
+    const toolButtons = document.querySelectorAll('.map-tool-btn');
     const markerTypeSelect = document.getElementById('marker-type');
     const elementColorInput = document.getElementById('element-color');
     const locationSelect = document.getElementById('map-location-select');
@@ -2213,6 +2280,9 @@ document.addEventListener('DOMContentLoaded', function() {
     mapCanvas.addEventListener('mousemove', handleMouseMove);
     mapCanvas.addEventListener('mouseup', handleMouseUp);
     mapCanvas.addEventListener('wheel', handleMouseWheel);
+    mapCanvas.addEventListener('contextmenu', function(e) {
+        e.preventDefault(); // Empêcher le menu contextuel du clic droit
+    });
     
     // Événement pour aller à des coordonnées spécifiques
     gotoButton.addEventListener('click', function() {
@@ -2272,6 +2342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 break;
         }
         renderMap();
+        showNotification(`🧭 Carte centrée sur ${location}`);
     }
     
     // Fonction pour gérer le clic sur la carte
@@ -2297,6 +2368,7 @@ document.addEventListener('DOMContentLoaded', function() {
             mapState.markers.push(marker);
             createMarkerDOM(marker);
             saveMapData();
+            showNotification(`📍 Marqueur ajouté à X: ${Math.floor(mapX)}, Y: ${Math.floor(mapY)}`);
         } else if (mapState.currentTool === 'area') {
             // Commencer à dessiner une zone
             mapState.drawing = true;
@@ -2310,7 +2382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 id: Date.now().toString()
             };
         } else if (mapState.currentTool === 'path') {
-            // Commencer à dessiner un chemin
+            // Commencer ou continuer à dessiner un chemin
             if (!mapState.drawing) {
                 mapState.drawing = true;
                 mapState.tempElement = {
@@ -2319,10 +2391,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     color: elementColorInput.value,
                     id: Date.now().toString()
                 };
+                showNotification("🛣️ Tracé commencé - Clic gauche pour ajouter des points, clic droit pour terminer");
             } else {
-                // Ajouter un point au chemin
-                mapState.tempElement.points.push({ x: mapX, y: mapY });
-                renderMap();
+                // Ajouter un point au chemin si c'est un clic gauche
+                if (e.button === 0) {
+                    mapState.tempElement.points.push({ x: mapX, y: mapY });
+                    renderMap();
+                } else if (e.button === 2) {
+                    // Finaliser le chemin avec le clic droit
+                    if (mapState.tempElement.points.length > 1) {
+                        mapState.paths.push(mapState.tempElement);
+                        createPathDOM(mapState.tempElement);
+                        mapState.drawing = false;
+                        mapState.tempElement = null;
+                        saveMapData();
+                        showNotification("🛣️ Tracé terminé");
+                    }
+                }
             }
         } else if (mapState.currentTool === 'text') {
             // Ajouter du texte
@@ -2339,10 +2424,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapState.texts.push(textElement);
                 createTextDOM(textElement);
                 saveMapData();
+                showNotification(`📝 Texte ajouté: "${text.substring(0, 20)}${text.length > 20 ? '...' : ''}"`);
             }
         } else if (mapState.currentTool === 'delete') {
-            // Suppression d'éléments - implémentation simplifiée
-            // Vous devrez implémenter la détection et la suppression des éléments
+            // La suppression est gérée par les événements des éléments eux-mêmes
+            showNotification("🗑️ Cliquez sur un élément pour le supprimer");
         } else {
             // Déplacement de la carte (panoramique)
             mapState.dragging = true;
@@ -2379,12 +2465,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapState.tempElement.width = mapX - mapState.tempElement.startX;
                 mapState.tempElement.height = mapY - mapState.tempElement.startY;
                 renderMap();
+                drawArea(ctx, {
+                    x: mapState.tempElement.startX,
+                    y: mapState.tempElement.startY,
+                    width: mapState.tempElement.width,
+                    height: mapState.tempElement.height,
+                    color: mapState.tempElement.color
+                });
             } else if (mapState.tempElement.type === 'path') {
                 // Prévisualiser la ligne jusqu'au curseur
-                const previewPath = { ...mapState.tempElement };
-                previewPath.points = [...mapState.tempElement.points, { x: mapX, y: mapY }];
                 renderMap();
-                drawPath(ctx, previewPath);
+                
+                const ctx = mapCanvas.getContext('2d');
+                ctx.beginPath();
+                ctx.strokeStyle = mapState.tempElement.color;
+                ctx.lineWidth = 3;
+                
+                // Dessiner le chemin existant
+                const points = mapState.tempElement.points;
+                if (points.length > 0) {
+                    const firstPoint = points[0];
+                    const screenX1 = mapToScreenX(firstPoint.x);
+                    const screenY1 = mapToScreenY(firstPoint.y);
+                    
+                    ctx.moveTo(screenX1, screenY1);
+                    
+                    for (let i = 1; i < points.length; i++) {
+                        const point = points[i];
+                        const screenX = mapToScreenX(point.x);
+                        const screenY = mapToScreenY(point.y);
+                        ctx.lineTo(screenX, screenY);
+                    }
+                    
+                    // Dessiner la ligne vers le curseur
+                    const screenX = mapToScreenX(mapX);
+                    const screenY = mapToScreenY(mapY);
+                    ctx.lineTo(screenX, screenY);
+                }
+                
+                ctx.stroke();
             }
         }
     }
@@ -2419,13 +2538,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapState.drawing = false;
                 mapState.tempElement = null;
                 saveMapData();
-            } else if (mapState.tempElement.type === 'path' && e.button === 2) {
-                // Finaliser le chemin avec le clic droit
-                mapState.paths.push(mapState.tempElement);
-                createPathDOM(mapState.tempElement);
-                mapState.drawing = false;
-                mapState.tempElement = null;
-                saveMapData();
+                showNotification("🔲 Zone créée");
             }
         }
         
@@ -2488,7 +2601,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Dessiner les lignes verticales
         ctx.beginPath();
-        ctx.strokeStyle = 'rgba(50, 50, 50, 0.3)';
+        ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
         ctx.lineWidth = 1;
         
         const startX = Math.floor(visibleLeft / gridSize) * gridSize;
@@ -2519,6 +2632,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.fillText(`${x},${y}`, screenX + 5, screenY + 15);
             }
         }
+        
+        // Ajouter des repères pour les villes principales
+        const cities = [
+            { name: "Muldraugh", x: 10700, y: 9800, color: "#ff4500" },
+            { name: "West Point", x: 12000, y: 6800, color: "#2ecc40" },
+            { name: "Rosewood", x: 8100, y: 11800, color: "#0074d9" },
+            { name: "Riverside", x: 6200, y: 5400, color: "#ffdc00" },
+            { name: "Louisville", x: 12500, y: 3500, color: "#b10dc9" }
+        ];
+        
+        cities.forEach(city => {
+            const screenX = mapToScreenX(city.x);
+            const screenY = mapToScreenY(city.y);
+            
+            // Vérifier si la ville est visible
+            if (screenX >= 0 && screenX <= mapCanvas.width && screenY >= 0 && screenY <= mapCanvas.height) {
+                // Dessiner un cercle pour marquer la ville
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, 8, 0, 2 * Math.PI);
+                ctx.fillStyle = city.color;
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Ajouter le nom de la ville
+                ctx.font = 'bold 14px Courier New';
+                ctx.fillStyle = "#fff";
+                ctx.textAlign = "center";
+                ctx.fillText(city.name, screenX, screenY - 15);
+                ctx.textAlign = "start";
+            }
+        });
     }
     
     // Fonction pour dessiner une zone
@@ -2538,7 +2684,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Fonction pour dessiner un chemin
     function drawPath(ctx, path) {
-        if (path.points.length < 2) return;
+        if (!path.points || path.points.length < 2) return;
         
         ctx.beginPath();
         ctx.strokeStyle = path.color;
@@ -2595,6 +2741,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapElements.removeChild(markerElem);
                 mapState.markers = mapState.markers.filter(m => m.id !== marker.id);
                 saveMapData();
+                showNotification("🗑️ Marqueur supprimé");
                 return;
             }
             
@@ -2698,6 +2845,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapElements.removeChild(areaElem);
                 mapState.areas = mapState.areas.filter(a => a.id !== area.id);
                 saveMapData();
+                showNotification("🗑️ Zone supprimée");
                 return;
             }
             
@@ -2777,6 +2925,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapElements.removeChild(pathElem);
                 mapState.paths = mapState.paths.filter(p => p.id !== path.id);
                 saveMapData();
+                showNotification("🗑️ Chemin supprimé");
             }
         });
         
@@ -2818,6 +2967,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 mapElements.removeChild(textElem);
                 mapState.texts = mapState.texts.filter(t => t.id !== textElement.id);
                 saveMapData();
+                showNotification("🗑️ Texte supprimé");
                 return;
             }
             
@@ -2866,6 +3016,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const markerElem = document.getElementById(`marker-${marker.id}`);
             if (markerElem) {
                 updateMarkerPosition(markerElem, marker);
+            } else {
+                // Si le marqueur n'existe pas dans le DOM, le créer
+                createMarkerDOM(marker);
             }
         });
         
@@ -2874,14 +3027,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const areaElem = document.getElementById(`area-${area.id}`);
             if (areaElem) {
                 updateAreaDOM(areaElem, area);
-            }
-        });
-        
-        // Mettre à jour les chemins
-        mapState.paths.forEach(path => {
-            const pathElem = document.getElementById(`path-${path.id}`);
-            if (pathElem) {
-                updatePathDOM(pathElem, path);
+            } else {
+                // Si la zone n'existe pas dans le DOM, la créer
+                createAreaDOM(area);
             }
         });
         
@@ -2890,6 +3038,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const textElem = document.getElementById(`text-${textElement.id}`);
             if (textElem) {
                 updateTextPosition(textElem, textElement);
+            } else {
+                // Si le texte n'existe pas dans le DOM, le créer
+                createTextDOM(textElement);
             }
         });
     }
@@ -2905,7 +3056,6 @@ document.addEventListener('DOMContentLoaded', function() {
         };
         
         localStorage.setItem('deadhope-map-data', JSON.stringify(mapData));
-        showNotification('🗺️ Données de la carte sauvegardées');
     }
     
     // Fonction pour charger les données de la carte
@@ -2946,7 +3096,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 renderMap();
-                showNotification('🗺️ Données de la carte chargées');
+                showNotification('🗺️ Carte chargée');
             } catch (e) {
                 console.error('Erreur lors du chargement des données de la carte', e);
                 showNotification('⚠️ Erreur lors du chargement des données de la carte');
@@ -2995,9 +3145,13 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             
             // Aller à l'emplacement lorsqu'on clique dessus
-            locationElem.addEventListener('click', function() {
+            locationElem.addEventListener('click', function(e) {
+                // Ne pas déclencher si on clique sur le bouton supprimer
+                if (e.target.classList.contains('delete-location')) return;
+                
                 mapState.mapCenter = { x: location.x, y: location.y };
                 renderMap();
+                showNotification(`🧭 Carte centrée sur "${location.name}"`);
             });
             
             // Gérer le bouton de suppression
@@ -3021,6 +3175,33 @@ document.addEventListener('DOMContentLoaded', function() {
         const b = parseInt(hex.slice(5, 7), 16);
         return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     }
+    
+    // Fonction pour afficher une notification
+    function showNotification(message) {
+        // Vérifier si la fonction showNotification existe déjà dans le code global
+        if (typeof window.showNotification === 'function') {
+            window.showNotification(message);
+        } else {
+            // Utiliser une implémentation basique si la fonction n'existe pas
+            console.log(message);
+            
+            // Créer un élément de notification si la structure existe
+            const notificationArea = document.querySelector('.notification-area');
+            if (notificationArea) {
+                const notification = document.createElement('div');
+                notification.className = 'notification';
+                notification.textContent = message;
+                notificationArea.appendChild(notification);
+                
+                // Supprimer la notification après 5.5 secondes
+                setTimeout(() => {
+                    notification.remove();
+                }, 5500);
+            }
+        }
+    }
+});
+</script>
                             <td><input type="text" placeholder="Nom du lieu"></td>
                             <td>
                                 <select>
