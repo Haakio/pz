@@ -176,19 +176,28 @@ body::before {
 }
 </style>
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+  // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
-    authDomain: "deadhope-a1704.firebaseapp.com",
-    projectId: "deadhope-a1704",
-    storageBucket: "deadhope-a1704.firebasestorage.app",
-    messagingSenderId: "1019321338333",
-    appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
-  };
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyASp6Gfi4Fz8Nduap0on89oAZzCkPLKpFc",
+  authDomain: "lions-890e9.firebaseapp.com",
+  databaseURL: "https://lions-890e9-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "lions-890e9",
+  storageBucket: "lions-890e9.firebasestorage.app",
+  messagingSenderId: "560777699926",
+  appId: "1:560777699926:web:2e256d3d1d337513be91f7",
+  measurementId: "G-ZX3N3XWJ4K"
+};
 
-  const app = initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
   const db = getFirestore(app);
   const docRef = doc(db, "dashboards", "main");
 
