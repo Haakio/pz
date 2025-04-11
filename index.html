@@ -1,559 +1,2006 @@
-<!DOCTYPE html>
+<script>
+        function toggleNav() {
+            const nav = document.getElementById('main-nav');
+            nav.classList.toggle('show');
+        }
+        
+        function toggleSection(id) {
+            const content = document.getElementById(id);
+            const button = content.previousElementSibling.querySelector('button');
+            
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                button.textContent = '-';
+            } else {
+                content.style.display = 'none';
+                button.textContent = '+';
+            }
+        }
+        
+        // Initialisation du stockage local pour sauvegarder les données
+        function saveData() {
+            const inputs = document.querySelectorAll('input, textarea, select');
+            const data = {};
+            
+            inputs.forEach((input, index) => {
+                if (input.type === 'checkbox') {
+                    data[`input-${index}`] = input.checked;
+                } else if (input.type === 'select-multiple') {
+                    const selectedOptions = Array.from(input.selectedOptions).map(option => option.value);
+                    data[`input-${index}`] = selectedOptions;
+                } else {
+                    data[`input-${index}`] = input.value;
+                }
+            });
+            
+            // Sauvegarder également l'état des barres de ressources
+            const resources = ['food', 'meds', 'ammo', 'fuel'];
+            resources.forEach(resource => {
+                const bar = document.getElementById(resource + '-bar');
+                if (bar) {
+                    data[resource + '-width'] = bar.style.width;
+                    data[resource + '-class'] = Array.from(bar.classList).filter(c => c !== 'resource-bar-fill').join(' ');
+                }
+                
+                // Sauvegarde des étoiles de priorité
+                const stars = document.querySelectorAll(`.priority-selector button[onclick*="${resource}"]`);
+                if (stars.length > 0) {
+                    data[resource + '-stars'] = Array.from(stars).map(star => star.classList.contains('active')).join(',');
+                }
+            });
+            
+            localStorage.setItem('deadhope-data', JSON.stringify(data));
+            showNotification('✅ Données sauvegardées avec succès !');
+        }
+        
+        function loadData() {
+            const saved = localStorage.getItem('deadhope-data');
+            if (saved) {
+                const data = JSON.parse(saved);
+                const inputs = document.querySelectorAll('input, textarea, select');
+                
+                inputs.forEach((input, index) => {
+                    const value = data[`input-${index}`];
+                    if (value !== undefined) {
+                        if (input.type === 'checkbox') {
+                            input.checked = value;
+                        } else if (input.type === 'select-multiple') {
+                            if (Array.isArray(value)) {
+                                value.forEach(val => {
+                                    for (let i = 0; i < input.options.length; i++) {
+                                        if (input.options[i].value === val) {
+                                            input.options[i].selected = true;
+                                        }
+                                    }
+                                });
+                            }
+                        } else {
+                            input.value = value;
+                        }
+                    }
+                });
+                
+                // Charger l'état des barres de ressources
+                const resources = ['food', 'meds', 'ammo', 'tools', 'fuel', 'materials'];
+                resources.forEach(resource => {
+                    const bar = document.getElementById(resource + '-bar');
+                    if (bar && data[resource + '-width']) {
+                        bar.style.width = data[resource + '-width'];
+                        
+                        // Restaurer la classe (couleur)
+                        bar.classList.remove('high', 'medium', 'low');
+                        if (data[resource + '-class']) {
+                            data[resource + '-class'].split(' ').forEach(cls => {
+                                if (cls) bar.classList.add(cls);
+                            });
+                        }
+                        
+                        // Mettre à jour le texte
+                        const textElement = bar.parentElement.querySelector('.resource-level-text');
+                        if (textElement) {
+                            textElement.textContent = data[resource + '-width'];
+                        }
+                        
+                        // Afficher/masquer les avertissements
+                        const warningElement = document.getElementById(resource + '-warning');
+                        if (warningElement) {
+                            const level = parseInt(data[resource + '-width']);
+                            warningElement.style.display = level < 40 ? 'block' : 'none';
+                        }
+                    }
+                    
+                    // Restaurer les étoiles de priorité
+                    if (data[resource + '-stars']) {
+                        const starStates = data[resource + '-stars'].split(',').map(s => s === 'true');
+                        const stars = document.querySelectorAll(`.priority-selector button[onclick*="${resource}"]`);
+                        stars.forEach((star, i) => {
+                            if (starStates[i]) {
+                                star.classList.add('active');
+                            } else {
+                                star.classList.remove('active');
+                            }
+                        });
+                    }
+                });
+                
+                showNotification('📂 Données chargées avec succès !');
+            } else {
+                showNotification('⚠️ Aucune donnée sauvegardée trouvée !');
+            }
+        }
+        
+        // Fonction pour afficher une notification
+        function showNotification(message) {
+            const notificationArea = document.querySelector('.notification-area') || createNotificationArea();
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notificationArea.appendChild(notification);
+            
+            // Supprimer la notification après 5 secondes
+            setTimeout(() => {
+                notification.remove();
+            }, 5500);
+        }
+        
+        // Fonction pour créer la zone de notification si elle n'existe pas
+        function createNotificationArea() {
+            const notificationArea = document.createElement('div');
+            notificationArea.className = 'notification-area';
+            document.body.appendChild(notificationArea);
+            return notificationArea;
+        }
+        
+        // Fonction pour mettre à jour la barre de ressource
+        function updateResourceBar(barId, value) {
+            const bar = document.getElementById(barId);
+            const resourceName = barId.split('-')[0];
+            const warningElement = document.getElementById(resourceName + '-warning');
+            
+            // Limiter la valeur entre 0 et 100
+            const level = Math.max(0, Math.min(100, value));
+            
+            // Mettre à jour la largeur de la barre
+            bar.style.width = level + '%';
+            
+            // Mettre à jour le texte du niveau
+            bar.parentElement.querySelector('.resource-level-text').textContent = level + '%';
+            
+            // Déterminer la couleur de la barre en fonction du niveau
+            bar.classList.remove('high', 'medium', 'low');
+            if (level >= 70) {
+                bar.classList.add('high');
+                warningElement.style.display = 'none';
+            } else if (level >= 40) {
+                bar.classList.add('medium');
+                warningElement.style.display = 'none';
+            } else {
+                bar.classList.add('low');
+                warningElement.style.display = 'block';
+                
+                // Afficher une notification si le niveau est critique
+                if (level < 30) {
+                    showNotification('⚠️ ' + resourceName.toUpperCase() + ' en niveau critique (' + level + '%) !');
+                }
+            }
+        }
+        
+        // Fonction pour basculer les étoiles de priorité
+        function toggleStar(element, index, resourceName) {
+            const stars = element.parentElement.querySelectorAll('.star-toggle');
+            
+            if (index === 0 && !element.classList.contains('active')) {
+                // Activer la première étoile si elle est désactivée
+                element.classList.add('active');
+            } else if (index === stars.length - 1 && element.classList.contains('active')) {
+                // Désactiver la dernière étoile si elle est activée
+                element.classList.remove('active');
+            } else if (element.classList.contains('active')) {
+                // Si l'étoile actuelle est active, désactiver toutes les étoiles après
+                for (let i = index; i < stars.length; i++) {
+                    stars[i].classList.remove('active');
+                }
+            } else {
+                // Si l'étoile actuelle est inactive, activer toutes les étoiles avant
+                for (let i = 0; i <= index; i++) {
+                    stars[i].classList.add('active');
+                }
+            }
+            
+            // Compter le nombre d'étoiles actives
+            const activeStars = element.parentElement.querySelectorAll('.star-toggle.active').length;
+            const resourceDisplayName = {
+                'food': 'Nourriture',
+                'meds': 'Médicaments',
+                'ammo': 'Munitions',
+                'fuel': 'Carburant'
+            }[resourceName] || resourceName;
+            
+            showNotification('⭐ Priorité de ' + resourceDisplayName + ' mise à jour : ' + activeStars + ' étoiles');
+        }
+        
+        // Ajout des boutons de sauvegarde et de chargement au menu
+        document.addEventListener('DOMContentLoaded', function() {
+            // Créer la zone de notification
+            createNotificationArea();
+            
+            // Vérifier tous les niveaux de ressources au chargement
+            const resources = ['food', 'meds', 'ammo', 'tools', 'fuel', 'materials'];
+            resources.forEach(resource => {
+                const quantityInput = document.getElementById(resource + '-quantity');
+                if (quantityInput) {
+                    updateResourceBar(resource + '-bar', quantityInput.value);
+                }
+            });
+            
+            const nav = document.getElementById('main-nav');
+            const saveButton = document.createElement('a');
+            saveButton.href = '#';
+            saveButton.innerHTML = '💾 Sauvegarder';
+            saveButton.style.backgroundColor = '#2ecc40';
+            saveButton.onclick = function(e) {
+                e.preventDefault();
+                saveData();
+            };
+            
+            const loadButton = document.createElement('a');
+            loadButton.href = '#';
+            loadButton.innerHTML = '📂 Charger';
+            loadButton.style.backgroundColor = '#3498db';
+            loadButton.onclick = function(e) {
+                e.preventDefault();
+                loadData();
+            };
+            
+            nav.appendChild(saveButton);
+            nav.appendChild(loadButton);
+            
+            // Afficher un message de bienvenue
+            setTimeout(() => {
+                showNotification('🧟‍♂️ Bienvenue sur le Tableau de Bord DeadHope !');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>        <section id="resources" class="section fade-in">
+            <div class="section-header">
+                <h2>📦 INVENTAIRE DES RESSOURCES CRITIQUES</h2>
+                <button onclick="toggleSection('resources-content')">-</button>
+            </div>
+            <div class="section-content" id="resources-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>NOURRITURE</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill medium" style="width: 65%;" id="food-bar"></div>
+                            <div class="resource-level-text">65%</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0" id="food-quantity" value="65" onchange="updateResourceBar('food-bar', this.value)">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div class="resource-priority">
+                            <span>Priorité: </span>
+                            <div class="priority-selector">
+                                <button class="star-toggle active" onclick="toggleStar(this, 0, 'food')">★</button>
+                                <button class="star-toggle active" onclick="toggleStar(this, 1, 'food')">★</button>
+                                <button class="star-toggle active" onclick="toggleStar(this, 2, 'food')">★</button>
+                            </div>
+                        </div>
+                        <div class="low-resource-warning" id="food-warning">
+                            ⚠️ NIVEAU CRITIQUE ! PRIORITÉ DE COLLECTE
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>MÉDICAMENTS</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill low" style="width: 35%;" id="meds-bar"></div>
+                            <div class="resource-level-text">35%</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0" id="meds-quantity" value="35" onchange="updateResourceBar('meds-bar', this.value)">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div class="resource-priority">
+                            <span>Priorité: </span>
+                            <div class="priority-selector">
+                                <button class="star-toggle active" onclick="toggleStar(this, 0, 'meds')">★</button>
+                                <button class="star-toggle active" onclick="toggleStar(this, 1, 'meds')">★</button>
+                                <button class="star-toggle active" onclick="toggleStar(this, 2, 'meds')">★</button>
+                            </div>
+                        </div>
+                        <div class="low-resource-warning" id="meds-warning" style="display: block;">
+                            ⚠️ NIVEAU CRITIQUE ! PRIORITÉ DE COLLECTE
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>MUNITIONS</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill medium" style="width: 50%;" id="ammo-bar"></div>
+                            <div class="resource-level-text">50%</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0" id="ammo-quantity" value="50" onchange="updateResourceBar('ammo-bar', this.value)">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div class="resource-priority">
+                            <span>Priorité: </span>
+                            <div class="priority-selector">
+                                <button class="star-toggle active" onclick="toggleStar(this, 0, 'ammo')">★</button>
+                                <button class="star-toggle active" onclick="toggleStar(this, 1, 'ammo')">★</button>
+                                <button class="star-toggle" onclick="toggleStar(this, 2, 'ammo')">★</button>
+                            </div>
+                        </div>
+                        <div class="low-resource-warning" id="ammo-warning">
+                            ⚠️ NIVEAU CRITIQUE ! PRIORITÉ DE COLLECTE
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>CARBURANT</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill low" style="width: 25%;" id="fuel-bar"></div>
+                            <div class="resource-level-text">25%</div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0" id="fuel-quantity" value="25" onchange="updateResourceBar('fuel-bar', this.value)">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div class="resource-priority">
+                            <span>Priorité: </span>
+                            <div class="priority-selector">
+                                <button class="star-toggle active" onclick="toggleStar(this, 0, 'fuel')">★</button>
+                                <button class="star-toggle active" onclick="toggleStar(this, 1, 'fuel')">★</button>
+                                <button class="star-toggle active" onclick="toggleStar(this, 2, 'fuel')">★</button>
+                            </div>
+                        </div>
+                        <div class="low-resource-warning" id="fuel-warning" style="display: block;">
+                            ⚠️ NIVEAU CRITIQUE ! PRIORITÉ DE COLLECTE
+                        </div>
+                    </div>
+                </div>
+                
+                <button style="margin-top: 1rem;">+ Ajouter une ressource</button>
+            </div>
+        </section><!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventaire Project Zomboid</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeadHope - Tableau de Bord de Survie</title>
+    <style>
+        :root {
+            --dark-bg: #0d1117;
+            --medium-bg: #161b22;
+            --light-bg: #21262d;
+            --accent: #ff4500;
+            --accent-hover: #ff6a33;
+            --text: #e6edf3;
+            --text-dim: #8b949e;
+            --border: #30363d;
+            --danger: #ff4136;
+            --warning: #ffcc00;
+            --success: #2ecc40;
+            --info: #39cccc;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="%230d1117"/><path d="M0 10L100 10M0 30L100 30M0 50L100 50M0 70L100 70M0 90L100 90M10 0L10 100M30 0L30 100M50 0L50 100M70 0L70 100M90 0L90 100" stroke="%23242a33" stroke-width="0.5"/></svg>');
+            background-attachment: fixed;
+        }
+        
+        header {
+            background-color: var(--medium-bg);
+            position: relative;
+            text-align: center;
+            border-bottom: 4px solid var(--accent);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect x="0" y="0" width="200" height="200" fill="%23161b22"/><path d="M0 50L200 50M0 100L200 100M0 150L200 150M50 0L50 200M100 0L100 200M150 0L150 200" stroke="%23242a33" stroke-width="1"/></svg>');
+            opacity: 0.3;
+            z-index: -1;
+        }
+        
+        .header-overlay {
+            background: rgba(22, 27, 34, 0.7);
+            padding: 1.5rem;
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 69, 0, 0.6);
+            color: var(--accent);
+            font-family: 'Impact', sans-serif;
+            z-index: 5;
+            position: relative;
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.8);
+            z-index: 5;
+            position: relative;
+        }
+        
+        nav {
+            background-color: var(--light-bg);
+            padding: 0.5rem;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 101px; /* Ajusté pour s'adapter à la hauteur du header */
+            z-index: 90;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            padding: 0.7rem 1.2rem;
+            margin: 0.25rem;
+            border-radius: 5px;
+            background-color: var(--medium-bg);
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        nav a:hover {
+            background-color: var(--accent);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.4);
+        }
+        
+        main {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .section {
+            background-color: var(--medium-bg);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .section-header {
+            background: linear-gradient(to right, var(--light-bg), var(--medium-bg));
+            color: var(--accent);
+            padding: 1rem 1.2rem;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .section-header h2 {
+            font-family: 'Impact', sans-serif;
+            letter-spacing: 1px;
+        }
+        
+        .section-header button {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+        }
+        
+        .section-header button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--accent);
+        }
+        
+        .section-content {
+            padding: 1.5rem;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        table, th, td {
+            border: 1px solid var(--border);
+        }
+        
+        th {
+            background-color: var(--light-bg);
+            padding: 0.75rem;
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+        
+        td {
+            padding: 0.75rem;
+            background-color: var(--medium-bg);
+        }
+        
+        tr:nth-child(even) td {
+            background-color: rgba(13, 17, 23, 0.5);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background-color: var(--medium-bg);
+            border-radius: 8px;
+            padding: 1.2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .card h3 {
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+            font-family: 'Impact', sans-serif;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.7rem;
+            margin-bottom: 1rem;
+            background-color: var(--dark-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 69, 0, 0.2), inset 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        button {
+            background: linear-gradient(to bottom, var(--accent), #e03e00);
+            color: #000;
+            border: none;
+            padding: 0.7rem 1.2rem;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        button:hover {
+            background: linear-gradient(to bottom, var(--accent-hover), var(--accent));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .coords-input {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .coords-input input {
+            width: 80px;
+        }
 
-  <!-- Librairies externes -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+        .mission-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            background-color: rgba(13, 17, 23, 0.5);
+            padding: 0.8rem;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+        }
+        
+        .mission-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.8rem;
+            transform: scale(1.2);
+        }
+        
+        .danger-zone {
+            background-color: rgba(255, 65, 54, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 5px;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 0 10px rgba(255, 65, 54, 0.2);
+        }
+        
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+            box-shadow: 0 0 5px currentColor;
+        }
+        
+        .status-good {
+            background-color: var(--success);
+        }
+        
+        .status-warning {
+            background-color: var(--warning);
+        }
+        
+        .status-danger {
+            background-color: var(--danger);
+        }
+        
+        .status-unknown {
+            background-color: var(--text-dim);
+        }
+        
+        .resource-bar {
+            height: 24px;
+            background-color: var(--dark-bg);
+            border-radius: 12px;
+            margin-bottom: 0.8rem;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+        
+        .resource-bar-fill {
+            height: 100%;
+            transition: width 0.5s ease, background-color 0.5s ease;
+        }
+        
+        .resource-bar-fill.high {
+            background: linear-gradient(to right, #2ecc40, #39d353);
+            box-shadow: 0 0 8px rgba(46, 204, 64, 0.5);
+        }
+        
+        .resource-bar-fill.medium {
+            background: linear-gradient(to right, #ffcc00, #ffdd33);
+            box-shadow: 0 0 8px rgba(255, 204, 0, 0.5);
+        }
+        
+        .resource-bar-fill.low {
+            background: linear-gradient(to right, #ff4136, #ff6b5b);
+            box-shadow: 0 0 8px rgba(255, 65, 54, 0.5);
+        }
+        
+        .resource-level-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+        }
+        
+        .priority-stars {
+            color: var(--warning);
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+        
+        .low-resource-warning {
+            display: none;
+            background-color: rgba(255, 65, 54, 0.1);
+            border: 1px solid var(--danger);
+            border-radius: 5px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            color: var(--danger);
+            font-weight: bold;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 65, 54, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 65, 54, 0); }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background-color: var(--medium-bg);
+            color: var(--text-dim);
+            margin-top: 3rem;
+            border-top: 1px solid var(--border);
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+        
+        footer::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect x="0" y="0" width="200" height="200" fill="%23161b22"/><path d="M0 50L200 50M0 100L200 100M0 150L200 150M50 0L50 200M100 0L100 200M150 0L150 200" stroke="%23242a33" stroke-width="1"/></svg>');
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .emergency-codes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0.8rem;
+        }
+        
+        .code {
+            padding: 0.8rem;
+            border-radius: 5px;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+        
+        .code:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        .code-red {
+            background-color: rgba(255, 0, 0, 0.15);
+            border: 1px solid #ff0000;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.2);
+        }
+        
+        .code-orange {
+            background-color: rgba(255, 165, 0, 0.15);
+            border: 1px solid #ffa500;
+            box-shadow: 0 0 8px rgba(255, 165, 0, 0.2);
+        }
+        
+        .code-yellow {
+            background-color: rgba(255, 255, 0, 0.15);
+            border: 1px solid #ffff00;
+            box-shadow: 0 0 8px rgba(255, 255, 0, 0.2);
+        }
+        
+        .code-green {
+            background-color: rgba(0, 128, 0, 0.15);
+            border: 1px solid #008000;
+            box-shadow: 0 0 8px rgba(0, 128, 0, 0.2);
+        }
+        
+        .code-blue {
+            background-color: rgba(0, 0, 255, 0.15);
+            border: 1px solid #0000ff;
+            box-shadow: 0 0 8px rgba(0, 0, 255, 0.2);
+        }
+        
+        .code-black {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid #000000;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.1);
+        }
+        
+        .tips-list li {
+            margin-bottom: 0.8rem;
+            list-style-type: none;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .tips-list li::before {
+            content: "▶";
+            color: var(--accent);
+            position: absolute;
+            left: 0;
+        }
+        
+        .mobile-toggle {
+            display: none;
+            background: linear-gradient(to bottom, var(--accent), #e03e00);
+            color: black;
+            padding: 0.8rem;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        
+        .base-location {
+            display: block;
+            color: var(--accent);
+            font-style: italic;
+            margin-top: 0.3rem;
+            font-size: 0.9rem;
+        }
+        
+        .resource-priority {
+            display: flex;
+            align-items: center;
+            margin-top: 0.5rem;
+            justify-content: space-between;
+        }
+        
+        .priority-selector {
+            display: flex;
+            align-items: center;
+        }
+        
+        .priority-selector label {
+            margin-right: 0.5rem;
+        }
+        
+        .star-toggle {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin: 0 2px;
+        }
+        
+        .star-toggle.active {
+            color: var(--warning);
+            text-shadow: 0 0 5px rgba(255, 204, 0, 0.5);
+        }
+        
+        .star-toggle:hover {
+            transform: scale(1.2);
+        }
+        
+        .notification-area {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background-color: var(--light-bg);
+            border-left: 4px solid var(--danger);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.5s ease forwards, fadeOut 0.5s ease 5s forwards;
+            transform: translateX(120%);
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(120%); }
+        }
+        
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                display: none;
+                position: static;
+            }
+            
+            nav.show {
+                display: flex;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 2.5rem;
+            }
+            
+            header p {
+                font-size: 1rem;
+            }
+            
+            .section-header h2 {
+                font-size: 1.2rem;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .blood-splatter {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0.05;
+            z-index: -1;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400"><circle cx="100" cy="100" r="50" fill="%23ff0000" filter="blur(10px)"/><circle cx="300" cy="150" r="40" fill="%23ff0000" filter="blur(8px)"/><circle cx="150" cy="300" r="60" fill="%23ff0000" filter="blur(12px)"/><circle cx="250" cy="250" r="30" fill="%23ff0000" filter="blur(6px)"/></svg>');
+        }
+    </style>
+</head>3 {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            background-color: var(--dark-bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 3px;
+        }
+        
+        button {
+            background-color: var(--accent);
+            color: black;
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-radius: 3px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background-color: var(--text);
+            transform: translateY(-2px);
+        }
+        
+        .coords-input {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .coords-input input {
+            width: 80px;
+        }
 
-  <!-- Style intégré -->
-  <style>
-    :root {
-      --primary: #c62828;
-      --background: #121212;
-      --surface: #1e1e1e;
-      --text: #f5f5f5;
-      --text-secondary: #b0b0b0;
-      --radius: 8px;
-    }
-
-    [data-theme="light"] {
-      --background: #ffffff;
-      --surface: #f0f0f0;
-      --text: #212121;
-      --text-secondary: #666666;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-      background-color: var(--background);
-      color: var(--text);
-    }
-
-    header {
-      background-color: var(--primary);
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-    }
-
-    header h1 {
-      margin: 0;
-      font-size: 1.5rem;
-      color: white;
-    }
-
-    header button {
-      background: none;
-      border: none;
-      color: white;
-      font-size: 1.2rem;
-      cursor: pointer;
-    }
-
-    main {
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    section {
-      background-color: var(--surface);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-
-    h2 {
-      margin-top: 0;
-      font-size: 1.2rem;
-      border-bottom: 1px solid var(--text-secondary);
-      padding-bottom: 5px;
-    }
-
-    #qrcode {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 15px;
-    }
-
-    button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: var(--radius);
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #a92222;
-    }
-
-    #toast {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background-color: var(--surface);
-      color: var(--text);
-      padding: 12px 18px;
-      border-radius: var(--radius);
-      box-shadow: 0 0 10px rgba(0,0,0,0.4);
-      display: none;
-      align-items: center;
-      gap: 10px;
-      z-index: 10000;
-    }
-
-    .toast.show {
-      display: flex;
-    }
-
-    #resource-map {
-      width: 100%;
-      height: 400px;
-      border-radius: var(--radius);
-    }
-
-    /* Ajoute ici d'autres styles selon tes sections : modales, filtres, inventaire, etc. */
-  </style>
+        .mission-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mission-item input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+        
+        .danger-zone {
+            background-color: rgba(255, 65, 54, 0.2);
+            border: 1px solid var(--danger);
+            border-radius: 5px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .status-indicator {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        .status-good {
+            background-color: var(--success);
+        }
+        
+        .status-warning {
+            background-color: var(--warning);
+        }
+        
+        .status-danger {
+            background-color: var(--danger);
+        }
+        
+        .status-unknown {
+            background-color: var(--text-dim);
+        }
+        
+        .resource-bar {
+            height: 20px;
+            background-color: var(--dark-bg);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .resource-bar-fill {
+            height: 100%;
+            background-color: var(--accent);
+            width: 75%; /* Example width */
+        }
+        
+        .priority-stars {
+            color: var(--warning);
+            letter-spacing: 2px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--medium-bg);
+            color: var(--text-dim);
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .emergency-codes {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .code {
+            padding: 0.5rem;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .code-red {
+            background-color: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+        }
+        
+        .code-orange {
+            background-color: rgba(255, 165, 0, 0.2);
+            border: 1px solid #ffa500;
+        }
+        
+        .code-yellow {
+            background-color: rgba(255, 255, 0, 0.2);
+            border: 1px solid #ffff00;
+        }
+        
+        .code-green {
+            background-color: rgba(0, 128, 0, 0.2);
+            border: 1px solid #008000;
+        }
+        
+        .code-blue {
+            background-color: rgba(0, 0, 255, 0.2);
+            border: 1px solid #0000ff;
+        }
+        
+        .code-black {
+            background-color: rgba(0, 0, 0, 0.2);
+            border: 1px solid #000000;
+        }
+        
+        .tips-list li {
+            margin-bottom: 0.5rem;
+            list-style-type: square;
+            margin-left: 1.5rem;
+        }
+        
+        .mobile-toggle {
+            display: none;
+            background-color: var(--accent);
+            color: black;
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                display: none;
+                position: static;
+            }
+            
+            nav.show {
+                display: flex;
+            }
+            
+            .mobile-toggle {
+                display: block;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
 </head>
-
-<body data-theme="dark">
-  <!-- En-tête -->
-  <header>
-    <h1>Inventaire Zomboid</h1>
-    <button id="theme-toggle-btn" title="Changer de thème">
-      <i class="fas fa-moon"></i>
-    </button>
-  </header>
-
-  <!-- Contenu principal -->
-  <main>
-
-    <!-- Section Inventaire -->
-    <section id="inventory-section">
-      <h2>Inventaire</h2>
-      <div id="inventory">
-        <!-- Le contenu est généré dynamiquement par JS -->
-      </div>
-    </section>
-
-    <!-- Section Crafting -->
-    <section id="crafting-section">
-      <h2>Crafting</h2>
-      <div id="recipe-container">
-        <!-- Recettes affichées ici -->
-      </div>
-    </section>
-
-    <!-- Section QR Code de partage -->
-    <section id="qrcode-section">
-      <h2>QR Code Partage</h2>
-      <button id="generate-qrcode-btn">
-        Générer QR Code
-      </button>
-      <div id="qrcode"></div>
-    </section>
-
-    <!-- Section Carte interactive -->
-    <section id="map-section">
-      <h2>Carte Interactive</h2>
-      <div id="resource-map"></div>
-    </section>
-
-  </main>
-
-  <!-- Toast Notification -->
-  <div id="toast" class="toast">
-    <i class="fas fa-check-circle fa-lg"></i>
-    <div id="toast-message"></div>
-  </div>
-
-  <!-- Dépendances JS -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode.js@1.0.0/qrcode.min.js"></script>
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-
-  <!-- Script principal -->
-  <script>
-    // --- Configuration Firebase ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyASp6Gfi4Fz8Nduap0on89oAZzCkPLKpFc",
-      authDomain: "lions-890e9.firebaseapp.com",
-      databaseURL: "https://lions-890e9-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "lions-890e9",
-      storageBucket: "lions-890e9.appspot.com",
-      messagingSenderId: "560777699926",
-      appId: "1:560777699926:web:2e256d3d1d337513be91f7",
-      measurementId: "G-ZX3N3XWJ4K"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const storage = firebase.storage();
-
-    // --- Variables globales ---
-    let currentRoomId = null;
-    let currentStorage = 'main';
-    let inventoryRef = null;
-    let mapMarkersRef = null;
-    let userName = 'Survivant';
-
-    // --- Toast Notification ---
-    function showToast(title, message, type = "success") {
-      const toast = document.getElementById('toast');
-      const toastMessage = document.getElementById('toast-message');
-      if (!toast || !toastMessage) return;
-
-      toastMessage.textContent = message;
-      const icon = toast.querySelector('i');
-      icon.className = "fas fa-info-circle fa-lg";
-      if (type === "success") icon.className = "fas fa-check-circle fa-lg";
-      if (type === "error") icon.className = "fas fa-exclamation-circle fa-lg";
-
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
-    }
-
-    // --- Thème clair/sombre ---
-    function toggleTheme() {
-      const body = document.body;
-      const theme = body.getAttribute('data-theme');
-      const newTheme = theme === 'dark' ? 'light' : 'dark';
-      body.setAttribute('data-theme', newTheme);
-
-      const icon = document.getElementById('theme-toggle-btn');
-      if (icon) {
-        icon.innerHTML = newTheme === 'dark'
-          ? '<i class="fas fa-moon"></i>'
-          : '<i class="fas fa-sun"></i>';
-      }
-
-      localStorage.setItem('theme', newTheme);
-      showToast("Thème", `Thème ${newTheme === 'dark' ? 'sombre' : 'clair'} activé`);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('theme') || 'dark';
-      document.body.setAttribute('data-theme', savedTheme);
-
-      const themeToggle = document.getElementById('theme-toggle-btn');
-      if (themeToggle) {
-        themeToggle.innerHTML = savedTheme === 'dark'
-          ? '<i class="fas fa-moon"></i>'
-          : '<i class="fas fa-sun"></i>';
-        themeToggle.addEventListener('click', toggleTheme);
-      }
-
-      // --- Initialisation de la room ---
-      const params = new URLSearchParams(window.location.search);
-      currentRoomId = params.get("room") || "default-room";
-      userName = prompt("Ton pseudo ?") || "Survivant";
-
-      inventoryRef = database.ref(`rooms/${currentRoomId}/inventory`);
-      mapMarkersRef = database.ref(`rooms/${currentRoomId}/mapMarkers`);
-    });
-
-    // --- Rendu de l'inventaire ---
-    function renderInventory(data) {
-      const container = document.getElementById('inventory');
-      if (!container || !data || !data[currentStorage]) return;
-
-      container.innerHTML = '';
-      const storage = data[currentStorage];
-
-      for (const category in storage) {
-        const items = storage[category] || [];
-
-        if (items.length === 0) continue;
-
-        const section = document.createElement('div');
-        section.className = 'inventory-category';
-
-        const title = document.createElement('h3');
-        title.textContent = category.charAt(0).toUpperCase() + category.slice(1);
-        section.appendChild(title);
-
-        const list = document.createElement('ul');
-        list.className = 'inventory-list';
-
-        items.forEach((item, index) => {
-          const li = document.createElement('li');
-          li.className = 'inventory-item';
-          li.innerHTML = `
-            <strong>${item.name}</strong> (${item.count})
-            <div class="actions">
-              <button onclick="decreaseCount('${category}', ${index})"><i class="fas fa-minus"></i></button>
-              <button onclick="increaseCount('${category}', ${index})"><i class="fas fa-plus"></i></button>
-              <button onclick="removeItem('${category}', ${index})"><i class="fas fa-trash"></i></button>
+<body>
+    <div class="blood-splatter"></div>
+    <header>
+        <div class="header-overlay">
+            <h1>DEADHOPE</h1>
+            <p>Tableau de Bord de Survie - Project Zomboid</p>
+        </div>
+    </header>
+    
+    <div class="mobile-toggle" onclick="toggleNav()">☰ MENU</div>
+    
+    <nav id="main-nav">
+        <a href="#map">Carte</a>
+        <a href="#team">Équipe</a>
+        <a href="#missions">Missions</a>
+        <a href="#resources">Ressources</a>
+        <a href="#construction">Construction</a>
+        <a href="#vehicles">Véhicules</a>
+        <a href="#skills">Compétences</a>
+        <a href="#calendar">Calendrier</a>
+        <a href="#security">Sécurité</a>
+        <a href="#journal">Journal</a>
+        <a href="#relations">Relations</a>
+        <a href="#emergency">Urgences</a>
+    </nav>
+    
+    <main>
+        <section id="map" class="section fade-in">
+            <div class="section-header">
+                <h2>🧭 CARTE STRATÉGIQUE</h2>
+                <button onclick="toggleSection('map-content')">-</button>
             </div>
-          `;
-          list.appendChild(li);
-        });
-
-        section.appendChild(list);
-        container.appendChild(section);
-      }
-    }
-
-    // --- Ajouter un objet ---
-    function addItem(name, category, count) {
-      if (!inventoryRef) return;
-
-      const item = {
-        name,
-        count,
-        addedOn: firebase.database.ServerValue.TIMESTAMP
-      };
-
-      const catRef = inventoryRef.child(`${currentStorage}/${category}`);
-      catRef.once('value', snapshot => {
-        const items = snapshot.val() || [];
-        const index = items.findIndex(i => i.name.toLowerCase() === name.toLowerCase());
-
-        if (index !== -1) {
-          items[index].count += count;
-        } else {
-          items.push(item);
-        }
-
-        catRef.set(items).then(() => {
-          showToast("Ajouté", `${count} x ${name}`, "success");
-        });
-      });
-    }
-
-    // --- Supprimer un objet ---
-    function removeItem(category, index) {
-      const ref = inventoryRef.child(`${currentStorage}/${category}`);
-      ref.once('value', snapshot => {
-        const items = snapshot.val() || [];
-        if (index >= 0 && index < items.length) {
-          items.splice(index, 1);
-          ref.set(items);
-          showToast("Supprimé", "Objet retiré", "success");
-        }
-      });
-    }
-
-    // --- Modifier la quantité ---
-    function increaseCount(category, index) {
-      updateCount(category, index, 1);
-    }
-
-    function decreaseCount(category, index) {
-      updateCount(category, index, -1);
-    }
-
-    function updateCount(category, index, delta) {
-      const ref = inventoryRef.child(`${currentStorage}/${category}/${index}`);
-      ref.once('value', snapshot => {
-        const item = snapshot.val();
-        if (!item) return;
-
-        const newCount = (item.count || 0) + delta;
-        if (newCount <= 0) {
-          removeItem(category, index);
-        } else {
-          ref.update({ count: newCount });
-        }
-      });
-    }
-
-    // --- Filtres et recherche (si tu veux en ajouter plus tard) ---
-    // À brancher avec des boutons ou une barre de recherche si besoin
-
-    // --- Initialiser la carte Leaflet ---
-    function initMap() {
-      const mapEl = document.getElementById('resource-map');
-      if (!mapEl) return;
-
-      zomboidMap = L.map(mapEl).setView([0, 0], 2);
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-      }).addTo(zomboidMap);
-
-      loadMapMarkers();
-    }
-
-    // --- Charger les marqueurs depuis Firebase ---
-    function loadMapMarkers() {
-      if (!mapMarkersRef || !zomboidMap) return;
-
-      mapMarkersRef.child(currentStorage).on('value', snapshot => {
-        const markers = snapshot.val() || {};
-
-        // Supprimer anciens marqueurs
-        zomboidMap.eachLayer(layer => {
-          if (layer instanceof L.Marker) zomboidMap.removeLayer(layer);
-        });
-
-        for (const key in markers) {
-          const marker = markers[key];
-          if (!marker.lat || !marker.lng) continue;
-
-          L.marker([marker.lat, marker.lng])
-            .addTo(zomboidMap)
-            .bindPopup(`
-              <strong>${marker.type}</strong><br>
-              ${marker.description || ''}
-              <br><em>Ajouté par ${marker.addedBy || 'inconnu'}</em>
-            `);
-        }
-      });
-    }
-
-    // --- Ajouter un marqueur via clic ---
-    function enableMapClick() {
-      if (!zomboidMap) return;
-
-      zomboidMap.on('click', function(e) {
-        const type = prompt("Type de ressource (ex: loot, essence, danger)");
-        if (!type) return;
-
-        const description = prompt("Description (optionnelle)") || "";
-        const markerData = {
-          lat: e.latlng.lat,
-          lng: e.latlng.lng,
-          type,
-          description,
-          addedBy: userName,
-          addedOn: firebase.database.ServerValue.TIMESTAMP
-        };
-
-        mapMarkersRef.child(currentStorage).push(markerData);
-        showToast("Carte", "Marqueur ajouté !", "success");
-      });
-    }
-
-    // --- QR Code de partage ---
-    function generateQRCode() {
-      const container = document.getElementById('qrcode');
-      if (!container || !currentRoomId) return;
-
-      container.innerHTML = '';
-      const url = `${location.origin}${location.pathname}?room=${currentRoomId}`;
-
-      new QRCode(container, {
-        text: url,
-        width: 200,
-        height: 200,
-        colorDark: "#c62828",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-      });
-
-      showToast("QR Code", "QR Code généré", "success");
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      initMap();
-      enableMapClick();
-
-      const qrBtn = document.getElementById('generate-qrcode-btn');
-      if (qrBtn) qrBtn.addEventListener('click', generateQRCode);
-    });
-
-    // --- Graphique de stats ---
-    let resourcesChart = null;
-
-    function initStatsChart() {
-      const canvas = document.createElement('canvas');
-      canvas.id = 'resources-chart';
-      canvas.style.maxWidth = '100%';
-
-      const section = document.createElement('section');
-      section.innerHTML = '<h2>Statistiques des ressources</h2>';
-      section.appendChild(canvas);
-
-      const main = document.querySelector('main');
-      if (main) main.appendChild(section);
-
-      const ctx = canvas.getContext('2d');
-      resourcesChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: ['Armes', 'Nourriture', 'Médicaments'],
-          datasets: [{
-            label: 'Quantité',
-            data: [0, 0, 0],
-            backgroundColor: ['#c62828', '#43a047', '#1e88e5']
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            y: { beginAtZero: true }
-          }
-        }
-      });
-    }
-
-    function updateStatsChart() {
-      if (!resourcesChart || !inventoryRef) return;
-
-      inventoryRef.once('value', snapshot => {
-        const data = snapshot.val()?.[currentStorage] || {};
-        let weapons = 0, food = 0, meds = 0;
-
-        data.weapons?.forEach(i => weapons += i.count || 0);
-        data.food?.forEach(i => food += i.count || 0);
-        data.medicine?.forEach(i => meds += i.count || 0);
-
-        resourcesChart.data.datasets[0].data = [weapons, food, meds];
-        resourcesChart.update();
-      });
-    }
-
-    // --- Initialisation des données ---
-    document.addEventListener('DOMContentLoaded', () => {
-      if (!inventoryRef) return;
-
-      inventoryRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-        renderInventory(data);
-        updateStatsChart();
-      });
-
-      inventoryRef.once('value').then(snapshot => {
-        if (!snapshot.exists()) {
-          const base = {
-            weapons: [],
-            food: [],
-            medicine: [],
-            tools: [],
-            clothing: [],
-            materials: [],
-            ammunition: [],
-            fuel: [],
-            electronics: [],
-            books: [],
-            containers: [],
-            other: []
-          };
-          inventoryRef.child(currentStorage).set(base);
-        }
-      });
-
-      initStatsChart();
-    });
-  </script>
-</body>
-</html>
+            <div class="section-content" id="map-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>🏠 BASE PRINCIPALE</h3>
+                        <input type="text" placeholder="Nom/Description">
+                        <span class="base-location">Localisation avant déconnexion :</span>
+                        <div class="coords-input">
+                            <span>Coords:</span>
+                            <input type="number" placeholder="X">
+                            <span>x</span>
+                            <input type="number" placeholder="Y">
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🏥 INFIRMERIE</h3>
+                        <input type="text" placeholder="Nom/Description">
+                        <span class="base-location">Localisation avant déconnexion :</span>
+                        <div class="coords-input">
+                            <span>Coords:</span>
+                            <input type="number" placeholder="X">
+                            <span>x</span>
+                            <input type="number" placeholder="Y">
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🏭 ATELIER</h3>
+                        <input type="text" placeholder="Nom/Description">
+                        <span class="base-location">Localisation avant déconnexion :</span>
+                        <div class="coords-input">
+                            <span>Coords:</span>
+                            <input type="number" placeholder="X">
+                            <span>x</span>
+                            <input type="number" placeholder="Y">
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🌱 FERME</h3>
+                        <input type="text" placeholder="Nom/Description">
+                        <span class="base-location">Localisation avant déconnexion :</span>
+                        <div class="coords-input">
+                            <span>Coords:</span>
+                            <input type="number" placeholder="X">
+                            <span>x</span>
+                            <input type="number" placeholder="Y">
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🚗 GARAGE</h3>
+                        <input type="text" placeholder="Nom/Description">
+                        <span class="base-location">Localisation avant déconnexion :</span>
+                        <div class="coords-input">
+                            <span>Coords:</span>
+                            <input type="number" placeholder="X">
+                            <span>x</span>
+                            <input type="number" placeholder="Y">
+                        </div>
+                    </div>
+                </div>
+                
+                <h3 style="margin-top: 2rem;">ZONES DANGEREUSES</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LIEU</th>
+                            <th>DENSITÉ ZOMBIE</th>
+                            <th>NOTES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du lieu"></td>
+                            <td>
+                                <select>
+                                    <option value="1">⭐ Faible</option>
+                                    <option value="2">⭐⭐ Modérée</option>
+                                    <option value="3">⭐⭐⭐ Élevée</option>
+                                    <option value="4">⭐⭐⭐⭐ Très élevée</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Informations supplémentaires"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du lieu"></td>
+                            <td>
+                                <select>
+                                    <option value="1">⭐ Faible</option>
+                                    <option value="2">⭐⭐ Modérée</option>
+                                    <option value="3">⭐⭐⭐ Élevée</option>
+                                    <option value="4">⭐⭐⭐⭐ Très élevée</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Informations supplémentaires"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du lieu"></td>
+                            <td>
+                                <select>
+                                    <option value="1">⭐ Faible</option>
+                                    <option value="2">⭐⭐ Modérée</option>
+                                    <option value="3">⭐⭐⭐ Élevée</option>
+                                    <option value="4">⭐⭐⭐⭐ Très élevée</option>
+                                    <option value="5">⭐⭐⭐⭐⭐ Extrême</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Informations supplémentaires"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="margin-top: 2rem;">POINTS D'INTÉRÊT À EXPLORER</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>LIEU</th>
+                            <th>RESSOURCES POTENTIELLES</th>
+                            <th>PRIORITÉ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du lieu"></td>
+                            <td><input type="text" placeholder="Ressources attendues"></td>
+                            <td>
+                                <select>
+                                    <option value="high">Haute</option>
+                                    <option value="medium">Moyenne</option>
+                                    <option value="low">Basse</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du lieu"></td>
+                            <td><input type="text" placeholder="Ressources attendues"></td>
+                            <td>
+                                <select>
+                                    <option value="high">Haute</option>
+                                    <option value="medium">Moyenne</option>
+                                    <option value="low">Basse</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du lieu"></td>
+                            <td><input type="text" placeholder="Ressources attendues"></td>
+                            <td>
+                                <select>
+                                    <option value="high">Haute</option>
+                                    <option value="medium">Moyenne</option>
+                                    <option value="low">Basse</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button style="margin-top: 1rem;">+ Ajouter un point d'intérêt</button>
+            </div>
+        </section>
+        
+        <section id="team" class="section fade-in">
+            <div class="section-header">
+                <h2>👥 ÉQUIPE</h2>
+                <button onclick="toggleSection('team-content')">-</button>
+            </div>
+            <div class="section-content" id="team-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NOM</th>
+                            <th>RÔLE</th>
+                            <th>COMPÉTENCES PRINCIPALES</th>
+                            <th>LOCALISATION DERNIÈRE DÉCO</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du joueur"></td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="medic">Médecin</option>
+                                    <option value="builder">Constructeur</option>
+                                    <option value="farmer">Fermier</option>
+                                    <option value="scavenger">Éclaireur</option>
+                                    <option value="mechanic">Mécanicien</option>
+                                    <option value="guard">Garde</option>
+                                    <option value="cook">Cuisinier</option>
+                                    <option value="leader">Chef</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Ex: Menuiserie, Tir, etc."></td>
+                            <td><input type="text" placeholder="Lieu avant déconnexion"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du joueur"></td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="medic">Médecin</option>
+                                    <option value="builder">Constructeur</option>
+                                    <option value="farmer">Fermier</option>
+                                    <option value="scavenger">Éclaireur</option>
+                                    <option value="mechanic">Mécanicien</option>
+                                    <option value="guard">Garde</option>
+                                    <option value="cook">Cuisinier</option>
+                                    <option value="leader">Chef</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Ex: Menuiserie, Tir, etc."></td>
+                            <td><input type="text" placeholder="Lieu avant déconnexion"></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du joueur"></td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="medic">Médecin</option>
+                                    <option value="builder">Constructeur</option>
+                                    <option value="farmer">Fermier</option>
+                                    <option value="scavenger">Éclaireur</option>
+                                    <option value="mechanic">Mécanicien</option>
+                                    <option value="guard">Garde</option>
+                                    <option value="cook">Cuisinier</option>
+                                    <option value="leader">Chef</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Ex: Menuiserie, Tir, etc."></td>
+                            <td><input type="text" placeholder="Lieu avant déconnexion"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button style="margin-top: 1rem;">+ Ajouter un membre</button>
+            </div>
+        </section>
+        
+        <section id="missions" class="section">
+            <div class="section-header">
+                <h2>📋 MISSIONS PRIORITAIRES</h2>
+                <button onclick="toggleSection('missions-content')">-</button>
+            </div>
+            <div class="section-content" id="missions-content">
+                <div class="mission-item">
+                    <input type="checkbox">
+                    <input type="text" placeholder="Description de la mission" style="flex-grow: 1; margin-bottom: 0;">
+                    <select style="width: 150px; margin: 0 0.5rem;">
+                        <option value="">-- Responsable --</option>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                    </select>
+                    <input type="date" style="width: 150px; margin: 0;">
+                </div>
+                
+                <div class="mission-item">
+                    <input type="checkbox">
+                    <input type="text" placeholder="Description de la mission" style="flex-grow: 1; margin-bottom: 0;">
+                    <select style="width: 150px; margin: 0 0.5rem;">
+                        <option value="">-- Responsable --</option>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                    </select>
+                    <input type="date" style="width: 150px; margin: 0;">
+                </div>
+                
+                <div class="mission-item">
+                    <input type="checkbox">
+                    <input type="text" placeholder="Description de la mission" style="flex-grow: 1; margin-bottom: 0;">
+                    <select style="width: 150px; margin: 0 0.5rem;">
+                        <option value="">-- Responsable --</option>
+                        <option value="player1">Joueur 1</option>
+                        <option value="player2">Joueur 2</option>
+                        <option value="player3">Joueur 3</option>
+                    </select>
+                    <input type="date" style="width: 150px; margin: 0;">
+                </div>
+                
+                <button style="margin-top: 1rem;">+ Ajouter une mission</button>
+            </div>
+        </section>
+        
+        <section id="resources" class="section">
+            <div class="section-header">
+                <h2>📦 INVENTAIRE DES RESSOURCES CRITIQUES</h2>
+                <button onclick="toggleSection('resources-content')">-</button>
+            </div>
+            <div class="section-content" id="resources-content">
+                <div class="grid">
+                    <div class="card">
+                        <h3>NOURRITURE</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill" style="width: 65%; background-color: #ffcc00;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span>Priorité: </span>
+                            <span class="priority-stars">⭐⭐⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>MÉDICAMENTS</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill" style="width: 35%; background-color: #ff4136;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span>Priorité: </span>
+                            <span class="priority-stars">⭐⭐⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>MUNITIONS</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill" style="width: 50%; background-color: #ffcc00;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span>Priorité: </span>
+                            <span class="priority-stars">⭐⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>OUTILS</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill" style="width: 80%; background-color: #2ecc40;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span>Priorité: </span>
+                            <span class="priority-stars">⭐⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>CARBURANT</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill" style="width: 25%; background-color: #ff4136;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span>Priorité: </span>
+                            <span class="priority-stars">⭐⭐⭐</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>MATÉRIAUX</h3>
+                        <div class="resource-bar">
+                            <div class="resource-bar-fill" style="width: 60%; background-color: #ffcc00;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Quantité:</span>
+                            <input type="number" style="width: 100px;" placeholder="0">
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                            <span>Stockage:</span>
+                            <input type="text" style="width: 200px;" placeholder="Lieu de stockage">
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span>Priorité: </span>
+                            <span class="priority-stars">⭐⭐</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button style="margin-top: 1rem;">+ Ajouter une ressource</button>
+            </div>
+        </section>
+        
+        <section id="construction" class="section fade-in">
+            <div class="section-header">
+                <h2>🔧 PROJETS DE CONSTRUCTION</h2>
+                <button onclick="toggleSection('construction-content')">-</button>
+            </div>
+            <div class="section-content" id="construction-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>PROJET</th>
+                            <th>MATÉRIAUX REQUIS</th>
+                            <th>ÉTAT</th>
+                            <th>RESPONSABLE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du projet"></td>
+                            <td><textarea placeholder="Liste des matériaux nécessaires"></textarea></td>
+                            <td>
+                                <select>
+                                    <option value="planning">Planification</option>
+                                    <option value="gathering">Collecte</option>
+                                    <option value="building">En construction</option>
+                                    <option value="finished">Terminé</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du projet"></td>
+                            <td><textarea placeholder="Liste des matériaux nécessaires"></textarea></td>
+                            <td>
+                                <select>
+                                    <option value="planning">Planification</option>
+                                    <option value="gathering">Collecte</option>
+                                    <option value="building">En construction</option>
+                                    <option value="finished">Terminé</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Nom du projet"></td>
+                            <td><textarea placeholder="Liste des matériaux nécessaires"></textarea></td>
+                            <td>
+                                <select>
+                                    <option value="planning">Planification</option>
+                                    <option value="gathering">Collecte</option>
+                                    <option value="building">En construction</option>
+                                    <option value="finished">Terminé</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button style="margin-top: 1rem;">+ Ajouter un projet</button>
+            </div>
+        </section>
+        
+        <section id="scripts" class="section fade-in" style="display: none;">
+            <div class="section-content" id="scripts-content">
+                <script>
+                    // Fonction pour mettre à jour la barre de ressource
+                    function updateResourceBar(barId, value) {
+                        const bar = document.getElementById(barId);
+                        const resourceName = barId.split('-')[0];
+                        const warningElement = document.getElementById(resourceName + '-warning');
+                        
+                        // Limiter la valeur entre 0 et 100
+                        const level = Math.max(0, Math.min(100, value));
+                        
+                        // Mettre à jour la largeur de la barre
+                        bar.style.width = level + '%';
+                        
+                        // Mettre à jour le texte du niveau
+                        bar.parentElement.querySelector('.resource-level-text').textContent = level + '%';
+                        
+                        // Déterminer la couleur de la barre en fonction du niveau
+                        bar.classList.remove('high', 'medium', 'low');
+                        if (level >= 70) {
+                            bar.classList.add('high');
+                            warningElement.style.display = 'none';
+                        } else if (level >= 40) {
+                            bar.classList.add('medium');
+                            warningElement.style.display = 'none';
+                        } else {
+                            bar.classList.add('low');
+                            warningElement.style.display = 'block';
+                            
+                            // Afficher une notification si le niveau est critique
+                            if (level < 30) {
+                                showNotification(resourceName + ' en niveau critique (' + level + '%) !');
+                            }
+                        }
+                    }
+                    
+                    // Fonction pour basculer les étoiles de priorité
+                    function toggleStar(element, index, resourceName) {
+                        const stars = element.parentElement.querySelectorAll('.star-toggle');
+                        
+                        if (index === 0 && !element.classList.contains('active')) {
+                            // Activer la première étoile si elle est désactivée
+                            element.classList.add('active');
+                        } else if (index === stars.length - 1 && element.classList.contains('active')) {
+                            // Désactiver la dernière étoile si elle est activée
+                            element.classList.remove('active');
+                        } else if (element.classList.contains('active')) {
+                            // Si l'étoile actuelle est active, désactiver toutes les étoiles après
+                            for (let i = index; i < stars.length; i++) {
+                                stars[i].classList.remove('active');
+                            }
+                        } else {
+                            // Si l'étoile actuelle est inactive, activer toutes les étoiles avant
+                            for (let i = 0; i <= index; i++) {
+                                stars[i].classList.add('active');
+                            }
+                        }
+                        
+                        // Compter le nombre d'étoiles actives
+                        const activeStars = element.parentElement.querySelectorAll('.star-toggle.active').length;
+                        showNotification('Priorité de ' + resourceName + ' mise à jour : ' + activeStars + ' étoiles');
+                    }
+                    
+                    // Fonction pour afficher une notification
+                    function showNotification(message) {
+                        const notificationArea = document.querySelector('.notification-area') || createNotificationArea();
+                        const notification = document.createElement('div');
+                        notification.className = 'notification';
+                        notification.textContent = message;
+                        notificationArea.appendChild(notification);
+                        
+                        // Supprimer la notification après 5 secondes
+                        setTimeout(() => {
+                            notification.remove();
+                        }, 5500);
+                    }
+                    
+                    // Fonction pour créer la zone de notification si elle n'existe pas
+                    function createNotificationArea() {
+                        const notificationArea = document.createElement('div');
+                        notificationArea.className = 'notification-area';
+                        document.body.appendChild(notificationArea);
+                        return notificationArea;
+                    }
+                    
+                    // Initialisation des barres de ressources
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Vérifier tous les niveaux de ressources au chargement
+                        const resources = ['food', 'meds', 'ammo', 'tools', 'fuel', 'materials'];
+                        resources.forEach(resource => {
+                            const quantityInput = document.getElementById(resource + '-quantity');
+                            if (quantityInput) {
+                                updateResourceBar(resource + '-bar', quantityInput.value);
+                            }
+                        });
+                    });
+                </script>
+            </div>
+        </section>
+                    
+        
+        <section id="vehicles" class="section">
+            <div class="section-header">
+                <h2>🚙 VÉHICULES</h2>
+                <button onclick="toggleSection('vehicles-content')">-</button>
+            </div>
+            <div class="section-content" id="vehicles-content">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>VÉHICULE</th>
+                            <th>ÉTAT</th>
+                            <th>CARBURANT</th>
+                            <th>LOCALISATION</th>
+                            <th>CLÉS AVEC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" placeholder="Type/Couleur du véhicule"></td>
+                            <td>
+                                <select>
+                                    <option value="excellent">Excellent</option>
+                                    <option value="good">Bon</option>
+                                    <option value="damaged">Endommagé</option>
+                                    <option value="critical">Critique</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="range" min="0" max="100" value="50">
+                                <div style="text-align: center;"><span>50%</span></div>
+                            </td>
+                            <td><input type="text" placeholder="Où est garé le véhicule"></td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                    <option value="garage">Au garage</option>
+                                    <option value="lost">Perdues</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Type/Couleur du véhicule"></td>
+                            <td>
+                                <select>
+                                    <option value="excellent">Excellent</option>
+                                    <option value="good">Bon</option>
+                                    <option value="damaged">Endommagé</option>
+                                    <option value="critical">Critique</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="range" min="0" max="100" value="25">
+                                <div style="text-align: center;"><span>25%</span></div>
+                            </td>
+                            <td><input type="text" placeholder="Où est garé le véhicule"></td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                    <option value="garage">Au garage</option>
+                                    <option value="lost">Perdues</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Type/Couleur du véhicule"></td>
+                            <td>
+                                <select>
+                                    <option value="excellent">Excellent</option>
+                                    <option value="good">Bon</option>
+                                    <option value="damaged">Endommagé</option>
+                                    <option value="critical">Critique</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="range" min="0" max="100" value="75">
+                                <div style="text-align: center;"><span>75%</span></div>
+                            </td>
+                            <td><input type="text" placeholder="Où est garé le véhicule"></td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                    <option value="garage">Au garage</option>
+                                    <option value="lost">Perdues</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button style="margin-top: 1rem;">+ Ajouter un véhicule</button>
+            </div>
+        </section>
+        
+électionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="high">⭐⭐⭐ Haute</option>
+                                    <option value="medium">⭐⭐ Moyenne</option>
+                                    <option value="low">⭐ Basse</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Agriculture</td>
+                            <td>
+                                <select multiple>
+                                    <option value="beginner">Débutant</option>
+                                    <option value="intermediate">Intermédiaire</option>
+                                    <option value="advanced">Avancé</option>
+                                    <option value="expert">Expert</option>
+                                    <option value="master">Maître</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="">-- Sélectionner --</option>
+                                    <option value="player1">Joueur 1</option>
+                                    <option value="player2">Joueur 2</option>
+                                    <option value="player3">Joueur 3</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select>
+                                    <option value="high">⭐⭐⭐ Haute</option>
+                                    <option value="medium">⭐⭐ Moyenne</option>
+                                    <option value="low">⭐ Basse</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button style="margin-top: 1rem;">+ Ajouter une compétence</button>
+            </div>
+        </section>
