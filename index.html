@@ -1,310 +1,142 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DeadHope - Dashboard</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background-color: #111;
-      color: #f5f5f5;
-    }
-    .hidden { display: none; }
-    .login-box {
-      background: #222;
-      padding: 2rem;
-      border-radius: 8px;
-      width: 300px;
-      text-align: center;
-      box-shadow: 0 0 20px #000;
-      margin: 5rem auto;
-    }
-    input, button, select, textarea {
-      width: 100%;
-      padding: 0.5rem;
-      margin: 0.5rem 0;
-      border: 1px solid #444;
-      background: #1a1a1a;
-      color: #f5f5f5;
-      font-family: monospace;
-    }
-    button {
-      cursor: pointer;
-      background-color: #8b0000;
-      font-weight: bold;
-    }
-    header, nav, section {
-      padding: 1rem;
-    }
-    nav {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      background-color: #222;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      padding: 0.5rem 1rem;
-      background-color: #8b0000;
-      border-radius: 5px;
-    }
-    .grid, table {
-      width: 100%;
-      margin-top: 1rem;
-      border-collapse: collapse;
-    }
-    table th, table td {
-      border: 1px solid #333;
-      padding: 0.5rem;
-    }
-  </style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DeadHope - Dashboard V2</title>
+<link href="https://unpkg.com/lucide@latest" rel="stylesheet"/>
+<style>
+/* Styles optimisés */
+:root {
+  --bg: #1c1c1c;
+  --fg: #f5f5f5;
+  --accent: #00bcd4;
+  --danger: #e74c3c;
+}
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: var(--bg);
+  color: var(--fg);
+}
+header {
+  padding: 1rem;
+  background-color: #111;
+  text-align: center;
+}
+nav {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  background-color: #222;
+  padding: 0.5rem;
+}
+nav a {
+  color: var(--fg);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  background-color: var(--accent);
+  border-radius: 5px;
+}
+section {
+  padding: 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+h2 {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.5rem;
+  margin-top: 2rem;
+}
+input, select, button, textarea {
+  padding: 0.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+button:hover {
+  background-color: #333;
+  cursor: pointer;
+}
+</style>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
+  authDomain: "deadhope-a1704.firebaseapp.com",
+  projectId: "deadhope-a1704",
+  storageBucket: "deadhope-a1704.appspot.com",
+  messagingSenderId: "1019321338333",
+  appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentRoom = null;
+let docRef = null;
+let pseudo = "";
+
+window.startSession = async function () {
+  const room = document.getElementById("room-input").value.trim();
+  const pass = document.getElementById("pass-input").value.trim();
+  pseudo = document.getElementById("pseudo-input").value.trim();
+  if (!room || !pass || !pseudo) {
+    document.getElementById("login-error").textContent = "Tous les champs sont requis.";
+    return;
+  }
+
+  currentRoom = room;
+  const roomRef = doc(db, "rooms", room);
+  const snap = await getDoc(roomRef);
+
+  if (!snap.exists()) {
+    await setDoc(roomRef, { password: pass });
+  } else if (snap.data().password !== pass) {
+    document.getElementById("login-error").textContent = "Mot de passe incorrect.";
+    return;
+  }
+
+  docRef = doc(db, "dashboards", currentRoom);
+
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("player-name").textContent = pseudo;
+
+  const dataSnap = await getDoc(docRef);
+  if (dataSnap.exists()) {
+    const data = dataSnap.data();
+    // Charger les données dans l'interface
+  }
+};
+
+window.syncToFirebase = async function () {
+  if (!docRef) return;
+  const data = {
+    joueur: pseudo,
+    lastUpdate: new Date().toISOString()
+  };
+  await setDoc(docRef, data, { merge: true });
+};
+</script>
 </head>
 <body>
-  <!-- Écran de connexion -->
-  <div id="login-screen" class="login-box">
+<div id="login-screen" style="background:#111;height:100vh;display:flex;justify-content:center;align-items:center;">
+  <div style="background:#222;padding:2rem;border-radius:10px;max-width:350px;width:100%;color:#fff;text-align:center;">
     <h2>🔐 Connexion</h2>
-    <input type="text" id="room-name" placeholder="Nom de la room" />
-    <input type="password" id="room-pass" placeholder="Mot de passe" />
-    <button id="login-btn">Entrer</button>
-    <p id="error-msg" style="color:red;"></p>
+    <input id="room-input" placeholder="Nom de la room" style="margin:0.5rem 0;">
+    <input id="pass-input" type="password" placeholder="Mot de passe" style="margin:0.5rem 0;">
+    <input id="pseudo-input" placeholder="Ton pseudo" style="margin:0.5rem 0;">
+    <button onclick="startSession()" style="margin-top:1rem;background:#8b0000;color:#fff;border:none;">Entrer</button>
+    <div id="login-error" style="color:red;margin-top:0.5rem;"></div>
   </div>
-
-  <!-- Tableau de bord complet -->
-  <div id="dashboard" class="hidden">
-    <header>
-      <h1>🧟‍♂️ DeadHope - Dashboard</h1>
-    </header>
-    <nav>
-      <a href="#characters">Fiches</a>
-      <a href="#journal">Journal</a>
-      <a href="#priorities">Tâches</a>
-      <a href="#missions">Missions</a>
-      <a href="#logistique">Matériel</a>
-    </nav>
-
-    <main style="max-width: 1000px; margin: auto;">
-      <section id="characters">
-        <h2>Fiches de personnage</h2>
-        <div id="character-list">
-          <div class="character-card">
-            <input type="text" placeholder="Nom">
-            <input type="text" placeholder="Rôle">
-            <textarea placeholder="Notes..."></textarea>
-            <button onclick="this.parentElement.remove()">🗑️</button>
-          </div>
-        </div>
-        <button onclick="ajouterFichePerso()">➕ Ajouter</button>
-      </section>
-
-      <section id="journal">
-        <h2>Journal</h2>
-        <table><tbody id="journal-body">
-          <tr>
-            <td><input type="date"></td>
-            <td><input type="text" placeholder="Événement"></td>
-            <td><input type="text" placeholder="Joueur"></td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody></table>
-        <button onclick="ajouterJournal()">➕ Ajouter</button>
-      </section>
-
-      <section id="priorities">
-        <h2>Tâches / Priorités</h2>
-        <table><tbody id="priority-body">
-          <tr>
-            <td><input type="text" placeholder="Tâche"></td>
-            <td><input type="text" placeholder="Responsable"></td>
-            <td>
-              <select>
-                <option>⚪ Faible</option>
-                <option>🟡 Moyenne</option>
-                <option>🔴 Haute</option>
-              </select>
-            </td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody></table>
-        <button onclick="ajouterPriorite()">➕ Ajouter</button>
-      </section>
-
-      <section id="missions">
-        <h2>Missions</h2>
-        <table><tbody id="mission-body">
-          <tr>
-            <td><input type="text" placeholder="Objectif"></td>
-            <td><input type="text" placeholder="Responsable"></td>
-            <td>
-              <select>
-                <option>🟡 En cours</option>
-                <option>✅ Fait</option>
-                <option>❌ Échoué</option>
-              </select>
-            </td>
-            <td><input type="date"></td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody></table>
-        <button onclick="ajouterMission()">➕ Ajouter</button>
-      </section>
-
-      <section id="logistique">
-        <h2>Matériel</h2>
-        <table><tbody id="logistique-body">
-          <tr>
-            <td><select><option>🔫 Arme</option><option>🚗 Véhicule</option><option>🧰 Outil</option><option>🩹 Soins</option><option>📻 Électronique</option></select></td>
-            <td><input type="text" placeholder="Nom"></td>
-            <td><select onchange="checkEtat(this)"><option>✅ Fonctionnel</option><option>⚠️ Endommagé</option><option>❌ Hors service</option></select></td>
-            <td><input type="text" placeholder="Avec qui / Où ?"></td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody></table>
-        <button onclick="ajouterLogistique()">➕ Ajouter</button>
-      </section>
-    </main>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
-
-    const app = initializeApp({
-      apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
-      authDomain: "deadhope-a1704.firebaseapp.com",
-      projectId: "deadhope-a1704"
-    });
-    const db = getFirestore(app);
-
-    let docRef = null;
-
-    function syncToFirebase() {
-      const data = {
-        personnages: Array.from(document.querySelectorAll("#character-list .character-card")).map(card => ({
-          nom: card.querySelectorAll("input")[0].value,
-          role: card.querySelectorAll("input")[1].value,
-          notes: card.querySelector("textarea").value
-        })),
-        journal: Array.from(document.querySelectorAll("#journal-body tr")).map(row => ({
-          date: row.cells[0].querySelector("input").value,
-          evenement: row.cells[1].querySelector("input").value,
-          joueur: row.cells[2].querySelector("input").value
-        })),
-        priorites: Array.from(document.querySelectorAll("#priority-body tr")).map(row => ({
-          tache: row.cells[0].querySelector("input").value,
-          joueur: row.cells[1].querySelector("input").value,
-          importance: row.cells[2].querySelector("select").value
-        })),
-        missions: Array.from(document.querySelectorAll("#mission-body tr")).map(row => ({
-          objectif: row.cells[0].querySelector("input").value,
-          joueur: row.cells[1].querySelector("input").value,
-          etat: row.cells[2].querySelector("select").value,
-          deadline: row.cells[3].querySelector("input").value
-        })),
-        logistique: Array.from(document.querySelectorAll("#logistique-body tr")).map(row => ({
-          type: row.cells[0].querySelector("select").value,
-          nom: row.cells[1].querySelector("input").value,
-          etat: row.cells[2].querySelector("select").value,
-          emplacement: row.cells[3].querySelector("input").value
-        }))
-      };
-      if (docRef) setDoc(docRef, data);
-    }
-
-    async function loadData(path, password) {
-      docRef = doc(db, "dashboards", path);
-      const roomCheck = doc(db, "rooms", path);
-      const snap = await getDoc(roomCheck);
-      if (!snap.exists()) await setDoc(roomCheck, { password });
-      else if (snap.data().password !== password) {
-        document.getElementById("error-msg").textContent = "Mot de passe incorrect.";
-        return false;
-      }
-
-      const dashSnap = await getDoc(docRef);
-      if (!dashSnap.exists()) return true;
-
-      const data = dashSnap.data();
-      // apply data...
-      const clearAndFill = (id, buildFn) => {
-        const container = document.getElementById(id);
-        container.innerHTML = "";
-        data[id]?.forEach(buildFn);
-      };
-      clearAndFill("character-list", p => {
-        const div = document.createElement("div");
-        div.className = "character-card";
-        div.innerHTML = `<input value="${p.nom}"><input value="${p.role}"><textarea>${p.notes}</textarea><button onclick="this.parentElement.remove()">🗑️</button>`;
-        document.getElementById("character-list").appendChild(div);
-      });
-      ["journal", "priority", "mission", "logistique"].forEach(type => {
-        const body = document.getElementById(`${type}-body`);
-        body.innerHTML = "";
-        data[type + "s"]?.forEach(item => {
-          const row = body.parentElement.rows[0].cloneNode(true);
-          Array.from(row.querySelectorAll("input, select")).forEach((el, i) => {
-            el.value = Object.values(item)[i] || "";
-          });
-          body.appendChild(row);
-        });
-      });
-      return true;
-    }
-
-    window.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("login-btn").addEventListener("click", async () => {
-        const room = document.getElementById("room-name").value.trim();
-        const pass = document.getElementById("room-pass").value.trim();
-        if (!room || !pass) return;
-        const ok = await loadData(room, pass);
-        if (ok) {
-          document.getElementById("login-screen").classList.add("hidden");
-          document.getElementById("dashboard").classList.remove("hidden");
-        }
-      });
-
-      document.addEventListener("input", () => syncToFirebase());
-      document.addEventListener("change", () => syncToFirebase());
-    });
-
-    window.ajouterFichePerso = () => {
-      const base = document.querySelector("#character-list .character-card");
-      const clone = base.cloneNode(true);
-      clone.querySelectorAll("input, textarea").forEach(e => e.value = "");
-      base.parentElement.appendChild(clone);
-    };
-    window.ajouterJournal = () => {
-      const base = document.querySelector("#journal-body tr");
-      const clone = base.cloneNode(true);
-      clone.querySelectorAll("input").forEach(e => e.value = "");
-      base.parentElement.appendChild(clone);
-    };
-    window.ajouterPriorite = () => {
-      const base = document.querySelector("#priority-body tr");
-      const clone = base.cloneNode(true);
-      clone.querySelectorAll("input").forEach(e => e.value = "");
-      base.parentElement.appendChild(clone);
-    };
-    window.ajouterMission = () => {
-      const base = document.querySelector("#mission-body tr");
-      const clone = base.cloneNode(true);
-      clone.querySelectorAll("input").forEach(e => e.value = "");
-      base.parentElement.appendChild(clone);
-    };
-    window.ajouterLogistique = () => {
-      const base = document.querySelector("#logistique-body tr");
-      const clone = base.cloneNode(true);
-      clone.querySelectorAll("input").forEach(e => e.value = "");
-      base.parentElement.appendChild(clone);
-    };
-    window.checkEtat = (select) => {
-      const row = select.closest("tr");
-      row.style.backgroundColor = select.value.includes("❌") ? "#4a1c1c" :
-                                  select.value.includes("⚠️") ? "#4a3c1c" : "transparent";
-    };
-  </script>
+</div>
+<div id="dashboard" style="display:none;">
+  <header>
+    <h1>🧟 DeadHope - Tableau de bord</h1>
+    <div><strong>Connecté :</strong> <span id="player-name">???</span></div>
+  </header>
+  <!-- Contenu du tableau de bord -->
+</div>
 </body>
 </html>
