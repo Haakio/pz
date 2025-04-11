@@ -176,28 +176,19 @@ body::before {
 }
 </style>
 <script type="module">
-  // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyASp6Gfi4Fz8Nduap0on89oAZzCkPLKpFc",
-  authDomain: "lions-890e9.firebaseapp.com",
-  databaseURL: "https://lions-890e9-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "lions-890e9",
-  storageBucket: "lions-890e9.firebasestorage.app",
-  messagingSenderId: "560777699926",
-  appId: "1:560777699926:web:2e256d3d1d337513be91f7",
-  measurementId: "G-ZX3N3XWJ4K"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
+    authDomain: "deadhope-a1704.firebaseapp.com",
+    projectId: "deadhope-a1704",
+    storageBucket: "deadhope-a1704.firebasestorage.app",
+    messagingSenderId: "1019321338333",
+    appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
+  };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+  const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const docRef = doc(db, "dashboards", "main");
 
@@ -348,53 +339,8 @@ document.addEventListener("input", () => syncToFirebase());
 document.addEventListener("change", () => syncToFirebase());
 
 </script>
-
-<style>
-.fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
 </head>
 <body>
-<style>
-#chat-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #8b0000;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
-  color: white;
-  border: none;
-  cursor: pointer;
-  z-index: 10000;
-}
-#radio-chat {
-  display: none;
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 350px;
-  background: #111;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #444;
-  z-index: 9999;
-}
-</style>
-<button id="chat-toggle" onclick="toggleChat()">💬</button>
-<script>
-function toggleChat() {
-  const box = document.getElementById("radio-chat");
-  box.style.display = box.style.display === "none" ? "block" : "none";
-}
-</script>
 <div id="last-updated" style="margin:10px 0; color:#aaa; font-size: 0.9em;">Dernière mise à jour : jamais</div><header>
 <h1>☣️  DeadHope // Terminal de survie ☣️</h1><div id="player-bar" style="margin-bottom:10px;color:#ccc;">Pseudo joueur : <input id="pseudo" placeholder="Ton pseudo" style="margin-left:5px;"/></div>
 <div id="weather-info">Chargement météo...</div>
@@ -827,7 +773,44 @@ function resetSection(sectionId) {
   syncToFirebase();
 }
 </script>
-<section id="radio-chat" style="margin-top: 2rem;">
+
+<style>
+#chat-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #8b0000;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 10000;
+}
+#radio-chat {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 350px;
+  background: #111;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  z-index: 9999;
+}
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+<button id="chat-toggle" onclick="toggleChat()">💬</button>
+<section id="radio-chat">
 <h2>📻 Communications radio</h2>
 <div style="margin-bottom: 10px;">
 <input id="chat-input" placeholder="Tape ton message..." style="width:70%;" type="text"/>
@@ -835,91 +818,78 @@ function resetSection(sectionId) {
 </div>
 <div id="chat-log" style="background:#222;padding:10px;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #444;"></div>
 </section>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
-  authDomain: "deadhope-a1704.firebaseapp.com",
-  projectId: "deadhope-a1704",
-  storageBucket: "deadhope-a1704.firebasestorage.app",
-  messagingSenderId: "1019321338333",
-  appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const docRef = doc(db, "dashboards", "main");
-
-function getPseudo() {
-  const pseudo = document.getElementById("pseudo");
-  return pseudo ? pseudo.value.trim() || "Anonyme" : "Anonyme";
+<audio id="radio-bip" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+<script>
+function toggleChat() {
+  const box = document.getElementById("radio-chat");
+  box.style.display = box.style.display === "none" ? "block" : "none";
 }
 
-async function sendMessage
-window.sendMessage = sendMessage () {
+const firebaseConfig = {
+  apiKey: "AIzaSyD-test1234567890xxxxxxxxxxxxxxxxx",
+  authDomain: "deadhope-test.firebaseapp.com",
+  projectId: "deadhope-test",
+  storageBucket: "deadhope-test.appspot.com",
+  messagingSenderId: "123456789000",
+  appId: "1:123456789000:web:testappid"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const docRef = db.collection("dashboards").doc("main");
+
+function getPseudo() {
+  const pseudoInput = document.getElementById("pseudo");
+  return pseudoInput ? pseudoInput.value.trim() || "Anonyme" : "Anonyme";
+}
+
+function sendMessage() {
   const input = document.getElementById("chat-input");
   const text = input.value.trim();
   if (!text) return;
-
   const message = {
     pseudo: getPseudo(),
     text: text,
     timestamp: new Date().toISOString()
   };
-
-  try {
-    await updateDoc(docRef, {
-      messages: arrayUnion(message)
-    });
+  docRef.update({
+    messages: firebase.firestore.FieldValue.arrayUnion(message)
+  }).then(() => {
     input.value = "";
-  } catch (e) {
-    console.error("Erreur envoi message:", e);
-  }
-};
+  }).catch(console.error);
+}
 
 function renderMessages(messages) {
   const log = document.getElementById("chat-log");
-  if (!log) return;
   log.innerHTML = "";
-  messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  messages.forEach(msg => {
-    const date = new Date(msg.timestamp);
-    const time = date.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
-    const div = document.createElement("div");
-    div.classList.add("fade-in");
-    div.innerHTML = `<strong style="color:#8f8">${msg.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${msg.text}`;
-    log.appendChild(div);
-  });
+  messages
+    .filter(m => (Date.now() - new Date(m.timestamp)) < 1000 * 60 * 60 * 12)
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+    .forEach(msg => {
+      const div = document.createElement("div");
+      const time = new Date(msg.timestamp).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+      div.classList.add("fade-in");
+      div.innerHTML = `<strong style="color:#8f8">${msg.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${msg.text}`;
+      log.appendChild(div);
+    });
   log.scrollTop = log.scrollHeight;
 }
 
-onSnapshot(docRef, (snap) => {
+docRef.onSnapshot(snap => {
   const data = snap.data();
   if (data && data.messages) {
-    
-const validMessages = data.messages.filter(m => {
-  const age = Date.now() - new Date(m.timestamp).getTime();
-  return age < 1000 * 60 * 60 * 12; // moins de 12h
-});
-const lastCount = document.getElementById("chat-log").children.length;
-renderMessages(validMessages);
-if (validMessages.length > lastCount) {
-  const lastMsg = validMessages[validMessages.length - 1];
-  if (lastMsg.pseudo !== getPseudo()) {
-    document.getElementById("radio-bip").play().catch(() => {});
-  }
-}
-
+    const lastLen = document.getElementById("chat-log").children.length;
+    renderMessages(data.messages);
+    const newLen = data.messages.length;
+    if (newLen > lastLen) {
+      const lastMsg = data.messages[data.messages.length - 1];
+      if (lastMsg.pseudo !== getPseudo()) {
+        document.getElementById("radio-bip").play().catch(() => {});
+      }
+    }
   }
 });
 </script>
-<audio id="radio-bip" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 </body>
 </html>
