@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="fr">
 <head>
 <meta charset="utf-8"/>
@@ -6,137 +7,905 @@
 <title>DeadHope - Dashboard V2</title>
 <link href="https://unpkg.com/lucide@latest" rel="stylesheet"/>
 <style>
-/* Styles optimisés */
-:root {
-  --bg: #1c1c1c;
-  --fg: #f5f5f5;
-  --accent: #00bcd4;
-  --danger: #e74c3c;
+        :root {
+            --bg: #1c1c1c;
+            --fg: #f5f5f5;
+            --accent: #00bcd4;
+            --danger: #e74c3c;
+        }
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background-color: var(--bg);
+            color: var(--fg);
+        }
+        header {
+            padding: 1rem;
+            background-color: #111;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            background-color: #222;
+            padding: 0.5rem;
+        }
+        nav a {
+            color: var(--fg);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            background-color: var(--accent);
+            border-radius: 5px;
+        }
+        section {
+            padding: 1rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h2 {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+        .danger-grid-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .danger-zone-entry {
+            display: grid;
+            grid-template-columns: 1fr 150px 150px 100px;
+            gap: 1rem;
+        }
+        input, select, button {
+            padding: 0.5rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+    
+
+.character-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
 }
-body {
-  margin: 0;
-  font-family: sans-serif;
-  background-color: var(--bg);
-  color: var(--fg);
+.character-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    background-color: #2a2a2a;
+    padding: 1rem;
+    border-radius: 8px;
 }
-header {
-  padding: 1rem;
-  background-color: #111;
-  text-align: center;
+.character-card textarea {
+    grid-column: 1 / -1;
+    resize: vertical;
+    min-height: 60px;
 }
-nav {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  background-color: #222;
-  padding: 0.5rem;
-}
-nav a {
-  color: var(--fg);
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  background-color: var(--accent);
-  border-radius: 5px;
-}
-section {
-  padding: 1rem;
-  max-width: 1000px;
-  margin: 0 auto;
-}
-h2 {
-  border-bottom: 2px solid var(--accent);
-  padding-bottom: 0.5rem;
-  margin-top: 2rem;
-}
-input, select, button, textarea {
-  padding: 0.5rem;
-  width: 100%;
-  box-sizing: border-box;
-}
-button:hover {
-  background-color: #333;
-  cursor: pointer;
+
+
+    body {
+        background-color: #121212;
+        background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
+        color: #e0e0e0;
+    }
+    header {
+        background: #222;
+        border-bottom: 2px solid #444;
+    }
+    nav {
+        background: #1a1a1a;
+    }
+    nav a {
+        background-color: #8b0000;
+        font-weight: bold;
+        border: 1px solid #aa0000;
+    }
+    h1, h2 {
+        font-family: 'Courier New', Courier, monospace;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #e74c3c;
+    }
+    table th, table td {
+        border-bottom: 1px solid #444;
+    }
+    input, select, textarea, button {
+        background-color: #222;
+        color: #eee;
+        border: 1px solid #555;
+        font-family: monospace;
+    }
+    button:hover {
+        background-color: #333;
+        cursor: pointer;
+    }
+    #json-input, #json-output {
+        background-color: #1a1a1a !important;
+        border: 1px solid #444;
+        color: #eee !important;
+        font-family: monospace;
+    }
+    
+    body {
+        font-family: 'Courier New', Courier, monospace;
+        background: linear-gradient(#0d0d0d, #1a1a1a);
+        color: #d4d4d4;
+    }
+    h1 {
+        font-family: 'Courier New', monospace;
+        text-transform: uppercase;
+        background: #8b0000;
+        padding: 10px;
+        text-align: center;
+        color: #fff;
+        border-radius: 6px;
+        box-shadow: 0 0 10px #8b0000;
+    }
+    h2 {
+        color: #ff4;
+        font-family: monospace;
+    }
+    input, select, textarea {
+        font-family: monospace;
+        background-color: #111;
+        color: #0f0;
+    }
+    
+body::before {
+  content: "";
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.1),
+    rgba(0, 0, 0, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 9999;
 }
 </style>
 <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
+    authDomain: "deadhope-a1704.firebaseapp.com",
+    projectId: "deadhope-a1704",
+    storageBucket: "deadhope-a1704.firebasestorage.app",
+    messagingSenderId: "1019321338333",
+    appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const docRef = doc(db, "dashboards", "main");
+
+  async function syncToFirebase() {
+    const data = {
+      personnages: Array.from(document.querySelectorAll("#character-list .character-card")).map(card => ({
+        nom: card.querySelectorAll("input")[0].value,
+        role: card.querySelectorAll("input")[1].value,
+        notes: card.querySelector("textarea").value
+      })),
+      journal: Array.from(document.querySelectorAll("#journal-body tr")).map(row => ({
+        date: row.cells[0].querySelector("input").value,
+        evenement: row.cells[1].querySelector("input").value,
+        joueur: row.cells[2].querySelector("input").value
+      })),
+      priorites: Array.from(document.querySelectorAll("#priority-body tr")).map(row => ({
+        tache: row.cells[0].querySelector("input").value,
+        joueur: row.cells[1].querySelector("input").value,
+        importance: row.cells[2].querySelector("select").value
+      })),
+      missions: Array.from(document.querySelectorAll("#mission-body tr")).map(row => ({
+        objectif: row.cells[0].querySelector("input").value,
+        joueur: row.cells[1].querySelector("input").value,
+        etat: row.cells[2].querySelector("select").value,
+        deadline: row.cells[3].querySelector("input").value
+      })),
+      logistique: Array.from(document.querySelectorAll("#logistique-body tr")).map(row => ({
+        type: row.cells[0].querySelector("select").value,
+        nom: row.cells[1].querySelector("input").value,
+        etat: row.cells[2].querySelector("select").value,
+        emplacement: row.cells[3].querySelector("input").value
+      }))
+    };
+    await setDoc(docRef, data);
+    updateTimestamp();
+  }
+
+  async function loadFromFirebase() {
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data();
+
+      // Fiches personnages
+      const charList = document.getElementById("character-list");
+      charList.innerHTML = "";
+      data.personnages?.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "character-card";
+        div.innerHTML = `
+          <input type="text" value="${p.nom}">
+          <input type="text" value="${p.role}">
+          <textarea>${p.notes}</textarea>
+          <button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
+        `;
+        charList.appendChild(div);
+      });
+
+      // Journal
+      const journalBody = document.getElementById("journal-body");
+      journalBody.innerHTML = "";
+      data.journal?.forEach(j => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="date" value="${j.date}"></td>
+          <td><input type="text" value="${j.evenement}"></td>
+          <td><input type="text" value="${j.joueur}"></td>
+          <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+        `;
+        journalBody.appendChild(row);
+      });
+
+      // Priorités
+      const priBody = document.getElementById("priority-body");
+      priBody.innerHTML = "";
+      data.priorites?.forEach(p => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="text" value="${p.tache}"></td>
+          <td><input type="text" value="${p.joueur}"></td>
+          <td>
+            <select>
+              <option ${p.importance === '⚪ Faible' ? 'selected' : ''}>⚪ Faible</option>
+              <option ${p.importance === '🟡 Moyenne' ? 'selected' : ''}>🟡 Moyenne</option>
+              <option ${p.importance === '🔴 Haute' ? 'selected' : ''}>🔴 Haute</option>
+            </select>
+          </td>
+          <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+        `;
+        priBody.appendChild(row);
+      });
+
+      // Missions
+      const missBody = document.getElementById("mission-body");
+      missBody.innerHTML = "";
+      data.missions?.forEach(m => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><input type="text" value="${m.objectif}"></td>
+          <td><input type="text" value="${m.joueur}"></td>
+          <td>
+            <select>
+              <option ${m.etat === '🟡 En cours' ? 'selected' : ''}>🟡 En cours</option>
+              <option ${m.etat === '✅ Fait' ? 'selected' : ''}>✅ Fait</option>
+              <option ${m.etat === '❌ Échoué' ? 'selected' : ''}>❌ Échoué</option>
+            </select>
+          </td>
+          <td><input type="date" value="${m.deadline}"></td>
+          <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+        `;
+        missBody.appendChild(row);
+      });
+
+      // Logistique
+      const logBody = document.getElementById("logistique-body");
+      logBody.innerHTML = "";
+      data.logistique?.forEach(l => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>
+            <select>
+              <option ${l.type === '🔫 Arme' ? 'selected' : ''}>🔫 Arme</option>
+              <option ${l.type === '🚗 Véhicule' ? 'selected' : ''}>🚗 Véhicule</option>
+              <option ${l.type === '🧰 Outil' ? 'selected' : ''}>🧰 Outil</option>
+              <option ${l.type === '🩹 Soins' ? 'selected' : ''}>🩹 Soins</option>
+              <option ${l.type === '📻 Électronique' ? 'selected' : ''}>📻 Électronique</option>
+            </select>
+          </td>
+          <td><input type="text" value="${l.nom}"></td>
+          <td>
+            <select onchange="checkEtat(this)">
+              <option ${l.etat === '✅ Fonctionnel' ? 'selected' : ''}>✅ Fonctionnel</option>
+              <option ${l.etat === '⚠️ Endommagé' ? 'selected' : ''}>⚠️ Endommagé</option>
+              <option ${l.etat === '❌ Hors service' ? 'selected' : ''}>❌ Hors service</option>
+            </select>
+          </td>
+          <td><input type="text" value="${l.emplacement}"></td>
+          <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+        `;
+        logBody.appendChild(row);
+      });
+    }
+  }
+
+  window.syncToFirebase = syncToFirebase;
+  window.addEventListener("DOMContentLoaded", loadFromFirebase);
+
+document.addEventListener("input", () => syncToFirebase());
+document.addEventListener("change", () => syncToFirebase());
+
+</script>
+
+<style>
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body>
+<style>
+#chat-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #8b0000;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 10000;
+}
+#radio-chat {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 350px;
+  background: #111;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  z-index: 9999;
+}
+</style>
+<button id="chat-toggle" onclick="toggleChat()">💬</button>
+<script>
+function toggleChat() {
+  const box = document.getElementById("radio-chat");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+</script>
+<div id="last-updated" style="margin:10px 0; color:#aaa; font-size: 0.9em;">Dernière mise à jour : jamais</div><header>
+<h1>☣️  DeadHope // Terminal de survie ☣️</h1><div id="player-bar" style="margin-bottom:10px;color:#ccc;">Pseudo joueur : <input id="pseudo" placeholder="Ton pseudo" style="margin-left:5px;"/></div>
+<div id="weather-info">Chargement météo...</div>
+<div id="game-clock">Heure en jeu : ...</div>
+</header>
+<nav>
+<a href="#skills">Compétences</a>
+<a href="#zones">Zones dangereuses</a>
+<a href="#map">Carte</a>
+<a href="#" onclick="toggleTheme()">🌓</a>
+</nav>
+<main>
+<section id="characters">
+<h2>Fiches de personnage</h2>
+<button onclick="resetSection('character-list')">🧹 Réinitialiser Fiche de personnages</button><div class="character-wrapper" id="character-list">
+<div class="character-card">
+<input placeholder="Nom" type="text"/>
+<input placeholder="Rôle dans le groupe" type="text"/>
+<textarea placeholder="Notes ou observations..."></textarea>
+<button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
+</div>
+</div>
+<button onclick="ajouterFichePerso()">➕ Ajouter un personnage</button>
+</section>
+<section id="journal">
+<h2>Journal / Événements</h2>
+<input id="filter-journal" oninput="filterTable('filter-journal', 'journal-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+<table style="width: 100%; table-layout: fixed;">
+<thead>
+<tr>
+<th>Date</th>
+<th>Événement</th>
+<th>Joueur</th>
+<th></th>
+</tr>
+</thead>
+<button onclick="resetSection('journal-body')">🧹 Réinitialiser Journal d’événements</button><tbody id="journal-body">
+<tr>
+<td><input type="date"/></td>
+<td><input placeholder="Description" type="text"/></td>
+<td><input placeholder="Nom du joueur" type="text"/></td>
+<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+</tr>
+</tbody>
+</table>
+<button onclick="ajouterJournal()">➕ Ajouter une entrée</button>
+</section>
+<section id="priorities">
+<h2>Assignations / Priorités</h2>
+<input id="filter-priorites" oninput="filterTable('filter-priorites', 'priority-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+<table style="width: 100%; table-layout: fixed;">
+<thead>
+<tr>
+<th>Tâche</th>
+<th>Responsable</th>
+<th>Importance</th>
+<th></th>
+</tr>
+</thead>
+<button onclick="resetSection('priority-body')">🧹 Réinitialiser Priorités</button><tbody id="priority-body">
+<tr>
+<td><input placeholder="Ex: Cuisiner, Patrouiller..." type="text"/></td>
+<td><input placeholder="Nom du joueur" type="text"/></td>
+<td>
+<select>
+<option>⚪ Faible</option>
+<option>🟡 Moyenne</option>
+<option>🔴 Haute</option>
+</select>
+</td>
+<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+</tr>
+</tbody>
+</table>
+<button onclick="ajouterPriorite()">➕ Ajouter une tâche</button>
+</section>
+<section id="missions">
+<h2>🎯 Missions</h2>
+<input id="filter-missions" oninput="filterTable('filter-missions', 'mission-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+<table style="width: 100%; table-layout: fixed;">
+<thead>
+<tr>
+<th>Objectif</th>
+<th>Responsable</th>
+<th>État</th>
+<th>Deadline</th>
+<th></th>
+</tr>
+</thead>
+<button onclick="resetSection('mission-body')">🧹 Réinitialiser Missions</button><tbody id="mission-body">
+<tr>
+<td><input placeholder="Ex: Fouiller maison au nord" type="text"/></td>
+<td><input placeholder="Nom du joueur" type="text"/></td>
+<td>
+<select>
+<option>🟡 En cours</option>
+<option>✅ Fait</option>
+<option>❌ Échoué</option>
+</select>
+</td>
+<td><input type="date"/></td>
+<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+</tr>
+</tbody>
+</table>
+<button onclick="ajouterMission()">➕ Ajouter une mission</button>
+</section>
+<section id="logistique">
+<h2>📦 Logistique / Matériel</h2>
+<input id="filter-logistique" oninput="filterTable('filter-logistique', 'logistique-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
+<table style="width: 100%; table-layout: fixed;">
+<thead>
+<tr>
+<th>Type</th>
+<th>Nom</th>
+<th>État</th>
+<th>Emplacement</th>
+<th></th>
+</tr>
+</thead>
+<button onclick="resetSection('logistique-body')">🧹 Réinitialiser Logistique</button><tbody id="logistique-body">
+<tr>
+<td>
+<select>
+<option>🔫 Arme</option>
+<option>🚗 Véhicule</option>
+<option>🧰 Outil</option>
+<option>🩹 Soins</option>
+<option>📻 Électronique</option>
+</select>
+</td>
+<td><input placeholder="Nom ou modèle" type="text"/></td>
+<td>
+<select onchange="checkEtat(this)">
+<option>✅ Fonctionnel</option>
+<option>⚠️ Endommagé</option>
+<option>❌ Hors service</option>
+</select>
+</td>
+<td><input placeholder="Où ? ou Avec qui ?" type="text"/></td>
+<td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+</tr>
+</tbody>
+</table>
+<button onclick="ajouterLogistique()">➕ Ajouter un item</button>
+</section>
+<section id="skills">
+<h2>Compétences et responsabilités</h2>
+<table style="width:100%; table-layout: fixed;">
+<thead>
+<tr>
+<th>Niveau dans l'équipe</th>
+<th>Joueur responsable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><input placeholder="Niveau" type="text"/></td>
+<td><input placeholder="Joueur" type="text"/></td>
+</tr>
+</tbody>
+</table>
+<button onclick="ajouterLigneCompetence()">➕ Ajouter</button>
+</section>
+<section id="zones">
+<h2>Zones dangereuses</h2>
+<div class="danger-grid-wrapper" id="danger-zone-container">
+<div class="danger-zone-entry">
+<input placeholder="Nom du lieu" type="text"/>
+<select>
+<option>Faible</option>
+<option>Modéré</option>
+<option>Élevé</option>
+<option>Extrême</option>
+</select>
+<input placeholder="Informations" type="text"/>
+<button onclick="this.parentElement.remove()">🗑️</button>
+</div>
+</div>
+<button onclick="ajouterZoneDangereuse()">➕ Ajouter une zone</button>
+</section>
+<section id="map">
+<h2>Carte officielle Project Zomboid</h2>
+<iframe allowfullscreen="" src="https://map.projectzomboid.com/"></iframe>
+</section>
+</main>
+<script>
+        async function loadWeather() {
+            try {
+                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=47.47&longitude=-0.55&current_weather=true');
+                const data = await res.json();
+                const weather = data.current_weather;
+                document.getElementById("weather-info").textContent = `🌡️ ${weather.temperature}°C | 🌬️ ${weather.windspeed} km/h`;
+            } catch (e) {
+                document.getElementById("weather-info").textContent = "🌐 Météo indisponible.";
+            }
+        }
+
+        let gameMinutes = 8 * 60;
+        const gameSpeed = 10;
+        function updateGameClock() {
+            const hours = Math.floor(gameMinutes / 60) % 24;
+            const minutes = gameMinutes % 60;
+            document.getElementById("game-clock").textContent = `🕒 Heure en jeu : ${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+            gameMinutes += gameSpeed;
+        }
+
+        function ajouterZoneDangereuse() {
+            const container = document.getElementById("danger-zone-container");
+            const clone = container.firstElementChild.cloneNode(true);
+            clone.querySelectorAll("input").forEach(input => input.value = "");
+            container.appendChild(clone);
+        }
+        function ajouterLigneCompetence() {
+            const tbody = document.querySelector("#skills table tbody");
+            const clone = tbody.rows[0].cloneNode(true);
+            clone.querySelectorAll("input").forEach(input => input.value = "");
+            tbody.appendChild(clone);
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("light");
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadWeather();
+            updateGameClock();
+            setInterval(updateGameClock, 60000);
+        });
+    
+function ajouterFichePerso() {
+    const list = document.getElementById("character-list");
+    const original = list.children[0];
+    const clone = original.cloneNode(true);
+    clone.querySelectorAll("input, textarea").forEach(el => el.value = "");
+    clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+    list.appendChild(clone);
+}
+
+
+function ajouterJournal() {
+    const tbody = document.getElementById("journal-body");
+    const clone = tbody.rows[0].cloneNode(true);
+    clone.querySelectorAll("input").forEach(el => el.value = "");
+    tbody.appendChild(clone);
+}
+
+
+function ajouterRessource() {
+    const tbody = document.getElementById("resource-body");
+    const clone = tbody.rows[0].cloneNode(true);
+    clone.querySelectorAll("input").forEach(el => el.value = "");
+    tbody.appendChild(clone);
+}
+
+function removed_checkStock(el) {
+    const row = el.closest("tr");
+    const qty = parseInt(row.cells[1].querySelector("input").value) || 0;
+    const min = parseInt(row.cells[2].querySelector("input").value) || 0;
+    row.style.backgroundColor = qty < min ? "#4a1c1c" : "transparent";
+}
+
+
+function ajouterPriorite() {
+    const tbody = document.getElementById("priority-body");
+    const clone = tbody.rows[0].cloneNode(true);
+    clone.querySelectorAll("input").forEach(el => el.value = "");
+    clone.querySelector("select").selectedIndex = 0;
+    tbody.appendChild(clone);
+}
+
+
+function exporterJSON() {
+    const data = {
+        personnages: Array.from(document.querySelectorAll("#character-list .character-card")).map(card => ({
+            nom: card.querySelectorAll("input")[0].value,
+            role: card.querySelectorAll("input")[1].value,
+            notes: card.querySelector("textarea").value
+        })),
+        journal: Array.from(document.querySelectorAll("#journal-body tr")).map(row => ({
+            date: row.cells[0].querySelector("input").value,
+            evenement: row.cells[1].querySelector("input").value,
+            joueur: row.cells[2].querySelector("input").value
+        })),
+        ressources: Array.from(document.querySelectorAll("#resource-body tr")).map(row => ({
+            nom: row.cells[0].querySelector("input").value,
+            quantite: row.cells[1].querySelector("input").value,
+            minimum: row.cells[2].querySelector("input").value
+        })),
+        priorites: Array.from(document.querySelectorAll("#priority-body tr")).map(row => ({
+            tache: row.cells[0].querySelector("input").value,
+            joueur: row.cells[1].querySelector("input").value,
+            importance: row.cells[2].querySelector("select").value
+        }))
+    };
+    document.getElementById("json-output").textContent = JSON.stringify(data, null, 2);
+}
+
+
+function importerJSON() {
+    try {
+        const input = document.getElementById("json-input").value;
+        const data = JSON.parse(input);
+
+        // Fiches personnages
+        const charList = document.getElementById("character-list");
+        charList.innerHTML = "";
+        data.personnages.forEach(p => {
+            const div = document.createElement("div");
+            div.className = "character-card";
+            div.innerHTML = `
+                <input type="text" value="${p.nom}">
+                <input type="text" value="${p.role}">
+                <textarea>${p.notes}</textarea>
+                <button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
+            `;
+            charList.appendChild(div);
+        });
+
+        // Journal
+        const journalBody = document.getElementById("journal-body");
+        journalBody.innerHTML = "";
+        data.journal.forEach(j => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><input type="date" value="${j.date}"></td>
+                <td><input type="text" value="${j.evenement}"></td>
+                <td><input type="text" value="${j.joueur}"></td>
+                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+            `;
+            journalBody.appendChild(row);
+        });
+
+        // Ressources
+        const resBody = document.getElementById("resource-body");
+        resBody.innerHTML = "";
+        data.ressources.forEach(r => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><input type="text" value="${r.nom}"></td>
+                <td><input type="number" value="${r.quantite}" oninput="checkStock(this)"></td>
+                <td><input type="number" value="${r.minimum}" oninput="checkStock(this)"></td>
+                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+            `;
+            resBody.appendChild(row);
+        });
+
+        // Priorités
+        const priBody = document.getElementById("priority-body");
+        priBody.innerHTML = "";
+        data.priorites.forEach(p => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td><input type="text" value="${p.tache}"></td>
+                <td><input type="text" value="${p.joueur}"></td>
+                <td>
+                    <select>
+                        <option ${p.importance === '⚪ Faible' ? 'selected' : ''}>⚪ Faible</option>
+                        <option ${p.importance === '🟡 Moyenne' ? 'selected' : ''}>🟡 Moyenne</option>
+                        <option ${p.importance === '🔴 Haute' ? 'selected' : ''}>🔴 Haute</option>
+                    </select>
+                </td>
+                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+            `;
+            priBody.appendChild(row);
+        });
+
+        document.getElementById("json-input").value = "";
+        alert("Import réussi !");
+    } catch (e) {
+        alert("❌ Erreur d'import : JSON invalide.");
+    }
+}
+
+
+function ajouterMission() {
+    const tbody = document.getElementById("mission-body");
+    const clone = tbody.rows[0].cloneNode(true);
+    clone.querySelectorAll("input").forEach(el => el.value = "");
+    clone.querySelector("select").selectedIndex = 0;
+    tbody.appendChild(clone);
+}
+
+
+function ajouterLogistique() {
+    const tbody = document.getElementById("logistique-body");
+    const clone = tbody.rows[0].cloneNode(true);
+    clone.querySelectorAll("input").forEach(el => el.value = "");
+    clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+    tbody.appendChild(clone);
+}
+function checkEtat(select) {
+    const row = select.closest("tr");
+    const value = select.value;
+    if (value.includes("❌")) {
+        row.style.backgroundColor = "#4a1c1c";
+    } else if (value.includes("⚠️")) {
+        row.style.backgroundColor = "#4a3c1c";
+    } else {
+        row.style.backgroundColor = "transparent";
+    }
+}
+
+
+document.addEventListener("input", () => syncToFirebase());
+document.addEventListener("change", () => syncToFirebase());
+
+</script>
+<script>
+function filterTable(inputId, tableBodyId) {
+  const input = document.getElementById(inputId).value.toLowerCase();
+  const rows = document.getElementById(tableBodyId).querySelectorAll("tr");
+  rows.forEach(row => {
+    const text = row.innerText.toLowerCase();
+    row.style.display = text.includes(input) ? "" : "none";
+  });
+}
+</script>
+<script>
+function updateTimestamp() {
+  const now = new Date();
+  const formatted = now.toLocaleString("fr-FR");
+  document.getElementById("last-updated").textContent = "Dernière mise à jour : " + formatted;
+}
+</script>
+<script>
+function resetSection(sectionId) {
+  const el = document.getElementById(sectionId);
+  if (el) el.innerHTML = '';
+  syncToFirebase();
+}
+</script>
+<section id="radio-chat" style="margin-top: 2rem;">
+<h2>📻 Communications radio</h2>
+<div style="margin-bottom: 10px;">
+<input id="chat-input" placeholder="Tape ton message..." style="width:70%;" type="text"/>
+<button onclick="sendMessage()">📡 Envoyer</button>
+</div>
+<div id="chat-log" style="background:#222;padding:10px;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #444;"></div>
+</section>
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, arrayUnion, onSnapshot } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
   authDomain: "deadhope-a1704.firebaseapp.com",
   projectId: "deadhope-a1704",
-  storageBucket: "deadhope-a1704.appspot.com",
+  storageBucket: "deadhope-a1704.firebasestorage.app",
   messagingSenderId: "1019321338333",
   appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const docRef = doc(db, "dashboards", "main");
 
-let currentRoom = null;
-let docRef = null;
-let pseudo = "";
+function getPseudo() {
+  const pseudo = document.getElementById("pseudo");
+  return pseudo ? pseudo.value.trim() || "Anonyme" : "Anonyme";
+}
 
-window.startSession = async function () {
-  const room = document.getElementById("room-input").value.trim();
-  const pass = document.getElementById("pass-input").value.trim();
-  pseudo = document.getElementById("pseudo-input").value.trim();
-  if (!room || !pass || !pseudo) {
-    document.getElementById("login-error").textContent = "Tous les champs sont requis.";
-    return;
-  }
+async function sendMessage
+window.sendMessage = sendMessage () {
+  const input = document.getElementById("chat-input");
+  const text = input.value.trim();
+  if (!text) return;
 
-  currentRoom = room;
-  const roomRef = doc(db, "rooms", room);
-  const snap = await getDoc(roomRef);
-
-  if (!snap.exists()) {
-    await setDoc(roomRef, { password: pass });
-  } else if (snap.data().password !== pass) {
-    document.getElementById("login-error").textContent = "Mot de passe incorrect.";
-    return;
-  }
-
-  docRef = doc(db, "dashboards", currentRoom);
-
-  document.getElementById("login-screen").style.display = "none";
-  document.getElementById("player-name").textContent = pseudo;
-
-  const dataSnap = await getDoc(docRef);
-  if (dataSnap.exists()) {
-    const data = dataSnap.data();
-    // Charger les données dans l'interface
-  }
-};
-
-window.syncToFirebase = async function () {
-  if (!docRef) return;
-  const data = {
-    joueur: pseudo,
-    lastUpdate: new Date().toISOString()
+  const message = {
+    pseudo: getPseudo(),
+    text: text,
+    timestamp: new Date().toISOString()
   };
-  await setDoc(docRef, data, { merge: true });
+
+  try {
+    await updateDoc(docRef, {
+      messages: arrayUnion(message)
+    });
+    input.value = "";
+  } catch (e) {
+    console.error("Erreur envoi message:", e);
+  }
 };
+
+function renderMessages(messages) {
+  const log = document.getElementById("chat-log");
+  if (!log) return;
+  log.innerHTML = "";
+  messages.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  messages.forEach(msg => {
+    const date = new Date(msg.timestamp);
+    const time = date.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+    const div = document.createElement("div");
+    div.classList.add("fade-in");
+    div.innerHTML = `<strong style="color:#8f8">${msg.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${msg.text}`;
+    log.appendChild(div);
+  });
+  log.scrollTop = log.scrollHeight;
+}
+
+onSnapshot(docRef, (snap) => {
+  const data = snap.data();
+  if (data && data.messages) {
+    
+const validMessages = data.messages.filter(m => {
+  const age = Date.now() - new Date(m.timestamp).getTime();
+  return age < 1000 * 60 * 60 * 12; // moins de 12h
+});
+const lastCount = document.getElementById("chat-log").children.length;
+renderMessages(validMessages);
+if (validMessages.length > lastCount) {
+  const lastMsg = validMessages[validMessages.length - 1];
+  if (lastMsg.pseudo !== getPseudo()) {
+    document.getElementById("radio-bip").play().catch(() => {});
+  }
+}
+
+  }
+});
 </script>
-</head>
-<body>
-<div id="login-screen" style="background:#111;height:100vh;display:flex;justify-content:center;align-items:center;">
-  <div style="background:#222;padding:2rem;border-radius:10px;max-width:350px;width:100%;color:#fff;text-align:center;">
-    <h2>🔐 Connexion</h2>
-    <input id="room-input" placeholder="Nom de la room" style="margin:0.5rem 0;">
-    <input id="pass-input" type="password" placeholder="Mot de passe" style="margin:0.5rem 0;">
-    <input id="pseudo-input" placeholder="Ton pseudo" style="margin:0.5rem 0;">
-    <button onclick="startSession()" style="margin-top:1rem;background:#8b0000;color:#fff;border:none;">Entrer</button>
-    <div id="login-error" style="color:red;margin-top:0.5rem;"></div>
-  </div>
-</div>
-<div id="dashboard" style="display:none;">
-  <header>
-    <h1>🧟 DeadHope - Tableau de bord</h1>
-    <div><strong>Connecté :</strong> <span id="player-name">???</span></div>
-  </header>
-  <!-- Contenu du tableau de bord -->
-</div>
+<audio id="radio-bip" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 </body>
 </html>
