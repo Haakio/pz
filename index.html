@@ -174,12 +174,65 @@ body::before {
   pointer-events: none;
   z-index: 9999;
 }
+
+/* Style spécifique pour le chat */
+#chat-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #8b0000;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 10000;
+}
+#radio-chat {
+  display: none;
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 350px;
+  background: #111;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #444;
+  z-index: 9999;
+}
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Styliser les tableaux pour une meilleure lisibilité */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+}
+th {
+  text-align: left;
+  background-color: #222;
+  padding: 8px;
+}
+td {
+  padding: 8px;
+  border-bottom: 1px solid #333;
+}
 </style>
 
 </head>
 <body>
-<div id="last-updated" style="margin:10px 0; color:#aaa; font-size: 0.9em;">Dernière mise à jour : jamais</div><header>
-<h1>☣️  DeadHope // Terminal de survie ☣️</h1><div id="player-bar" style="margin-bottom:10px;color:#ccc;">Pseudo joueur : <input id="pseudo" placeholder="Ton pseudo" style="margin-left:5px;"/></div>
+<div id="last-updated" style="margin:10px 0; color:#aaa; font-size: 0.9em;">Dernière mise à jour : jamais</div>
+<header>
+<h1>☣️  DeadHope // Terminal de survie ☣️</h1>
+<div id="player-bar" style="margin-bottom:10px;color:#ccc;">Pseudo joueur : <input id="pseudo" placeholder="Ton pseudo" style="margin-left:5px;"/></div>
 <div id="weather-info">Chargement météo...</div>
 <div id="game-clock">Heure en jeu : ...</div>
 </header>
@@ -192,7 +245,8 @@ body::before {
 <main>
 <section id="characters">
 <h2>Fiches de personnage</h2>
-<button onclick="resetSection('character-list')">🧹 Réinitialiser Fiche de personnages</button><div class="character-wrapper" id="character-list">
+<button onclick="resetSection('character-list')">🧹 Réinitialiser Fiche de personnages</button>
+<div class="character-wrapper" id="character-list">
 <div class="character-card">
 <input placeholder="Nom" type="text"/>
 <input placeholder="Rôle dans le groupe" type="text"/>
@@ -214,7 +268,8 @@ body::before {
 <th></th>
 </tr>
 </thead>
-<button onclick="resetSection('journal-body')">🧹 Réinitialiser Journal d’événements</button><tbody id="journal-body">
+<button onclick="resetSection('journal-body')">🧹 Réinitialiser Journal d'événements</button>
+<tbody id="journal-body">
 <tr>
 <td><input type="date"/></td>
 <td><input placeholder="Description" type="text"/></td>
@@ -237,7 +292,8 @@ body::before {
 <th></th>
 </tr>
 </thead>
-<button onclick="resetSection('priority-body')">🧹 Réinitialiser Priorités</button><tbody id="priority-body">
+<button onclick="resetSection('priority-body')">🧹 Réinitialiser Priorités</button>
+<tbody id="priority-body">
 <tr>
 <td><input placeholder="Ex: Cuisiner, Patrouiller..." type="text"/></td>
 <td><input placeholder="Nom du joueur" type="text"/></td>
@@ -267,7 +323,8 @@ body::before {
 <th></th>
 </tr>
 </thead>
-<button onclick="resetSection('mission-body')">🧹 Réinitialiser Missions</button><tbody id="mission-body">
+<button onclick="resetSection('mission-body')">🧹 Réinitialiser Missions</button>
+<tbody id="mission-body">
 <tr>
 <td><input placeholder="Ex: Fouiller maison au nord" type="text"/></td>
 <td><input placeholder="Nom du joueur" type="text"/></td>
@@ -298,7 +355,8 @@ body::before {
 <th></th>
 </tr>
 </thead>
-<button onclick="resetSection('logistique-body')">🧹 Réinitialiser Logistique</button><tbody id="logistique-body">
+<button onclick="resetSection('logistique-body')">🧹 Réinitialiser Logistique</button>
+<tbody id="logistique-body">
 <tr>
 <td>
 <select>
@@ -364,229 +422,34 @@ body::before {
 <iframe allowfullscreen="" src="https://map.projectzomboid.com/"></iframe>
 </section>
 </main>
+
+<!-- Bouton chat et section chat -->
+<button id="chat-toggle" onclick="toggleChat()">💬</button>
+<section id="radio-chat" style="display:none;">
+<h2>📻 Communications radio</h2>
+<div style="margin-bottom: 10px;">
+<input id="chat-input" placeholder="Tape ton message..." style="width:70%;" type="text"/>
+<button onclick="sendMessage()">📡 Envoyer</button>
+</div>
+<div id="chat-log" style="background:#222;padding:10px;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #444;"></div>
+</section>
+
+<!-- Ressources audio -->
+<audio id="radio-bip" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+
+<!-- Scripts -->
 <script>
-        async function loadWeather() {
-            try {
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=47.47&longitude=-0.55&current_weather=true');
-                const data = await res.json();
-                const weather = data.current_weather;
-                document.getElementById("weather-info").textContent = `🌡️ ${weather.temperature}°C | 🌬️ ${weather.windspeed} km/h`;
-            } catch (e) {
-                document.getElementById("weather-info").textContent = "🌐 Météo indisponible.";
-            }
-        }
-
-        let gameMinutes = 8 * 60;
-        const gameSpeed = 10;
-        function updateGameClock() {
-            const hours = Math.floor(gameMinutes / 60) % 24;
-            const minutes = gameMinutes % 60;
-            document.getElementById("game-clock").textContent = `🕒 Heure en jeu : ${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
-            gameMinutes += gameSpeed;
-        }
-
-        function ajouterZoneDangereuse() {
-            const container = document.getElementById("danger-zone-container");
-            const clone = container.firstElementChild.cloneNode(true);
-            clone.querySelectorAll("input").forEach(input => input.value = "");
-            container.appendChild(clone);
-        }
-        function ajouterLigneCompetence() {
-            const tbody = document.querySelector("#skills table tbody");
-            const clone = tbody.rows[0].cloneNode(true);
-            clone.querySelectorAll("input").forEach(input => input.value = "");
-            tbody.appendChild(clone);
-        }
-
-        function toggleTheme() {
-            document.body.classList.toggle("light");
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            loadWeather();
-            updateGameClock();
-            setInterval(updateGameClock, 60000);
-        });
-    
-function ajouterFichePerso() {
-    const list = document.getElementById("character-list");
-    const original = list.children[0];
-    const clone = original.cloneNode(true);
-    clone.querySelectorAll("input, textarea").forEach(el => el.value = "");
-    clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
-    list.appendChild(clone);
+// Fonctions utilitaires
+function updateTimestamp() {
+  const now = new Date();
+  const formatted = now.toLocaleString("fr-FR");
+  document.getElementById("last-updated").textContent = "Dernière mise à jour : " + formatted;
 }
 
-
-function ajouterJournal() {
-    const tbody = document.getElementById("journal-body");
-    const clone = tbody.rows[0].cloneNode(true);
-    clone.querySelectorAll("input").forEach(el => el.value = "");
-    tbody.appendChild(clone);
-}
-
-
-function ajouterRessource() {
-    const tbody = document.getElementById("resource-body");
-    const clone = tbody.rows[0].cloneNode(true);
-    clone.querySelectorAll("input").forEach(el => el.value = "");
-    tbody.appendChild(clone);
-}
-
-function removed_checkStock(el) {
-    const row = el.closest("tr");
-    const qty = parseInt(row.cells[1].querySelector("input").value) || 0;
-    const min = parseInt(row.cells[2].querySelector("input").value) || 0;
-    row.style.backgroundColor = qty < min ? "#4a1c1c" : "transparent";
-}
-
-
-function ajouterPriorite() {
-    const tbody = document.getElementById("priority-body");
-    const clone = tbody.rows[0].cloneNode(true);
-    clone.querySelectorAll("input").forEach(el => el.value = "");
-    clone.querySelector("select").selectedIndex = 0;
-    tbody.appendChild(clone);
-}
-
-
-function exporterJSON() {
-    const data = {
-        personnages: Array.from(document.querySelectorAll("#character-list .character-card")).map(card => ({
-            nom: card.querySelectorAll("input")[0].value,
-            role: card.querySelectorAll("input")[1].value,
-            notes: card.querySelector("textarea").value
-        })),
-        journal: Array.from(document.querySelectorAll("#journal-body tr")).map(row => ({
-            date: row.cells[0].querySelector("input").value,
-            evenement: row.cells[1].querySelector("input").value,
-            joueur: row.cells[2].querySelector("input").value
-        })),
-        ressources: Array.from(document.querySelectorAll("#resource-body tr")).map(row => ({
-            nom: row.cells[0].querySelector("input").value,
-            quantite: row.cells[1].querySelector("input").value,
-            minimum: row.cells[2].querySelector("input").value
-        })),
-        priorites: Array.from(document.querySelectorAll("#priority-body tr")).map(row => ({
-            tache: row.cells[0].querySelector("input").value,
-            joueur: row.cells[1].querySelector("input").value,
-            importance: row.cells[2].querySelector("select").value
-        }))
-    };
-    document.getElementById("json-output").textContent = JSON.stringify(data, null, 2);
-}
-
-
-function importerJSON() {
-    try {
-        const input = document.getElementById("json-input").value;
-        const data = JSON.parse(input);
-
-        // Fiches personnages
-        const charList = document.getElementById("character-list");
-        charList.innerHTML = "";
-        data.personnages.forEach(p => {
-            const div = document.createElement("div");
-            div.className = "character-card";
-            div.innerHTML = `
-                <input type="text" value="${p.nom}">
-                <input type="text" value="${p.role}">
-                <textarea>${p.notes}</textarea>
-                <button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
-            `;
-            charList.appendChild(div);
-        });
-
-        // Journal
-        const journalBody = document.getElementById("journal-body");
-        journalBody.innerHTML = "";
-        data.journal.forEach(j => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td><input type="date" value="${j.date}"></td>
-                <td><input type="text" value="${j.evenement}"></td>
-                <td><input type="text" value="${j.joueur}"></td>
-                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-            `;
-            journalBody.appendChild(row);
-        });
-
-        // Ressources
-        const resBody = document.getElementById("resource-body");
-        resBody.innerHTML = "";
-        data.ressources.forEach(r => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td><input type="text" value="${r.nom}"></td>
-                <td><input type="number" value="${r.quantite}" oninput="checkStock(this)"></td>
-                <td><input type="number" value="${r.minimum}" oninput="checkStock(this)"></td>
-                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-            `;
-            resBody.appendChild(row);
-        });
-
-        // Priorités
-        const priBody = document.getElementById("priority-body");
-        priBody.innerHTML = "";
-        data.priorites.forEach(p => {
-            const row = document.createElement("tr");
-            row.innerHTML = `
-                <td><input type="text" value="${p.tache}"></td>
-                <td><input type="text" value="${p.joueur}"></td>
-                <td>
-                    <select>
-                        <option ${p.importance === '⚪ Faible' ? 'selected' : ''}>⚪ Faible</option>
-                        <option ${p.importance === '🟡 Moyenne' ? 'selected' : ''}>🟡 Moyenne</option>
-                        <option ${p.importance === '🔴 Haute' ? 'selected' : ''}>🔴 Haute</option>
-                    </select>
-                </td>
-                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-            `;
-            priBody.appendChild(row);
-        });
-
-        document.getElementById("json-input").value = "";
-        alert("Import réussi !");
-    } catch (e) {
-        alert("❌ Erreur d'import : JSON invalide.");
-    }
-}
-
-
-function ajouterMission() {
-    const tbody = document.getElementById("mission-body");
-    const clone = tbody.rows[0].cloneNode(true);
-    clone.querySelectorAll("input").forEach(el => el.value = "");
-    clone.querySelector("select").selectedIndex = 0;
-    tbody.appendChild(clone);
-}
-
-
-function ajouterLogistique() {
-    const tbody = document.getElementById("logistique-body");
-    const clone = tbody.rows[0].cloneNode(true);
-    clone.querySelectorAll("input").forEach(el => el.value = "");
-    clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
-    tbody.appendChild(clone);
-}
-function checkEtat(select) {
-    const row = select.closest("tr");
-    const value = select.value;
-    if (value.includes("❌")) {
-        row.style.backgroundColor = "#4a1c1c";
-    } else if (value.includes("⚠️")) {
-        row.style.backgroundColor = "#4a3c1c";
-    } else {
-        row.style.backgroundColor = "transparent";
-    }
-}
-
-
-document.addEventListener("input", () => syncToFirebase());
-document.addEventListener("change", () => syncToFirebase());
-
-</script>
-<script>
 function filterTable(inputId, tableBodyId) {
   const input = document.getElementById(inputId).value.toLowerCase();
   const rows = document.getElementById(tableBodyId).querySelectorAll("tr");
@@ -595,75 +458,137 @@ function filterTable(inputId, tableBodyId) {
     row.style.display = text.includes(input) ? "" : "none";
   });
 }
-</script>
-<script>
-function updateTimestamp() {
-  const now = new Date();
-  const formatted = now.toLocaleString("fr-FR");
-  document.getElementById("last-updated").textContent = "Dernière mise à jour : " + formatted;
-}
-</script>
-<script>
+
 function resetSection(sectionId) {
   const el = document.getElementById(sectionId);
-  if (el) el.innerHTML = '';
+  if (el) {
+    if (sectionId.includes('body')) {
+      // Pour les tableaux, on garde la première ligne comme modèle
+      const firstRow = el.querySelector('tr');
+      el.innerHTML = '';
+      if (firstRow) {
+        const newRow = firstRow.cloneNode(true);
+        newRow.querySelectorAll('input').forEach(input => input.value = '');
+        newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        el.appendChild(newRow);
+      }
+    } else {
+      // Pour d'autres conteneurs
+      const firstItem = el.children[0];
+      el.innerHTML = '';
+      if (firstItem) {
+        const newItem = firstItem.cloneNode(true);
+        newItem.querySelectorAll('input, textarea').forEach(input => input.value = '');
+        newItem.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+        el.appendChild(newItem);
+      }
+    }
+  }
   syncToFirebase();
 }
-</script>
 
-<style>
-#chat-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #8b0000;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
-  color: white;
-  border: none;
-  cursor: pointer;
-  z-index: 10000;
-}
-#radio-chat {
-  display: none;
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 350px;
-  background: #111;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #444;
-  z-index: 9999;
-}
-.fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-</style>
-<button id="chat-toggle" onclick="toggleChat()">💬</button>
-<section id="radio-chat">
-<h2>📻 Communications radio</h2>
-<div style="margin-bottom: 10px;">
-<input id="chat-input" placeholder="Tape ton message..." style="width:70%;" type="text"/>
-<button onclick="sendMessage()">📡 Envoyer</button>
-</div>
-<div id="chat-log" style="background:#222;padding:10px;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #444;"></div>
-</section>
-<audio id="radio-bip" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-<script>
-function toggleChat() {
-  const box = document.getElementById("radio-chat");
-  box.style.display = box.style.display === "none" ? "block" : "none";
+// Fonctions de gestion des météo et horloge
+async function loadWeather() {
+  try {
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=47.47&longitude=-0.55&current_weather=true');
+    const data = await res.json();
+    const weather = data.current_weather;
+    document.getElementById("weather-info").textContent = `🌡️ ${weather.temperature}°C | 🌬️ ${weather.windspeed} km/h`;
+  } catch (e) {
+    document.getElementById("weather-info").textContent = "🌐 Météo indisponible.";
+  }
 }
 
+let gameMinutes = 8 * 60;
+const gameSpeed = 10;
+function updateGameClock() {
+  const hours = Math.floor(gameMinutes / 60) % 24;
+  const minutes = gameMinutes % 60;
+  document.getElementById("game-clock").textContent = `🕒 Heure en jeu : ${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+  gameMinutes += gameSpeed;
+}
+
+// Fonctions d'ajout de contenu
+function ajouterFichePerso() {
+  const list = document.getElementById("character-list");
+  const original = list.children[0];
+  const clone = original.cloneNode(true);
+  clone.querySelectorAll("input, textarea").forEach(el => el.value = "");
+  clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+  list.appendChild(clone);
+  syncToFirebase();
+}
+
+function ajouterJournal() {
+  const tbody = document.getElementById("journal-body");
+  const clone = tbody.rows[0].cloneNode(true);
+  clone.querySelectorAll("input").forEach(el => el.value = "");
+  tbody.appendChild(clone);
+  syncToFirebase();
+}
+
+function ajouterPriorite() {
+  const tbody = document.getElementById("priority-body");
+  const clone = tbody.rows[0].cloneNode(true);
+  clone.querySelectorAll("input").forEach(el => el.value = "");
+  clone.querySelector("select").selectedIndex = 0;
+  tbody.appendChild(clone);
+  syncToFirebase();
+}
+
+function ajouterMission() {
+  const tbody = document.getElementById("mission-body");
+  const clone = tbody.rows[0].cloneNode(true);
+  clone.querySelectorAll("input").forEach(el => el.value = "");
+  clone.querySelector("select").selectedIndex = 0;
+  tbody.appendChild(clone);
+  syncToFirebase();
+}
+
+function ajouterLogistique() {
+  const tbody = document.getElementById("logistique-body");
+  const clone = tbody.rows[0].cloneNode(true);
+  clone.querySelectorAll("input").forEach(el => el.value = "");
+  clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+  tbody.appendChild(clone);
+  syncToFirebase();
+}
+
+function ajouterZoneDangereuse() {
+  const container = document.getElementById("danger-zone-container");
+  const clone = container.firstElementChild.cloneNode(true);
+  clone.querySelectorAll("input").forEach(input => input.value = "");
+  container.appendChild(clone);
+  syncToFirebase();
+}
+
+function ajouterLigneCompetence() {
+  const tbody = document.querySelector("#skills table tbody");
+  const clone = tbody.rows[0].cloneNode(true);
+  clone.querySelectorAll("input").forEach(input => input.value = "");
+  tbody.appendChild(clone);
+  syncToFirebase();
+}
+
+// Vérification de l'état des équipements
+function checkEtat(select) {
+  const row = select.closest("tr");
+  const value = select.value;
+  if (value.includes("❌")) {
+    row.style.backgroundColor = "#4a1c1c";
+  } else if (value.includes("⚠️")) {
+    row.style.backgroundColor = "#4a3c1c";
+  } else {
+    row.style.backgroundColor = "transparent";
+  }
+}
+
+// Paramètres du thème
+function toggleTheme() {
+  document.body.classList.toggle("light");
+}
+
+// Configuration Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
   authDomain: "deadhope-a1704.firebaseapp.com",
@@ -672,60 +597,147 @@ const firebaseConfig = {
   messagingSenderId: "1019321338333",
   appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
 };
+// Initialisation Firebase
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const docRef = db.collection("dashboards").doc("main");
 
+// Fonctions de chat
+function toggleChat() {
+  const box = document.getElementById("radio-chat");
+  box.style.display = box.style.display === "none" ? "block" : "none";
+}
+
 function getPseudo() {
   const pseudoInput = document.getElementById("pseudo");
-  return pseudoInput ? pseudoInput.value.trim() || "Anonyme" : "Anonyme";
+  return pseudoInput?.value.trim() || "Anonyme";
 }
 
 function sendMessage() {
   const input = document.getElementById("chat-input");
   const text = input.value.trim();
   if (!text) return;
+
   const message = {
     pseudo: getPseudo(),
-    text: text,
+    text,
     timestamp: new Date().toISOString()
   };
-  docRef.update({
-    messages: firebase.firestore.FieldValue.arrayUnion(message)
-  }).then(() => {
-    input.value = "";
-  }).catch(console.error);
+
+  docRef.set({ messages: firebase.firestore.FieldValue.arrayUnion(message) }, { merge: true })
+    .then(() => input.value = "")
+    .catch(console.error);
 }
 
 function renderMessages(messages) {
   const log = document.getElementById("chat-log");
   log.innerHTML = "";
-  messages
-    .filter(m => (Date.now() - new Date(m.timestamp)) < 1000 * 60 * 60 * 12)
-    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-    .forEach(msg => {
-      const div = document.createElement("div");
-      const time = new Date(msg.timestamp).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
-      div.classList.add("fade-in");
-      div.innerHTML = `<strong style="color:#8f8">${msg.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${msg.text}`;
-      log.appendChild(div);
-    });
+
+  const cutoff = Date.now() - 1000 * 60 * 60 * 12;
+  const recentMessages = messages
+    .filter(msg => new Date(msg.timestamp).getTime() > cutoff)
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+  recentMessages.forEach(msg => {
+    const time = new Date(msg.timestamp).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+    const div = document.createElement("div");
+    div.classList.add("fade-in");
+    div.innerHTML = `<strong style="color:#8f8">${msg.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${msg.text}`;
+    log.appendChild(div);
+  });
+
   log.scrollTop = log.scrollHeight;
 }
 
-docRef.onSnapshot(snap => {
-  const data = snap.data();
-  if (data && data.messages) {
-    const lastLen = document.getElementById("chat-log").children.length;
-    renderMessages(data.messages);
-    const newLen = data.messages.length;
-    if (newLen > lastLen) {
-      const lastMsg = data.messages[data.messages.length - 1];
-      if (lastMsg.pseudo !== getPseudo()) {
-        document.getElementById("radio-bip").play().catch(() => {});
-      }
+// Fonction pour synchroniser les données avec Firebase
+function syncToFirebase() {
+  updateTimestamp();
+  
+  // Récupération des données du tableau de bord
+  const data = {
+    characters: Array.from(document.querySelectorAll("#character-list .character-card")).map(card => ({
+      name: card.querySelectorAll("input")[0].value,
+      role: card.querySelectorAll("input")[1].value,
+      notes: card.querySelector("textarea").value
+    })),
+    journal: Array.from(document.querySelectorAll("#journal-body tr")).map(row => ({
+      date: row.cells[0].querySelector("input")?.value,
+      event: row.cells[1].querySelector("input")?.value,
+      player: row.cells[2].querySelector("input")?.value
+    })),
+    priorities: Array.from(document.querySelectorAll("#priority-body tr")).map(row => ({
+      task: row.cells[0].querySelector("input")?.value,
+      player: row.cells[1].querySelector("input")?.value,
+      importance: row.cells[2].querySelector("select")?.value
+    })),
+    missions: Array.from(document.querySelectorAll("#mission-body tr")).map(row => ({
+      objective: row.cells[0].querySelector("input")?.value,
+      responsible: row.cells[1].querySelector("input")?.value,
+      status: row.cells[2].querySelector("select")?.value,
+      deadline: row.cells[3].querySelector("input")?.value
+    })),
+    logistics: Array.from(document.querySelectorAll("#logistique-body tr")).map(row => ({
+      type: row.cells[0].querySelector("select")?.value,
+      name: row.cells[1].querySelector("input")?.value,
+      status: row.cells[2].querySelector("select")?.value,
+      location: row.cells[3].querySelector("input")?.value
+    })),
+    dangerZones: Array.from(document.querySelectorAll(".danger-zone-entry")).map(entry => ({
+      name: entry.querySelector("input:nth-child(1)")?.value,
+      level: entry.querySelector("select")?.value,
+      info: entry.querySelector("input:nth-child(3)")?.value
+    }))
+  };
+  
+  // Sauvegarde dans Firebase
+  docRef.update({dashboard: data})
+    .catch(error => console.error("Erreur de synchronisation:", error));
+}
+
+// Listener pour les messages Firebase
+let previousCount = 0;
+docRef.onSnapshot(snapshot => {
+  const data = snapshot.data();
+  if (!data || !Array.isArray(data.messages)) return;
+
+  const messages = data.messages;
+  if (messages.length > previousCount) {
+    const last = messages[messages.length - 1];
+    if (last.pseudo !== getPseudo()) {
+      document.getElementById("radio-bip").play().catch(() => {});
     }
   }
+  previousCount = messages.length;
+  renderMessages(messages);
+});
+
+// Ajouter un gestionnaire pour la touche Entrée sur le chat
+document.getElementById("chat-input").addEventListener("keypress", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    sendMessage();
+  }
+});
+
+// Écouter les modifications du contenu pour synchro
+document.addEventListener("input", () => syncToFirebase());
+document.addEventListener("change", () => syncToFirebase());
+
+// Initialisation au chargement de la page
+document.addEventListener("DOMContentLoaded", () => {
+  loadWeather();
+  updateGameClock();
+  setInterval(updateGameClock, 60000);
+  
+  // Charger les données existantes depuis Firebase
+  docRef.get().then(doc => {
+    if (doc.exists && doc.data().dashboard) {
+      // Implémenter le chargement des données
+      console.log("Données chargées depuis Firebase");
+    }
+  }).catch(error => {
+    console.error("Erreur lors du chargement des données:", error);
+  });
 });
 </script>
 </body>
