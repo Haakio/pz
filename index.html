@@ -1,835 +1,1819 @@
 <!DOCTYPE html>
-
 <html lang="fr">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>DeadHope - Dashboard V2</title>
-<link href="https://unpkg.com/lucide@latest" rel="stylesheet"/>
-<style>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>DeadHope - Terminal Avancé</title>
+    <style>
         :root {
-            --bg: #1c1c1c;
-            --fg: #f5f5f5;
-            --accent: #00bcd4;
+            --bg: #0a0a0a;
+            --fg: #e0e0e0;
+            --accent: #8b0000;
+            --accent-glow: rgba(139, 0, 0, 0.7);
             --danger: #e74c3c;
+            --terminal-green: #00ff00;
+            --card-bg: rgba(20, 20, 20, 0.8);
         }
+        
         body {
             margin: 0;
-            font-family: sans-serif;
+            font-family: 'Courier New', monospace;
             background-color: var(--bg);
             color: var(--fg);
+            overflow-x: hidden;
+            position: relative;
         }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7));
+            z-index: -2;
+            pointer-events: none;
+        }
+        
+        /* CRT Overlay effect */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: flicker 0.15s infinite;
+        }
+        
+        @keyframes flicker {
+            0% { opacity: 0.97; }
+            5% { opacity: 0.95; }
+            10% { opacity: 0.97; }
+            15% { opacity: 0.94; }
+            20% { opacity: 0.98; }
+            25% { opacity: 0.95; }
+            30% { opacity: 0.97; }
+            35% { opacity: 0.96; }
+            40% { opacity: 0.97; }
+            45% { opacity: 0.95; }
+            50% { opacity: 0.98; }
+            55% { opacity: 0.97; }
+            60% { opacity: 0.95; }
+            65% { opacity: 0.97; }
+            70% { opacity: 0.96; }
+            75% { opacity: 0.94; }
+            80% { opacity: 0.98; }
+            85% { opacity: 0.97; }
+            90% { opacity: 0.95; }
+            95% { opacity: 0.96; }
+            100% { opacity: 0.97; }
+        }
+        
+        /* Scanline effect */
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 9998;
+            animation: scanline 6s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes scanline {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        
         header {
-            padding: 1rem;
-            background-color: #111;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(20,20,20,0.8) 0%, rgba(80,0,0,0.5) 100%);
             text-align: center;
+            border-bottom: 2px solid var(--accent);
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
         }
+        
+        .logo {
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .logo h1 {
+            font-family: 'Courier New', monospace;
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin: 0;
+            padding: 10px 20px;
+            color: #fff;
+            background: rgba(139, 0, 0, 0.7);
+            border-radius: 6px;
+            position: relative;
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+        }
+        
+        .logo-glow {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border-radius: 6px;
+            box-shadow: 0 0 15px var(--accent-glow);
+            animation: pulse 4s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.5; box-shadow: 0 0 15px var(--accent-glow); }
+            100% { opacity: 1; box-shadow: 0 0 30px var(--accent-glow); }
+        }
+        
+        .info-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            margin-top: 1rem;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-value {
+            font-family: monospace;
+            color: var(--terminal-green);
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.7);
+        }
+        
         nav {
             display: flex;
-            gap: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
             justify-content: center;
-            background-color: #222;
-            padding: 0.5rem;
+            background: linear-gradient(90deg, rgba(10,10,10,0.8) 0%, rgba(30,30,30,0.8) 100%);
+            padding: 1rem;
+            border-bottom: 1px solid #333;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
+        
         nav a {
             color: var(--fg);
             text-decoration: none;
             padding: 0.5rem 1rem;
-            background-color: var(--accent);
+            background: linear-gradient(to bottom, #8b0000, #5a0000);
             border-radius: 5px;
+            transition: all 0.3s ease;
+            border: 1px solid #aa0000;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
         }
-        section {
-            padding: 1rem;
-            max-width: 1000px;
+        
+        nav a::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        nav a:hover {
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.7);
+            transform: translateY(-2px);
+        }
+        
+        nav a:hover::before {
+            opacity: 1;
+        }
+        
+        main {
+            max-width: 1200px;
             margin: 0 auto;
+            padding: 1rem;
         }
+        
+        section {
+            margin-bottom: 3rem;
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border: 1px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        section::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+        
         h2 {
+            color: var(--accent);
+            font-family: monospace;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             border-bottom: 2px solid var(--accent);
             padding-bottom: 0.5rem;
-            margin-top: 2rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .danger-grid-wrapper {
+        
+        h2::before {
+            content: "▶";
+            color: var(--terminal-green);
+            font-size: 0.8em;
+        }
+        
+        button {
+            background: linear-gradient(to bottom, #333, #222);
+            color: #eee;
+            border: 1px solid #555;
+            padding: 8px 16px;
+            font-family: monospace;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            background: linear-gradient(to bottom, #444, #333);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        
+        input, select, textarea {
+            background-color: #111;
+            color: var(--terminal-green);
+            border: 1px solid #333;
+            padding: 8px;
+            font-family: monospace;
+            border-radius: 4px;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 5px rgba(139, 0, 0, 0.5);
+        }
+        
+        .character-wrapper {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .character-card {
+            background: linear-gradient(135deg, rgba(30,30,30,0.8) 0%, rgba(20,20,20,0.9) 100%);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            margin-top: 1rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        .danger-zone-entry {
+        
+        .character-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        
+        .character-card h3 {
+            margin: 0;
+            color: var(--accent);
+            border-bottom: 1px solid #333;
+            padding-bottom: 0.5rem;
+        }
+        
+        .character-card textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 1rem 0;
+        }
+        
+        th {
+            text-align: left;
+            background: linear-gradient(to bottom, #222, #111);
+            color: var(--accent);
+            padding: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+        }
+        
+        th:first-child {
+            border-top-left-radius: 6px;
+        }
+        
+        th:last-child {
+            border-top-right-radius: 6px;
+        }
+        
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            background: rgba(20, 20, 20, 0.5);
+        }
+        
+        tr:hover td {
+            background: rgba(30, 30, 30, 0.7);
+        }
+        
+        .danger-grid-wrapper {
             display: grid;
-            grid-template-columns: 1fr 150px 150px 100px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1rem;
         }
-        input, select, button {
-            padding: 0.5rem;
-            width: 100%;
-            box-sizing: border-box;
+        
+        .danger-zone-entry {
+            background: linear-gradient(135deg, rgba(30,10,10,0.8) 0%, rgba(10,10,10,0.9) 100%);
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
         }
-        iframe {
+        
+        #chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            cursor: pointer;
+            animation: pulse-chat 2s infinite alternate;
+        }
+        
+        @keyframes pulse-chat {
+            0% { box-shadow: 0 0 10px rgba(139, 0, 0, 0.5); }
+            100% { box-shadow: 0 0 25px rgba(139, 0, 0, 0.8); }
+        }
+        
+        #radio-chat {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 350px;
+            background: rgba(10, 10, 10, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            z-index: 999;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        
+        #chat-log {
+            background: #1a1a1a;
+            padding: 15px;
+            max-height: 250px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid #333;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+        
+        .chat-message {
+            margin-bottom: 10px;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .typing-indicator {
+            display: inline-block;
+            animation: typeBlink 1s infinite;
+        }
+        
+        @keyframes typeBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        #welcome-screen {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Custom code to ensure the welcome screen has a proper background and truck */
+        .welcome-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            z-index: -1;
+        }
+        
+        .welcome-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(0,20,0,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,20,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.2;
+            z-index: -1;
+        }
+        
+        .truck-container {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 150px;
+            z-index: 1;
+        }
+        
+        .truck {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .truck-body {
+            position: absolute;
+            bottom: 0;
+            width: 250px;
+            height: 60px;
+            background: #333;
+            border: 2px solid #444;
+            border-radius: 5px;
+        }
+        
+        .truck-cab {
+            position: absolute;
+            bottom: 60px;
+            left: 20px;
+            width: 80px;
+            height: 50px;
+            background: #222;
+            border: 2px solid #444;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 3px;
+        }
+        
+        .truck-window {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 50px;
+            height: 20px;
+            background: #111;
+            border: 1px solid #333;
+        }
+        
+        .truck-wheel {
+            position: absolute;
+            bottom: -10px;
+            width: 30px;
+            height: 30px;
+            background: #111;
+            border: 2px solid #333;
+            border-radius: 50%;
+        }
+        
+        .wheel-front {
+            left: 40px;
+        }
+        
+        .wheel-back {
+            right: 40px;
+        }
+        
+        .truck-light {
+            position: absolute;
+            bottom: 40px;
+            left: 10px;
+            width: 10px;
+            height: 5px;
+            background: #ff0;
+            border-radius: 50%;
+            animation: blink 1s infinite alternate;
+        }
+        
+        @keyframes blink {
+            0% { opacity: 0.5; }
+            100% { opacity: 1; box-shadow: 0 0 10px #ff0; }
+        }
+        
+        #welcome-title {
+            font-size: 3rem;
+            color: var(--terminal-green);
+            text-shadow: 0 0 15px rgba(0, 255, 0, 0.7);
+            margin-bottom: 2rem;
+            letter-spacing: 3px;
+            position: relative;
+        }
+        
+        #welcome-title::before,
+        #welcome-title::after {
+            content: "☣️";
+            margin: 0 15px;
+        }
+        
+        #terminal-lines {
+            font-family: monospace;
+            color: var(--terminal-green);
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 700px;
+            margin-bottom: 2rem;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        #input-zone {
+            display: none;
+            text-align: center;
+        }
+        
+        #input-pseudo {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--terminal-green);
+            color: var(--terminal-green);
+            padding: 15px;
+            width: 300px;
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+        
+        #start-button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        
+        #start-button:hover {
+            background: #a00000;
+            box-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
+        }
+        
+        /* Visual elements and animations */
+        .visual-glitch {
+            position: absolute;
+            background: rgba(255, 0, 0, 0.1);
+            width: 100%;
+            height: 40px;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            opacity: 0;
+            animation: glitch-appear 15s infinite;
+        }
+        
+        @keyframes glitch-appear {
+            0%, 95%, 100% { opacity: 0; transform: translateY(-100px); }
+            96%, 99% { opacity: 0.8; transform: translateY(var(--pos, 100px)); }
+        }
+        
+        /* Custom map style instead of iframe */
+        .custom-map {
             width: 100%;
             height: 600px;
-            border: none;
+            border-radius: 8px;
+            background-color: #1a1a1a;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
-    
-
-.character-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-top: 1rem;
-}
-.character-card {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    background-color: #2a2a2a;
-    padding: 1rem;
-    border-radius: 8px;
-}
-.character-card textarea {
-    grid-column: 1 / -1;
-    resize: vertical;
-    min-height: 60px;
-}
-
-
-    body {
-        background-color: #121212;
-        background-image: url('https://www.transparenttextures.com/patterns/asfalt-dark.png');
-        color: #e0e0e0;
-    }
-    header {
-        background: #222;
-        border-bottom: 2px solid #444;
-    }
-    nav {
-        background: #1a1a1a;
-    }
-    nav a {
-        background-color: #8b0000;
-        font-weight: bold;
-        border: 1px solid #aa0000;
-    }
-    h1, h2 {
-        font-family: 'Courier New', Courier, monospace;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #e74c3c;
-    }
-    table th, table td {
-        border-bottom: 1px solid #444;
-    }
-    input, select, textarea, button {
-        background-color: #222;
-        color: #eee;
-        border: 1px solid #555;
-        font-family: monospace;
-    }
-    button:hover {
-        background-color: #333;
-        cursor: pointer;
-    }
-    #json-input, #json-output {
-        background-color: #1a1a1a !important;
-        border: 1px solid #444;
-        color: #eee !important;
-        font-family: monospace;
-    }
-    
-    body {
-        font-family: 'Courier New', Courier, monospace;
-        background: linear-gradient(#0d0d0d, #1a1a1a);
-        color: #d4d4d4;
-    }
-    h1 {
-        font-family: 'Courier New', monospace;
-        text-transform: uppercase;
-        background: #8b0000;
-        padding: 10px;
-        text-align: center;
-        color: #fff;
-        border-radius: 6px;
-        box-shadow: 0 0 10px #8b0000;
-    }
-    h2 {
-        color: #ff4;
-        font-family: monospace;
-    }
-    input, select, textarea {
-        font-family: monospace;
-        background-color: #111;
-        color: #0f0;
-    }
-    
-body::before {
-  content: "";
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.1),
-    rgba(0, 0, 0, 0.1) 1px,
-    transparent 1px,
-    transparent 2px
-  );
-  pointer-events: none;
-  z-index: 9999;
-}
-
-/* Style spécifique pour le chat */
-#chat-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #8b0000;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
-  color: white;
-  border: none;
-  cursor: pointer;
-  z-index: 10000;
-}
-#radio-chat {
-  display: none;
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 350px;
-  background: #111;
-  padding: 10px;
-  border-radius: 8px;
-  border: 1px solid #444;
-  z-index: 9999;
-}
-.fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Styliser les tableaux pour une meilleure lisibilité */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 1rem 0;
-}
-th {
-  text-align: left;
-  background-color: #222;
-  padding: 8px;
-}
-td {
-  padding: 8px;
-  border-bottom: 1px solid #333;
-}
-</style>
-
+        
+        .map-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(#222 1px, transparent 1px),
+                linear-gradient(90deg, #222 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+        }
+        
+        .map-title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-family: 'Courier New', monospace;
+            color: #ddd;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            z-index: 5;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .map-error {
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 15px 30px;
+            background: #8b0000;
+            color: white;
+            border-radius: 5px;
+            font-family: monospace;
+            font-weight: bold;
+            z-index: 10;
+        }
+        
+        .map-message {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #aaa;
+            font-size: 0.9rem;
+            text-align: center;
+            max-width: 80%;
+            line-height: 1.5;
+            z-index: 10;
+        }
+        
+        .map-warning {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            z-index: 10;
+        }
+        
+        .warning-left {
+            top: 50%;
+            left: 10%;
+            transform: translateY(-50%);
+        }
+        
+        .warning-right {
+            top: 50%;
+            right: 10%;
+            transform: translateY(-50%);
+        }
+        
+        .warning-triangle {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            position: relative;
+        }
+        
+        .warning-triangle::before {
+            content: "⚠️";
+            font-size: 48px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #3498db;
+        }
+        
+        .map-location {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: transparent;
+            border-radius: 50%;
+            z-index: 5;
+        }
+        
+        .location-1 {
+            top: 30%;
+            left: 20%;
+            background: #e74c3c;
+            box-shadow: 0 0 10px #e74c3c;
+        }
+        
+        .location-2 {
+            top: 60%;
+            left: 70%;
+            background: #2ecc71;
+            box-shadow: 0 0 10px #2ecc71;
+        }
+        
+        .location-3 {
+            top: 20%;
+            left: 80%;
+            background: #3498db;
+            box-shadow: 0 0 10px #3498db;
+        }
+        
+        .location-4 {
+            top: 75%;
+            left: 35%;
+            background: #f1c40f;
+            box-shadow: 0 0 10px #f1c40f;
+        }
+        
+        .location-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: pulse-location 2s infinite;
+        }
+        
+        @keyframes pulse-location {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(3); opacity: 0; }
+        }
+        
+        .map-legend {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            z-index: 10;
+        }
+        
+        .legend-title {
+            color: #e74c3c;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .legend-item {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-circle {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .stat-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: rgba(20, 20, 20, 0.8);
+            border-radius: 8px;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            color: var(--terminal-green);
+            margin: 0.5rem 0;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .stat-label {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #222;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #ff5555);
+            width: var(--fill, 50%);
+            border-radius: 5px;
+        }
+        
+        /* Mission countdown */
+        .countdown {
+            text-align: center;
+            margin: 1rem 0;
+            padding: 1rem;
+            background: rgba(139, 0, 0, 0.2);
+            border-radius: 8px;
+            position: relative;
+        }
+        
+        .countdown-value {
+            font-size: 3rem;
+            font-family: monospace;
+            color: var(--accent);
+            text-shadow: 0 0 15px rgba(139, 0, 0, 0.7);
+        }
+        
+        .countdown-label {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 0.5rem;
+        }
+        
+        /* Message notification */
+        .msg-notification {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff3333;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+    </style>
 </head>
 <body>
-
-  <audio id="background-sound" autoplay loop volume="0.3">
-    <source src="https://cdn.pixabay.com/download/audio/2022/03/22/audio_52c99e24c0.mp3?filename=ambient-dark-ambient-loop-114870.mp3" type="audio/mpeg">
-    Ton navigateur ne supporte pas l'audio HTML5.
-  </audio>
-
-<div id="welcome-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:99999;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#0f0;font-family:'Courier New', monospace;">
-  <h1 style="margin-bottom:2rem;">☣️ Terminal DeadHope ☣️</h1>
-  <div id="terminal-lines" style="margin-bottom: 1rem; max-width: 80%; text-align: left;"></div>
-  <div id="input-zone" style="display: block;">
-    <input id="input-pseudo" type="text" placeholder="Entre ton pseudo..." style="padding:10px;background:#111;border:1px solid #444;color:#0f0;font-size:18px;margin-bottom:1rem;width:300px;text-align:center;">
-    <button onclick="startDashboard()" style="padding:10px 20px;background:#8b0000;color:#fff;border:none;border-radius:4px;font-size:16px;cursor:pointer;">Accéder au tableau</button>
-  </div>
-</div>
-
-<!-- Ajout des éléments audio manquants -->
-<audio id="boot-sound" src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" preload="auto"></audio>
-<audio id="confirm-sound" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" preload="auto"></audio>
-
-<div id="dashboard-content" style="display: block;">
-  <div id="last-updated" style="margin:10px 0; color:#aaa; font-size: 0.9em;">Dernière mise à jour : jamais</div>
-  <header>
-    <h1>☣️  DeadHope // Terminal de survie ☣️</h1>
-    <div id="weather-info">Chargement météo...</div>
-    <div id="game-clock">Heure en jeu : ...</div>
-  </header>
-  <nav>
-    <a href="#skills">Compétences</a>
-    <a href="#zones">Zones dangereuses</a>
-    <a href="#map">Carte</a>
-    <a href="#" onclick="toggleTheme()">🌓</a>
-  </nav>
-  <main>
-    <section id="characters">
-      <h2>Fiches de personnage</h2>
-      <button onclick="resetSection('character-list')">🧹 Réinitialiser Fiche de personnages</button>
-      <div class="character-wrapper" id="character-list">
-        <div class="character-card">
-          <input placeholder="Nom" type="text"/>
-          <input placeholder="Rôle dans le groupe" type="text"/>
-          <textarea placeholder="Notes ou observations..."></textarea>
-          <button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
+    <!-- CRT Scanline effect -->
+    <div class="scanline"></div>
+    
+    <!-- Random glitch effect elements -->
+    <div class="visual-glitch" style="--pos: 120px;"></div>
+    <div class="visual-glitch" style="--pos: 240px;"></div>
+    <div class="visual-glitch" style="--pos: 360px;"></div>
+    
+    <!-- Welcome screen avec camion et fond d'écran -->
+    <div id="welcome-screen">
+        <!-- Background elements -->
+        <div class="welcome-background"></div>
+        <div class="welcome-grid"></div>
+        
+        <!-- Truck graphic -->
+        <div class="truck-container">
+            <div class="truck">
+                <div class="truck-body"></div>
+                <div class="truck-cab">
+                    <div class="truck-window"></div>
+                </div>
+                <div class="truck-wheel wheel-front"></div>
+                <div class="truck-wheel wheel-back"></div>
+                <div class="truck-light"></div>
+            </div>
         </div>
-      </div>
-      <button onclick="ajouterFichePerso()">➕ Ajouter un personnage</button>
-    </section>
-    <section id="journal">
-      <h2>Journal / Événements</h2>
-      <input id="filter-journal" oninput="filterTable('filter-journal', 'journal-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-      <table style="width: 100%; table-layout: fixed;">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Événement</th>
-            <th>Joueur</th>
-            <th></th>
-          </tr>
-        </thead>
-        <button onclick="resetSection('journal-body')">🧹 Réinitialiser Journal d'événements</button>
-        <tbody id="journal-body">
-          <tr>
-            <td><input type="date"/></td>
-            <td><input placeholder="Description" type="text"/></td>
-            <td><input placeholder="Nom du joueur" type="text"/></td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <button onclick="ajouterJournal()">➕ Ajouter une entrée</button>
-    </section>
-    <section id="priorities">
-      <h2>Assignations / Priorités</h2>
-      <input id="filter-priorites" oninput="filterTable('filter-priorites', 'priority-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-      <table style="width: 100%; table-layout: fixed;">
-        <thead>
-          <tr>
-            <th>Tâche</th>
-            <th>Responsable</th>
-            <th>Importance</th>
-            <th></th>
-          </tr>
-        </thead>
-        <button onclick="resetSection('priority-body')">🧹 Réinitialiser Priorités</button>
-        <tbody id="priority-body">
-          <tr>
-            <td><input placeholder="Ex: Cuisiner, Patrouiller..." type="text"/></td>
-            <td><input placeholder="Nom du joueur" type="text"/></td>
-            <td>
-              <select>
-                <option>⚪ Faible</option>
-                <option>🟡 Moyenne</option>
-                <option>🔴 Haute</option>
-              </select>
-            </td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <button onclick="ajouterPriorite()">➕ Ajouter une tâche</button>
-    </section>
-    <section id="missions">
-      <h2>🎯 Missions</h2>
-      <input id="filter-missions" oninput="filterTable('filter-missions', 'mission-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-      <table style="width: 100%; table-layout: fixed;">
-        <thead>
-          <tr>
-            <th>Objectif</th>
-            <th>Responsable</th>
-            <th>État</th>
-            <th>Deadline</th>
-            <th></th>
-          </tr>
-        </thead>
-        <button onclick="resetSection('mission-body')">🧹 Réinitialiser Missions</button>
-        <tbody id="mission-body">
-          <tr>
-            <td><input placeholder="Ex: Fouiller maison au nord" type="text"/></td>
-            <td><input placeholder="Nom du joueur" type="text"/></td>
-            <td>
-              <select>
-                <option>🟡 En cours</option>
-                <option>✅ Fait</option>
-                <option>❌ Échoué</option>
-              </select>
-            </td>
-            <td><input type="date"/></td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <button onclick="ajouterMission()">➕ Ajouter une mission</button>
-    </section>
-    <section id="logistique">
-      <h2>📦 Logistique / Matériel</h2>
-      <input id="filter-logistique" oninput="filterTable('filter-logistique', 'logistique-body')" placeholder="🔍 Rechercher..." style="margin-bottom: 10px; padding: 5px; width: 200px; background:#222;color:#fff;border:1px solid #444;"/>
-      <table style="width: 100%; table-layout: fixed;">
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Nom</th>
-            <th>État</th>
-            <th>Emplacement</th>
-            <th></th>
-          </tr>
-        </thead>
-        <button onclick="resetSection('logistique-body')">🧹 Réinitialiser Logistique</button>
-        <tbody id="logistique-body">
-          <tr>
-            <td>
-              <select>
-                <option>🔫 Arme</option>
-                <option>🚗 Véhicule</option>
-                <option>🧰 Outil</option>
-                <option>🩹 Soins</option>
-                <option>📻 Électronique</option>
-              </select>
-            </td>
-            <td><input placeholder="Nom ou modèle" type="text"/></td>
-            <td>
-              <select onchange="checkEtat(this)">
-                <option>✅ Fonctionnel</option>
-                <option>⚠️ Endommagé</option>
-                <option>❌ Hors service</option>
-              </select>
-            </td>
-            <td><input placeholder="Où ? ou Avec qui ?" type="text"/></td>
-            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-          </tr>
-        </tbody>
-      </table>
-      <button onclick="ajouterLogistique()">➕ Ajouter un item</button>
-    </section>
-    <section id="skills">
-      <h2>Compétences et responsabilités</h2>
-      <table style="width:100%; table-layout: fixed;">
-        <thead>
-          <tr>
-            <th>Niveau dans l'équipe</th>
-            <th>Joueur responsable</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><input placeholder="Niveau" type="text"/></td>
-            <td><input placeholder="Joueur" type="text"/></td>
-          </tr>
-        </tbody>
-      </table>
-      <button onclick="ajouterLigneCompetence()">➕ Ajouter</button>
-    </section>
-    <section id="zones">
-      <h2>Zones dangereuses</h2>
-      <div class="danger-grid-wrapper" id="danger-zone-container">
-        <div class="danger-zone-entry">
-          <input placeholder="Nom du lieu" type="text"/>
-          <select>
-            <option>Faible</option>
-            <option>Modéré</option>
-            <option>Élevé</option>
-            <option>Extrême</option>
-          </select>
-          <input placeholder="Informations" type="text"/>
-          <button onclick="this.parentElement.remove()">🗑️</button>
+        
+        <h1 id="welcome-title">Terminal DeadHope</h1>
+        <div id="terminal-lines"></div>
+        <div id="input-zone">
+            <input id="input-pseudo" type="text" placeholder="Entre ton pseudo..." />
+            <button id="start-button" onclick="startDashboard()">Accéder au terminal</button>
         </div>
-      </div>
-      <button onclick="ajouterZoneDangereuse()">➕ Ajouter une zone</button>
-    </section>
-    <section id="map">
-      <h2>Carte officielle Project Zomboid</h2>
-      <iframe allowfullscreen="" src="https://map.projectzomboid.com/"></iframe>
-    </section>
-  </main>
-
-  <!-- Bouton chat et section chat -->
-  <button id="chat-toggle" onclick="toggleChat()">💬</button>
-  <section id="radio-chat" style="display:none;">
-    <h2>📻 Communications radio</h2>
-    <div style="margin-bottom: 10px;">
-      <input id="chat-input" placeholder="Tape ton message..." style="width:70%;" type="text"/>
-      <button onclick="sendMessage()">📡 Envoyer</button>
     </div>
-    <div id="chat-log" style="background:#222;padding:10px;max-height:200px;overflow-y:auto;border-radius:8px;border:1px solid #444;"></div>
-  </section>
-</div>
-
-<!-- Ressources audio -->
-<audio id="radio-bip" preload="auto" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-
-<!-- Scripts -->
-<script>
-// Fonctions utilitaires
-function updateTimestamp() {
-  const now = new Date();
-  const formatted = now.toLocaleString("fr-FR");
-  document.getElementById("last-updated").textContent = "Dernière mise à jour : " + formatted;
-}
-
-function filterTable(inputId, tableBodyId) {
-  const input = document.getElementById(inputId).value.toLowerCase();
-  const rows = document.getElementById(tableBodyId).querySelectorAll("tr");
-  rows.forEach(row => {
-    const text = row.innerText.toLowerCase();
-    row.style.display = text.includes(input) ? "" : "none";
-  });
-}
-
-function resetSection(sectionId) {
-  const el = document.getElementById(sectionId);
-  if (el) {
-    if (sectionId.includes('body')) {
-      // Pour les tableaux, on garde la première ligne comme modèle
-      const firstRow = el.querySelector('tr');
-      el.innerHTML = '';
-      if (firstRow) {
-        const newRow = firstRow.cloneNode(true);
-        newRow.querySelectorAll('input').forEach(input => input.value = '');
-        newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-        el.appendChild(newRow);
-      }
-    } else {
-      // Pour d'autres conteneurs
-      const firstItem = el.children[0];
-      el.innerHTML = '';
-      if (firstItem) {
-        const newItem = firstItem.cloneNode(true);
-        newItem.querySelectorAll('input, textarea').forEach(input => input.value = '');
-        newItem.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-        el.appendChild(newItem);
-      }
-    }
-  }
-  syncToFirebase();
-}
-
-// Fonctions de gestion des météo et horloge
-async function loadWeather() {
-  try {
-    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=47.47&longitude=-0.55&current_weather=true');
-    const data = await res.json();
-    const weather = data.current_weather || data.current;
-    const temperature = weather?.temperature || "N/A";
-    const windspeed = weather?.windspeed || "N/A";
-    document.getElementById("weather-info").textContent = `🌡️ ${temperature}°C | 🌬️ ${windspeed} km/h`;
-  } catch (e) {
-    document.getElementById("weather-info").textContent = "🌐 Météo indisponible.";
-  }
-}
-
-let gameMinutes = 8 * 60;
-const gameSpeed = 10;
-function updateGameClock() {
-  const hours = Math.floor(gameMinutes / 60) % 24;
-  const minutes = gameMinutes % 60;
-  document.getElementById("game-clock").textContent = `🕒 Heure en jeu : ${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
-  gameMinutes += gameSpeed;
-}
-
-// Fonctions d'ajout de contenu
-function ajouterFichePerso() {
-  const list = document.getElementById("character-list");
-  const original = list.children[0];
-  const clone = original.cloneNode(true);
-  clone.querySelectorAll("input, textarea").forEach(el => el.value = "");
-  clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
-  list.appendChild(clone);
-  syncToFirebase();
-}
-
-function ajouterJournal() {
-  const tbody = document.getElementById("journal-body");
-  const clone = tbody.rows[0].cloneNode(true);
-  clone.querySelectorAll("input").forEach(el => el.value = "");
-  tbody.appendChild(clone);
-  syncToFirebase();
-}
-
-function ajouterPriorite() {
-  const tbody = document.getElementById("priority-body");
-  const clone = tbody.rows[0].cloneNode(true);
-  clone.querySelectorAll("input").forEach(el => el.value = "");
-  clone.querySelector("select").selectedIndex = 0;
-  tbody.appendChild(clone);
-  syncToFirebase();
-}
-
-function ajouterMission() {
-  const tbody = document.getElementById("mission-body");
-  const clone = tbody.rows[0].cloneNode(true);
-  clone.querySelectorAll("input").forEach(el => el.value = "");
-  clone.querySelector("select").selectedIndex = 0;
-  tbody.appendChild(clone);
-  syncToFirebase();
-}
-
-function ajouterLogistique() {
-  const tbody = document.getElementById("logistique-body");
-  const clone = tbody.rows[0].cloneNode(true);
-  clone.querySelectorAll("input").forEach(el => el.value = "");
-  clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
-  tbody.appendChild(clone);
-  syncToFirebase();
-}
-
-function ajouterZoneDangereuse() {
-  const container = document.getElementById("danger-zone-container");
-  const clone = container.firstElementChild.cloneNode(true);
-  clone.querySelectorAll("input").forEach(input => input.value = "");
-  container.appendChild(clone);
-  syncToFirebase();
-}
-
-function ajouterLigneCompetence() {
-  const tbody = document.querySelector("#skills table tbody");
-  const clone = tbody.rows[0].cloneNode(true);
-  clone.querySelectorAll("input").forEach(input => input.value = "");
-  tbody.appendChild(clone);
-  syncToFirebase();
-}
-
-// Vérification de l'état des équipements
-function checkEtat(select) {
-  const row = select.closest("tr");
-  const value = select.value;
-  if (value.includes("❌")) {
-    row.style.backgroundColor = "#4a1c1c";
-  } else if (value.includes("⚠️")) {
-    row.style.backgroundColor = "#4a3c1c";
-  } else {
-    row.style.backgroundColor = "transparent";
-  }
-}
-
-// Paramètres du thème
-function toggleTheme() {
-  document.body.classList.toggle("light");
-}
-
-// Configuration Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
-  authDomain: "deadhope-a1704.firebaseapp.com",
-  projectId: "deadhope-a1704",
-  storageBucket: "deadhope-a1704.firebasestorage.app",
-  messagingSenderId: "1019321338333",
-  appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
-};
-// Initialisation Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const docRef = db.collection("dashboards").doc("main");
-
-// Fonctions de chat
-function toggleChat() {
-  const box = document.getElementById("radio-chat");
-  box.style.display = box.style.display === "none" ? "block" : "none";
-}
-
-
-function sendMessage() {
-  const input = document.getElementById("chat-input");
-  const text = input.value.trim();
-  if (!text) return;
-
-  const message = {
-    pseudo: getPseudo(),
-    text,
-    timestamp: new Date().toISOString()
-  };
-
-  docRef.set({ messages: firebase.firestore.FieldValue.arrayUnion(message) }, { merge: true })
-    .then(() => input.value = "")
-    .catch(console.error);
-}
-
-function renderMessages(messages) {
-  const log = document.getElementById("chat-log");
-  log.innerHTML = "";
-
-  const cutoff = Date.now() - 1000 * 60 * 60 * 12;
-  const recentMessages = messages
-    .filter(msg => new Date(msg.timestamp).getTime() > cutoff)
-    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-
-  recentMessages.forEach(msg => {
-    const time = new Date(msg.timestamp).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
-    const div = document.createElement("div");
-    div.classList.add("fade-in");
-    div.innerHTML = `<strong style="color:#8f8">${msg.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${msg.text}`;
-    log.appendChild(div);
-  });
-
-  log.scrollTop = log.scrollHeight;
-}
-
-// Fonction pour synchroniser les données avec Firebase
-function syncToFirebase() {
-  updateTimestamp();
-  
-  // Récupération des données du tableau de bord
-  const data = {
-    characters: Array.from(document.querySelectorAll("#character-list .character-card")).map(card => ({
-      name: card.querySelectorAll("input")[0].value,
-      role: card.querySelectorAll("input")[1].value,
-      notes: card.querySelector("textarea").value
-    })),
-    journal: Array.from(document.querySelectorAll("#journal-body tr")).map(row => ({
-      date: row.cells[0].querySelector("input")?.value,
-      event: row.cells[1].querySelector("input")?.value,
-      player: row.cells[2].querySelector("input")?.value
-    })),
-    priorities: Array.from(document.querySelectorAll("#priority-body tr")).map(row => ({
-      task: row.cells[0].querySelector("input")?.value,
-      player: row.cells[1].querySelector("input")?.value,
-      importance: row.cells[2].querySelector("select")?.value
-    })),
-    missions: Array.from(document.querySelectorAll("#mission-body tr")).map(row => ({
-      objective: row.cells[0].querySelector("input")?.value,
-      responsible: row.cells[1].querySelector("input")?.value,
-      status: row.cells[2].querySelector("select")?.value,
-      deadline: row.cells[3].querySelector("input")?.value
-    })),
-    logistics: Array.from(document.querySelectorAll("#logistique-body tr")).map(row => ({
-      type: row.cells[0].querySelector("select")?.value,
-      name: row.cells[1].querySelector("input")?.value,
-      status: row.cells[2].querySelector("select")?.value,
-      location: row.cells[3].querySelector("input")?.value
-    })),
-    dangerZones: Array.from(document.querySelectorAll(".danger-zone-entry")).map(entry => ({
-      name: entry.querySelector("input:nth-child(1)")?.value,
-      level: entry.querySelector("select")?.value,
-      info: entry.querySelector("input:nth-child(3)")?.value
-    }))
-  };
-  
-  // Sauvegarde dans Firebase
-  docRef.update({dashboard: data})
-    .catch(error => console.error("Erreur de synchronisation:", error));
-}
-// Listener pour les messages Firebase
-let previousCount = 0;
-docRef.onSnapshot(snapshot => {
-  const data = snapshot.data();
-  if (!data || !Array.isArray(data.messages)) return;
-
-  const messages = data.messages;
-  if (messages.length > previousCount) {
-    const last = messages[messages.length - 1];
-    if (last.pseudo !== getPseudo()) {
-      document.getElementById("radio-bip").play().catch(() => {});
-    }
-  }
-  previousCount = messages.length;
-  renderMessages(messages);
-});
-
-// Ajouter un gestionnaire pour la touche Entrée sur le chat
-document.getElementById("chat-input").addEventListener("keypress", function(event) {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    sendMessage();
-  }
-});
-
-// Écouter les modifications du contenu pour synchro
-document.addEventListener("input", () => syncToFirebase());
-document.addEventListener("change", () => syncToFirebase());
-
-// Initialisation au chargement de la page
-document.addEventListener("DOMContentLoaded", () => {
-  loadWeather();
-  updateGameClock();
-  setInterval(updateGameClock, 60000);
-  
-  // Charger les données existantes depuis Firebase
-  docRef.get().then(doc => {
-    if (doc.exists && doc.data().dashboard) {
-      // Implémenter le chargement des données
-      console.log("Données chargées depuis Firebase");
-    }
-  }).catch(error => {
-    console.error("Erreur lors du chargement des données:", error);
-  });
-});
-</script>
-
-<script>
-  window.pseudo = pseudo;
-  document.getElementById("welcome-screen").style.display = "none";
-  
-</script>
-
-
-<script>
-const lines = [
-  "Initialisation du protocole DeadHope...",
-  "Chargement du système de communication radio...",
-  "Synchronisation Firebase établie...",
-  "Chargement de la carte de Knox Country...",
-  "Connexion aux bases de données locales...",
-  "Authentification requise pour accéder au terminal."
-];
-
-let currentLine = 0;
-function typeNextLine() {
-  if (currentLine >= lines.length) {
-    document.getElementById("input-zone").style.display = "block";
-    return;
-  }
-  const terminal = document.getElementById("terminal-lines");
-  const newLine = document.createElement("div");
-  newLine.textContent = "";
-  terminal.appendChild(newLine);
-  let i = 0;
-  const text = lines[currentLine];
-  const interval = setInterval(() => {
-    if (i < text.length) {
-      newLine.textContent += text[i++];
-    } else {
-      clearInterval(interval);
-      currentLine++;
-      setTimeout(typeNextLine, 500);
-    }
-  }, 30);
-}
-
-window.addEventListener("load", () => {
-  document.getElementById("boot-sound").play().catch(() => {});
-  typeNextLine();
-});
-
-function startDashboard() {
-  const input = document.getElementById("input-pseudo");
-  const pseudo = input.value.trim();
-  if (!pseudo) {
-    input.style.border = "1px solid red";
-    input.placeholder = "⚠️ Entre ton pseudo !";
-    return;
-  }
-  input.disabled = true;
-  window.pseudo = pseudo;
-  document.getElementById("confirm-sound").play();
-  const terminal = document.getElementById("terminal-lines");
-  terminal.innerHTML += `\nBienvenue, OPÉRATEUR : ${pseudo.toUpperCase()}\nLancement du terminal...`;
-  setTimeout(() => {
-    document.getElementById("welcome-screen").style.display = "none";
-  }, 2000);
-  document.getElementById("background-sound").play().catch(() => {});
-}
-
-function getPseudo() {
-  return window.pseudo || "Anonyme";
-}
-
-document.getElementById("input-pseudo").addEventListener("keypress", function(e) {
-  if (e.key === "Enter") startDashboard();
-});
-</script>
-
+    
+    <!-- Main dashboard content -->
+    <div id="dashboard-content" style="display: none;">
+        <header>
+            <div class="logo">
+                <div class="logo-glow"></div>
+                <h1>☣️ DeadHope ☣️</h1>
+            </div>
+            <div class="info-bar">
+                <div class="info-item">
+                    <span>🕒 TEMPS ÉCOULÉ:</span>
+                    <span id="game-clock" class="info-value">00h00</span>
+                </div>
+                <div class="info-item">
+                    <span>🌡️ TEMPÉRATURE:</span>
+                    <span id="weather-info" class="info-value">CHARGEMENT...</span>
+                </div>
+                <div class="info-item">
+                    <span>📡 DERNIÈRE MAJ:</span>
+                    <span id="last-updated" class="info-value">JAMAIS</span>
+                </div>
+            </div>
+        </header>
+        
+        <nav>
+            <a href="#tableau-bord">📊 Tableau de bord</a>
+            <a href="#characters">👥 Personnages</a>
+            <a href="#missions">🎯 Missions</a>
+            <a href="#logistics">📦 Logistique</a>
+            <a href="#zones">⚠️ Zones</a>
+            <a href="#map">🗺️ Carte</a>
+        </nav>
+        
+        <main>
+            <!-- Tableau de bord section -->
+            <section id="tableau-bord">
+                <h2>Tableau de bord</h2>
+                
+                <!-- Countdown timer to next event -->
+                <div class="countdown">
+                    <div class="countdown-value" id="next-event-countdown">47:23:12</div>
+                    <div class="countdown-label">JUSQU'À LA PROCHAINE TEMPÊTE DE ZOMBIES</div>
+                </div>
+                
+                <!-- Stats overview -->
+                <div class="stat-container">
+                    <div class="stat-card">
+                        <div class="stat-label">JOURS DE SURVIE</div>
+                        <div class="stat-value">12</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="--fill: 32%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label">TENSION DU GROUPE</div>
+                        <div class="stat-value">63%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="--fill: 63%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-label">RAVITAILLEMENT</div>
+                        <div class="stat-value">47%</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="--fill: 47%"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Character section with improved cards -->
+            <section id="characters">
+                <h2>Fiches de personnage</h2>
+                <button onclick="resetSection('character-list')">🧹 Réinitialiser</button>
+                
+                <div class="character-wrapper" id="character-list">
+                    <div class="character-card">
+                        <h3>FICHE D'IDENTIFICATION</h3>
+                        <input placeholder="Nom" type="text" value="John Carpenter"/>
+                        <input placeholder="Rôle dans le groupe" type="text" value="Médecin"/>
+                        <textarea placeholder="Notes ou observations...">A travaillé 5 ans aux urgences. Connaissance en suture et traumatologie. A perdu sa famille lors de l'épidémie initiale.</textarea>
+                        <button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
+                    </div>
+                    
+                    <div class="character-card">
+                        <h3>FICHE D'IDENTIFICATION</h3>
+                        <input placeholder="Nom" type="text" value="Sarah Miller"/>
+                        <input placeholder="Rôle dans le groupe" type="text" value="Chef d'expédition"/>
+                        <textarea placeholder="Notes ou observations...">Ancienne militaire. Spécialiste en armes à feu et tactique de groupe. Insomnies chroniques depuis l'incident de la Zone Rouge.</textarea>
+                        <button onclick="this.parentElement.remove()">🗑️ Supprimer</button>
+                    </div>
+                </div>
+                
+                <button onclick="ajouterFichePerso()">➕ Ajouter un personnage</button>
+            </section>
+            
+            <!-- Missions section -->
+            <section id="missions">
+                <h2>🎯 Missions</h2>
+                <input id="filter-missions" oninput="filterTable('filter-missions', 'mission-body')" placeholder="🔍 Rechercher..." />
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Objectif</th>
+                            <th>Responsable</th>
+                            <th>État</th>
+                            <th>Deadline</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="mission-body">
+                        <tr>
+                            <td><input type="text" placeholder="Ex: Fouiller maison au nord" value="Exploration du centre commercial"/></td>
+                            <td><input type="text" placeholder="Nom du joueur" value="Sarah Miller"/></td>
+                            <td>
+                                <select>
+                                    <option selected>🟡 En cours</option>
+                                    <option>✅ Fait</option>
+                                    <option>❌ Échoué</option>
+                                </select>
+                            </td>
+                            <td><input type="date" value="2025-04-15"/></td>
+                            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+                        </tr>
+                        <tr>
+                            <td><input type="text" placeholder="Ex: Fouiller maison au nord" value="Réparation du générateur"/></td>
+                            <td><input type="text" placeholder="Nom du joueur" value="Mike Jenkins"/></td>
+                            <td>
+                                <select>
+                                    <option>🟡 En cours</option>
+                                    <option selected>✅ Fait</option>
+                                    <option>❌ Échoué</option>
+                                </select>
+                            </td>
+                            <td><input type="date" value="2025-04-11"/></td>
+                            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button onclick="ajouterMission()">➕ Ajouter une mission</button>
+            </section>
+            
+            <!-- Journal / Events section with visual enhancements -->
+            <section id="journal">
+                <h2>📅 Journal / Événements</h2>
+                <input id="filter-journal" oninput="filterTable('filter-journal', 'journal-body')" placeholder="🔍 Rechercher..." />
+                
+                <div class="timeline-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Événement</th>
+                                <th>Joueur</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="journal-body">
+                            <tr>
+                                <td><input type="date" value="2025-04-10"/></td>
+                                <td><input type="text" placeholder="Description" value="Attaque de zombies près du campement"/></td>
+                                <td><input type="text" placeholder="Nom du joueur" value="Tous"/></td>
+                                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+                            </tr>
+                            <tr>
+                                <td><input type="date" value="2025-04-11"/></td>
+                                <td><input type="text" placeholder="Description" value="Découverte d'une cache de médicaments"/></td>
+                                <td><input type="text" placeholder="Nom du joueur" value="John Carpenter"/></td>
+                                <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <button onclick="ajouterJournal()">➕ Ajouter une entrée</button>
+            </section>
+            
+            <!-- Logistics section with icons and status colors -->
+            <section id="logistics">
+                <h2>📦 Logistique / Matériel</h2>
+                <input id="filter-logistique" oninput="filterTable('filter-logistique', 'logistique-body')" placeholder="🔍 Rechercher..." />
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Nom</th>
+                            <th>État</th>
+                            <th>Emplacement</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="logistique-body">
+                        <tr>
+                            <td>
+                                <select>
+                                    <option selected>🔫 Arme</option>
+                                    <option>🚗 Véhicule</option>
+                                    <option>🧰 Outil</option>
+                                    <option>🩹 Soins</option>
+                                    <option>📻 Électronique</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Nom ou modèle" value="Fusil à pompe Remington"/></td>
+                            <td>
+                                <select onchange="checkEtat(this)">
+                                    <option selected>✅ Fonctionnel</option>
+                                    <option>⚠️ Endommagé</option>
+                                    <option>❌ Hors service</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Où ? ou Avec qui ?" value="Armurerie du camp"/></td>
+                            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+                        </tr>
+                        <tr style="background-color: rgba(74, 60, 28, 0.4);">
+                            <td>
+                                <select>
+                                    <option>🔫 Arme</option>
+                                    <option selected>🚗 Véhicule</option>
+                                    <option>🧰 Outil</option>
+                                    <option>🩹 Soins</option>
+                                    <option>📻 Électronique</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Nom ou modèle" value="Jeep Cherokee 2022"/></td>
+                            <td>
+                                <select onchange="checkEtat(this)">
+                                    <option>✅ Fonctionnel</option>
+                                    <option selected>⚠️ Endommagé</option>
+                                    <option>❌ Hors service</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="Où ? ou Avec qui ?" value="Garage Est"/></td>
+                            <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <button onclick="ajouterLogistique()">➕ Ajouter un item</button>
+            </section>
+            
+            <!-- Danger zones with visual heat map -->
+            <section id="zones">
+                <h2>⚠️ Zones dangereuses</h2>
+                
+                <div class="danger-grid-wrapper" id="danger-zone-container">
+                    <div class="danger-zone-entry" style="border-left: 4px solid #e74c3c;">
+                        <input type="text" placeholder="Nom du lieu" value="Centre commercial Westfield"/>
+                        <select>
+                            <option>Faible</option>
+                            <option>Modéré</option>
+                            <option>Élevé</option>
+                            <option selected>Extrême</option>
+                        </select>
+                        <input type="text" placeholder="Informations" value="Horde massive de zombies, éviter à tout prix"/>
+                        <button onclick="this.parentElement.remove()">🗑️</button>
+                    </div>
+                    
+                    <div class="danger-zone-entry" style="border-left: 4px solid #f39c12;">
+                        <input type="text" placeholder="Nom du lieu" value="Hôpital Saint-Michael"/>
+                        <select>
+                            <option>Faible</option>
+                            <option>Modéré</option>
+                            <option selected>Élevé</option>
+                            <option>Extrême</option>
+                        </select>
+                        <input type="text" placeholder="Informations" value="Médicaments disponibles mais lieu infesté"/>
+                        <button onclick="this.parentElement.remove()">🗑️</button>
+                    </div>
+                </div>
+                
+                <button onclick="ajouterZoneDangereuse()">➕ Ajouter une zone</button>
+                
+                <!-- Interactive heat map visualization -->
+                <div class="heat-map-container" style="margin-top: 2rem;">
+                    <h3 style="color: #f39c12; border-bottom: 1px solid #333; padding-bottom: 0.5rem;">Carte de chaleur des dangers</h3>
+                    <div style="position: relative; margin-top: 1rem;">
+                        <svg viewBox="0 0 800 400" style="width: 100%; height: auto; border: 1px solid #333; border-radius: 8px; background: #111;">
+                            <!-- Zone circles with danger levels -->
+                            <circle cx="200" cy="150" r="70" fill="url(#danger-extreme)" opacity="0.7"></circle>
+                            <circle cx="450" cy="220" r="50" fill="url(#danger-high)" opacity="0.7"></circle>
+                            <circle cx="650" cy="100" r="40" fill="url(#danger-medium)" opacity="0.7"></circle>
+                            <circle cx="300" cy="300" r="60" fill="url(#danger-low)" opacity="0.7"></circle>
+                            
+                            <!-- City markers -->
+                            <g transform="translate(200, 150)">
+                                <circle cx="0" cy="0" r="10" fill="#111" stroke="#e74c3c" stroke-width="2"></circle>
+                                <text x="15" y="5" fill="#e74c3c" font-size="12" font-family="monospace">Centre commercial</text>
+                            </g>
+                            
+                            <g transform="translate(450, 220)">
+                                <circle cx="0" cy="0" r="10" fill="#111" stroke="#f39c12" stroke-width="2"></circle>
+                                <text x="15" y="5" fill="#f39c12" font-size="12" font-family="monospace">Hôpital</text>
+                            </g>
+                            
+                            <g transform="translate(650, 100)">
+                                <circle cx="0" cy="0" r="10" fill="#111" stroke="#f1c40f" stroke-width="2"></circle>
+                                <text x="15" y="5" fill="#f1c40f" font-size="12" font-family="monospace">Station-service</text>
+                            </g>
+                            
+                            <g transform="translate(300, 300)">
+                                <circle cx="0" cy="0" r="10" fill="#111" stroke="#2ecc71" stroke-width="2"></circle>
+                                <text x="15" y="5" fill="#2ecc71" font-size="12" font-family="monospace">Zone résidentielle</text>
+                            </g>
+                            
+                            <!-- Camp position -->
+                            <g transform="translate(100, 100)">
+                                <path d="M0,-15 L10,5 L-10,5 Z" fill="#00bcd4"></path>
+                                <circle cx="0" cy="0" r="20" fill="none" stroke="#00bcd4" stroke-width="2" opacity="0.7">
+                                    <animate attributeName="r" from="20" to="30" dur="2s" repeatCount="indefinite" />
+                                    <animate attributeName="opacity" from="0.7" to="0" dur="2s" repeatCount="indefinite" />
+                                </circle>
+                                <text x="15" y="5" fill="#00bcd4" font-size="14" font-weight="bold" font-family="monospace">CAMP</text>
+                            </g>
+                            
+                            <!-- Gradient definitions -->
+                            <defs>
+                                <radialGradient id="danger-extreme" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                    <stop offset="0%" stop-color="#e74c3c" />
+                                    <stop offset="100%" stop-color="transparent" />
+                                </radialGradient>
+                                
+                                <radialGradient id="danger-high" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                    <stop offset="0%" stop-color="#f39c12" />
+                                    <stop offset="100%" stop-color="transparent" />
+                                </radialGradient>
+                                
+                                <radialGradient id="danger-medium" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                    <stop offset="0%" stop-color="#f1c40f" />
+                                    <stop offset="100%" stop-color="transparent" />
+                                </radialGradient>
+                                
+                                <radialGradient id="danger-low" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                    <stop offset="0%" stop-color="#2ecc71" />
+                                    <stop offset="100%" stop-color="transparent" />
+                                </radialGradient>
+                            </defs>
+                        </svg>
+                        
+                        <div class="map-legend" style="display: flex; justify-content: space-around; margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;">
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="display: inline-block; width: 15px; height: 15px; background: #e74c3c; border-radius: 50%;"></span>
+                                <span>Extrême</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="display: inline-block; width: 15px; height: 15px; background: #f39c12; border-radius: 50%;"></span>
+                                <span>Élevé</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="display: inline-block; width: 15px; height: 15px; background: #f1c40f; border-radius: 50%;"></span>
+                                <span>Modéré</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="display: inline-block; width: 15px; height: 15px; background: #2ecc71; border-radius: 50%;"></span>
+                                <span>Faible</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Interactive map section avec carte personnalisée au lieu de l'iframe qui ne fonctionne pas -->
+            <section id="map">
+                <h2>🗺️ CARTE INTERACTIVE</h2>
+                
+                <div class="custom-map">
+                    <!-- Map grid background -->
+                    <div class="map-grid"></div>
+                    
+                    <!-- Error message instead of iframe -->
+                    <div class="map-error">ERR_BLOCKED_BY_CSP</div>
+                    <div class="map-title">MAP.PROJECTZOMBOID.COM<br/>EST BLOQUÉ</div>
+                    <div class="map-message">Ce contenu est bloqué. Pour résoudre le problème, contactez le propriétaire du site.</div>
+                    
+                    <!-- Warning symbols -->
+                    <div class="map-warning warning-left">
+                        <div class="warning-triangle"></div>
+                    </div>
+                    <div class="map-warning warning-right">
+                        <div class="warning-triangle"></div>
+                    </div>
+                    
+                    <!-- Custom interactive map locations -->
+                    <div class="map-location location-1">
+                        <div class="location-pulse" style="background: #e74c3c;"></div>
+                    </div>
+                    <div class="map-location location-2">
+                        <div class="location-pulse" style="background: #2ecc71;"></div>
+                    </div>
+                    <div class="map-location location-3">
+                        <div class="location-pulse" style="background: #3498db;"></div>
+                    </div>
+                    <div class="map-location location-4">
+                        <div class="location-pulse" style="background: #f1c40f;"></div>
+                    </div>
+                    
+                    <!-- Map legend -->
+                    <div class="map-legend">
+                        <div class="legend-title">LÉGENDE</div>
+                        <div class="legend-item">
+                            <div class="legend-circle" style="background: #e74c3c;"></div>
+                            <span>Zone infestée</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-circle" style="background: #2ecc71;"></div>
+                            <span>Zone sécurisée</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-circle" style="background: #3498db;"></div>
+                            <span>Point d'intérêt</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <!-- Chat radio button with notification -->
+        <button id="chat-toggle" onclick="toggleChat()">
+            💬
+            <span class="msg-notification">3</span>
+        </button>
+        
+        <!-- Chat radio panel -->
+        <section id="radio-chat" style="display:none;">
+            <h2>📻 Communications radio</h2>
+            <div style="margin-bottom: 10px; display: flex; gap: 5px;">
+                <input id="chat-input" type="text" placeholder="Tape ton message..." style="flex: 1;"/>
+                <button onclick="sendMessage()" style="width: auto; display: flex; align-items: center; gap: 5px;">
+                    <span>Envoyer</span> 📡
+                </button>
+            </div>
+            
+            <div id="chat-log">
+                <div class="chat-message">
+                    <strong style="color:#8f8">Système</strong> <span style="color:#888">[08:45]</span>: Bienvenue sur la fréquence d'urgence.
+                </div>
+                <div class="chat-message">
+                    <strong style="color:#f55">Sarah</strong> <span style="color:#888">[09:12]</span>: Attention, hordes signalées au nord du centre commercial.
+                </div>
+                <div class="chat-message">
+                    <strong style="color:#5af">John</strong> <span style="color:#888">[09:15]</span>: Reçu. On évite cette zone pour l'expédition d'aujourd'hui.
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Audio elements -->
+    <audio id="background-sound" loop volume="0.2">
+        <source src="https://actions.google.com/sounds/v1/ambiences/abandoned_facility.ogg" type="audio/ogg">
+    </audio>
+    <audio id="boot-sound" preload="auto">
+        <source src="https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg" type="audio/ogg">
+    </audio>
+    <audio id="confirm-sound" preload="auto">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    </audio>
+    <audio id="radio-bip" preload="auto">
+        <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
+    </audio>
+    
+    <!-- JavaScript for the interface -->
+    <script>
+        // Store the user's pseudo
+        window.pseudo = "Anonyme";
+        
+        // Terminal welcome screen typing effect
+        const lines = [
+            "Initialisation du protocole DeadHope v2.7...",
+            "Connexion aux bases de données sécurisées...",
+            "Chargement de la carte tactique de Knox County...",
+            "Établissement des liaisons radio d'urgence...",
+            "Analyse des zones de danger en temps réel...",
+            "Estimation des mouvements de zombies...",
+            "Authentification requise pour accéder au terminal."
+        ];
+        
+        let currentLine = 0;
+        function typeNextLine() {
+            if (currentLine >= lines.length) {
+                document.getElementById("input-zone").style.display = "block";
+                return;
+            }
+            
+            const terminal = document.getElementById("terminal-lines");
+            const newLine = document.createElement("div");
+            newLine.textContent = "";
+            terminal.appendChild(newLine);
+            
+            let i = 0;
+            const text = lines[currentLine];
+            const typeInterval = setInterval(() => {
+                if (i < text.length) {
+                    newLine.textContent += text[i++];
+                } else {
+                    clearInterval(typeInterval);
+                    currentLine++;
+                    setTimeout(typeNextLine, 500);
+                }
+            }, 30);
+        }
+        
+        // Start dashboard after authentication
+        function startDashboard() {
+            const input = document.getElementById("input-pseudo");
+            const pseudo = input.value.trim();
+            
+            if (!pseudo) {
+                input.style.border = "1px solid #e74c3c";
+                input.placeholder = "⚠️ PSEUDO REQUIS!";
+                return;
+            }
+            
+            input.disabled = true;
+            window.pseudo = pseudo;
+            
+            // Play confirmation sound
+            document.getElementById("confirm-sound").play().catch(() => {});
+            
+            const terminal = document.getElementById("terminal-lines");
+            terminal.innerHTML += `\n\nBienvenue, OPÉRATEUR: <span style="color: #8b0000; font-weight: bold">${pseudo.toUpperCase()}</span>\nInitialisation du terminal tactique...`;
+            
+            // Add a loading animation
+            const loadingDiv = document.createElement("div");
+            loadingDiv.innerHTML = "<div style='margin-top: 10px; display: flex; justify-content: center;'><div class='typing-indicator'>■</div></div>";
+            terminal.appendChild(loadingDiv);
+            
+            // Transition to dashboard
+            setTimeout(() => {
+                document.getElementById("welcome-screen").style.display = "none";
+                document.getElementById("dashboard-content").style.display = "block";
+                document.getElementById("background-sound").play().catch(() => {});
+                updateTimestamp();
+            }, 2000);
+        }
+        
+        // Utility functions
+        function updateTimestamp() {
+            const now = new Date();
+            const formatted = now.toLocaleString("fr-FR");
+            document.getElementById("last-updated").textContent = formatted;
+        }
+        
+        function filterTable(inputId, tableBodyId) {
+            const input = document.getElementById(inputId).value.toLowerCase();
+            const rows = document.getElementById(tableBodyId).querySelectorAll("tr");
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(input) ? "" : "none";
+            });
+        }
+        
+        function resetSection(sectionId) {
+            const el = document.getElementById(sectionId);
+            
+            if (el) {
+                if (sectionId.includes('body')) {
+                    // For tables, keep first row as template
+                    const firstRow = el.querySelector('tr');
+                    el.innerHTML = '';
+                    
+                    if (firstRow) {
+                        const newRow = firstRow.cloneNode(true);
+                        newRow.querySelectorAll('input').forEach(input => input.value = '');
+                        newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                        el.appendChild(newRow);
+                    }
+                } else {
+                    // For other containers
+                    const firstItem = el.children[0];
+                    el.innerHTML = '';
+                    
+                    if (firstItem) {
+                        const newItem = firstItem.cloneNode(true);
+                        newItem.querySelectorAll('input, textarea').forEach(input => input.value = '');
+                        newItem.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                        el.appendChild(newItem);
+                    }
+                }
+            }
+        }
+        
+        // Check equipment status and change row color
+        function checkEtat(select) {
+            const row = select.closest("tr");
+            const value = select.value;
+            
+            if (value.includes("❌")) {
+                row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
+            } else if (value.includes("⚠️")) {
+                row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
+            } else {
+                row.style.backgroundColor = "transparent";
+            }
+        }
+        
+        // Add new entries to tables
+        function ajouterFichePerso() {
+            const list = document.getElementById("character-list");
+            const original = list.children[0];
+            const clone = original.cloneNode(true);
+            
+            clone.querySelectorAll("input, textarea").forEach(el => el.value = "");
+            clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+            
+            list.appendChild(clone);
+        }
+        
+        function ajouterJournal() {
+            const tbody = document.getElementById("journal-body");
+            const clone = tbody.rows[0].cloneNode(true);
+            
+            clone.querySelectorAll("input").forEach(el => el.value = "");
+            tbody.appendChild(clone);
+        }
+        
+        function ajouterMission() {
+            const tbody = document.getElementById("mission-body");
+            const clone = tbody.rows[0].cloneNode(true);
+            
+            clone.querySelectorAll("input").forEach(el => el.value = "");
+            clone.querySelector("select").selectedIndex = 0;
+            
+            tbody.appendChild(clone);
+        }
+        
+        function ajouterLogistique() {
+            const tbody = document.getElementById("logistique-body");
+            const clone = tbody.rows[0].cloneNode(true);
+            
+            clone.querySelectorAll("input").forEach(el => el.value = "");
+            clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+            clone.style.backgroundColor = "transparent";
+            
+            tbody.appendChild(clone);
+        }
+        
+        function ajouterZoneDangereuse() {
+            const container = document.getElementById("danger-zone-container");
+            const clone = container.firstElementChild.cloneNode(true);
+            
+            clone.querySelectorAll("input").forEach(input => input.value = "");
+            clone.style.borderLeftColor = "#333";
+            
+            container.appendChild(clone);
+        }
+        
+        // Chat functions
+        function toggleChat() {
+            const box = document.getElementById("radio-chat");
+            box.style.display = box.style.display === "none" ? "block" : "none";
+            
+            // Remove notification when opening chat
+            if (box.style.display === "block") {
+                const notification = document.querySelector(".msg-notification");
+                if (notification) notification.style.display = "none";
+            }
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById("chat-input");
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            const chatLog = document.getElementById("chat-log");
+            const now = new Date();
+            const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+            
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("chat-message", "fade-in");
+            msgDiv.innerHTML = `<strong style="color:#5af">${window.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${text}`;
+            
+            chatLog.appendChild(msgDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            
+            input.value = "";
+            
+            // Play radio sound
+            document.getElementById("radio-bip").play().catch(() => {});
+        }
+        
+        // Game clock update
+        let gameMinutes = 8 * 60;
+        const gameSpeed = 2; // Minutes per real minute
+        
+        function updateGameClock() {
+            const hours = Math.floor(gameMinutes / 60) % 24;
+            const minutes = gameMinutes % 60;
+            
+            document.getElementById("game-clock").textContent = `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+            
+            gameMinutes += gameSpeed;
+            
+            // Update countdowns and other time-based elements
+            updateCountdown();
+        }
+        
+        // Countdown to next event
+        let countdownMinutes = 47 * 60 + 23 * 60 + 12; // 47:23:12
+        
+        function updateCountdown() {
+            if (countdownMinutes <= 0) {
+                // Reset countdown or trigger event
+                countdownMinutes = Math.floor(Math.random() * 24 * 60 * 60); // Random time within 24 hours
+            }
+            
+            const hours = Math.floor(countdownMinutes / 3600);
+            const minutes = Math.floor((countdownMinutes % 3600) / 60);
+            const seconds = countdownMinutes % 60;
+            
+            document.getElementById("next-event-countdown").textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            countdownMinutes--;
+        }
+        
+        // Map location interaction
+        function setupMapInteraction() {
+            const locations = document.querySelectorAll('.map-location');
+            
+            locations.forEach(location => {
+                location.addEventListener('click', function() {
+                    // Show a simple tooltip with information
+                    let tooltip = document.createElement('div');
+                    tooltip.style.position = 'absolute';
+                    tooltip.style.background = 'rgba(0,0,0,0.8)';
+                    tooltip.style.color = '#fff';
+                    tooltip.style.padding = '10px';
+                    tooltip.style.borderRadius = '5px';
+                    tooltip.style.zIndex = '100';
+                    tooltip.style.maxWidth = '200px';
+                    tooltip.style.top = (this.offsetTop - 60) + 'px';
+                    tooltip.style.left = (this.offsetLeft + this.offsetWidth/2 - 100) + 'px';
+                    
+                    // Determine tooltip content based on location class
+                    if (this.classList.contains('location-1')) {
+                        tooltip.innerHTML = '<strong>Centre commercial</strong><br>Zone à haut risque, forte concentration de zombies. Richesse en ressources.';
+                    } else if (this.classList.contains('location-2')) {
+                        tooltip.innerHTML = '<strong>Zone résidentielle</strong><br>Zone sécurisée, patrouillée régulièrement. Abris et provisions disponibles.';
+                    } else if (this.classList.contains('location-3')) {
+                        tooltip.innerHTML = '<strong>Station service</strong><br>Point d\'intérêt. Carburant et pièces mécaniques disponibles.';
+                    } else if (this.classList.contains('location-4')) {
+                        tooltip.innerHTML = '<strong>Hôpital</strong><br>Risque modéré, concentrations de zombies sporadiques. Ressources médicales.';
+                    }
+                    
+                    const mapContainer = document.querySelector('.custom-map');
+                    mapContainer.appendChild(tooltip);
+                    
+                    // Remove tooltip after a delay
+                    setTimeout(() => {
+                        tooltip.remove();
+                    }, 3000);
+                });
+            });
+        }
+        
+        // Animate truck in welcome screen
+        function animateTruck() {
+            const truck = document.querySelector('.truck');
+            
+            // Add some subtle motion to the truck
+            truck.style.animation = 'truckIdle 2s infinite alternate';
+            
+            // Define the animation in stylesheet
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes truckIdle {
+                    0% { transform: translateY(0); }
+                    100% { transform: translateY(-3px); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Weather simulation effect
+        function simulateWeather() {
+            // Create a random weather effect (rain, fog, clear)
+            const weatherTypes = ['rain', 'fog', 'clear'];
+            const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+            const weatherTemp = Math.floor(Math.random() * 30 - 5); // -5 to 25 degrees
+            
+            document.getElementById("weather-info").textContent = `${weatherTemp}°C`;
+            
+            // Add visual effect based on weather
+            const style = document.createElement('style');
+            
+            if (randomWeather === 'rain') {
+                document.getElementById("weather-info").textContent = `🌧️ ${weatherTemp}°C`;
+                style.textContent = `
+                    body::before {
+                        background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8));
+                    }
+                `;
+            } else if (randomWeather === 'fog') {
+                document.getElementById("weather-info").textContent = `🌫️ ${weatherTemp}°C`;
+                style.textContent = `
+                    body::before {
+                        background: linear-gradient(rgba(20,20,30,0.8), rgba(20,20,30,0.8));
+                    }
+                `;
+            } else {
+                document.getElementById("weather-info").textContent = `☀️ ${weatherTemp}°C`;
+                style.textContent = `
+                    body::before {
+                        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6));
+                    }
+                `;
+            }
+            
+            document.head.appendChild(style);
+        }
+        
+        // Add blood splatter visual effect
+        function addBloodSplatterEffect() {
+            document.body.addEventListener('click', function(e) {
+                if (Math.random() > 0.7) { // 30% chance on any click
+                    const splatter = document.createElement('div');
+                    splatter.classList.add('blood-splatter');
+                    splatter.style.left = (e.clientX - 50) + 'px';
+                    splatter.style.top = (e.clientY - 50) + 'px';
+                    document.body.appendChild(splatter);
+                    
+                    // Animate and remove
+                    setTimeout(() => {
+                        splatter.style.transform = 'scale(1.5)';
+                        splatter.style.opacity = '0.7';
+                        
+                        setTimeout(() => {
+                            splatter.style.opacity = '0';
+                            setTimeout(() => {
+                                splatter.remove();
+                            }, 500);
+                        }, 100);
+                    }, 10);
+                }
+            });
+        }
+        
+        // Initialize on page load
+        window.addEventListener("load", () => {
+            // Start terminal boot sequence
+            document.getElementById("boot-sound").play().catch(() => {});
+            typeNextLine();
+            
+            // Set up intervals for game clock and other periodic updates
+            setInterval(updateGameClock, 60000 / gameSpeed);
+            setInterval(updateCountdown, 1000);
+            
+            // Initialize extra visual effects
+            animateTruck();
+            simulateWeather();
+            setupMapInteraction();
+            addBloodSplatterEffect();
+            
+            // Listen for Enter key on login
+            document.getElementById("input-pseudo").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") startDashboard();
+            });
+            
+            // Listen for Enter key on chat input
+            document.getElementById("chat-input").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") sendMessage();
+            });
+        });
+    </script>
 </body>
 </html>
