@@ -2,7 +2,29 @@
 <html lang="fr">
 <head>
     <!-- Ajoutez ces lignes dans la section <head> de votre document -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js">
+  // Référence vers la base de données Firebase (Realtime)
+  let userRef = null;
+
+  function registerPresence(pseudo) {
+    const presenceRef = database.ref("presence");
+    userRef = presenceRef.child(pseudo);
+
+    // Enregistre que le joueur est connecté
+    userRef.set(true);
+    userRef.onDisconnect().remove(); // Se retire automatiquement à la déconnexion
+
+    // Affiche les utilisateurs connectés
+    presenceRef.on("value", (snapshot) => {
+      const users = snapshot.val() || {};
+      const userList = Object.keys(users);
+      const container = document.querySelector("#connected-users span");
+      container.textContent = userList.length > 0 ? userList.join(", ") : "Aucun";
+    });
+  }
+</script>
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -1643,6 +1665,11 @@ transition: all 0.5s ease-in-out;
         <span>🌡️ TEMPÉRATURE:</span>
         <span id="weather-info" class="info-value">CHARGEMENT...</span>
     </div>
+    
+<div class="info-item" id="connected-users">
+  🧍 Connectés : <span class="info-value">Chargement...</span>
+</div>
+
     <div class="info-item">
         <span>📡 DERNIÈRE MAJ:</span>
         <span id="last-updated" class="info-value">JAMAIS</span>
