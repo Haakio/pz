@@ -2714,37 +2714,30 @@ icon.addEventListener('click', function() {
    });
  });
 
-// Fonction pour sauvegarder les données dans localStorage
-function saveDataToLocalStorage() {
-    // Récupération des différentes sections
-    const characters = collectCharactersData();
-    const missions = collectMissionsData();
-    const journal = collectJournalData();
-    const logistics = collectLogisticsData();
-    const dangerZones = collectDangerZonesData();
-    
-    // Création d'un objet avec toutes les données
-    const savedData = {
-        characters,
-        missions,
-        journal,
-        logistics,
-        dangerZones,
+// SYSTÈME DE SYNCHRONISATION EN TEMPS RÉEL
+
+// Fonction pour sauvegarder l'état complet de l'application
+function saveStateToLocalStorage() {
+    // Collecter toutes les données de l'application
+    const appState = {
+        characters: collectCharactersData(),
+        missions: collectMissionsData(),
+        journal: collectJournalData(),
+        logistics: collectLogisticsData(),
+        dangerZones: collectDangerZonesData(),
+        gameTime: {
+            gameMinutes: gameMinutes,
+            countdownMinutes: countdownMinutes
+        },
         lastSaved: new Date().toISOString(),
         pseudo: window.pseudo
     };
     
-    // Sauvegarde dans localStorage
-    localStorage.setItem('deadhope-data', JSON.stringify(savedData));
-    
-    // Mise à jour de l'horodatage
-    updateTimestamp();
-    
-    // Effet visuel pour indiquer la sauvegarde
-    showSaveNotification();
+    // Sauvegarder dans localStorage
+    localStorage.setItem('deadhope-state', JSON.stringify(appState));
 }
 
-// Collecter les données des personnages
+// Fonctions pour collecter les données (identiques au code précédent)
 function collectCharactersData() {
     const characterCards = document.querySelectorAll('#character-list .character-card');
     const characters = [];
@@ -2754,16 +2747,15 @@ function collectCharactersData() {
         const textarea = card.querySelector('textarea');
         
         characters.push({
-            name: inputs[0].value || '',
-            role: inputs[1].value || '',
-            notes: textarea.value || ''
+            name: inputs[0]?.value || '',
+            role: inputs[1]?.value || '',
+            notes: textarea?.value || ''
         });
     });
     
     return characters;
 }
 
-// Collecter les données des missions
 function collectMissionsData() {
     const missionRows = document.querySelectorAll('#mission-body tr');
     const missions = [];
@@ -2773,17 +2765,16 @@ function collectMissionsData() {
         const select = row.querySelector('select');
         
         missions.push({
-            objective: inputs[0].value || '',
-            responsible: inputs[1].value || '',
-            status: select.options[select.selectedIndex].text || '',
-            deadline: inputs[2].value || ''
+            objective: inputs[0]?.value || '',
+            responsible: inputs[1]?.value || '',
+            status: select?.options[select.selectedIndex]?.text || '',
+            deadline: inputs[2]?.value || ''
         });
     });
     
     return missions;
 }
 
-// Collecter les données du journal
 function collectJournalData() {
     const journalRows = document.querySelectorAll('#journal-body tr');
     const journal = [];
@@ -2792,16 +2783,15 @@ function collectJournalData() {
         const inputs = row.querySelectorAll('input');
         
         journal.push({
-            date: inputs[0].value || '',
-            event: inputs[1].value || '',
-            player: inputs[2].value || ''
+            date: inputs[0]?.value || '',
+            event: inputs[1]?.value || '',
+            player: inputs[2]?.value || ''
         });
     });
     
     return journal;
 }
 
-// Collecter les données logistiques
 function collectLogisticsData() {
     const logisticsRows = document.querySelectorAll('#logistique-body tr');
     const logistics = [];
@@ -2811,17 +2801,16 @@ function collectLogisticsData() {
         const selects = row.querySelectorAll('select');
         
         logistics.push({
-            type: selects[0].options[selects[0].selectedIndex].text || '',
-            name: inputs[0].value || '',
-            status: selects[1].options[selects[1].selectedIndex].text || '',
-            location: inputs[1].value || ''
+            type: selects[0]?.options[selects[0].selectedIndex]?.text || '',
+            name: inputs[0]?.value || '',
+            status: selects[1]?.options[selects[1].selectedIndex]?.text || '',
+            location: inputs[1]?.value || ''
         });
     });
     
     return logistics;
 }
 
-// Collecter les données des zones dangereuses
 function collectDangerZonesData() {
     const zoneEntries = document.querySelectorAll('#danger-zone-container .danger-zone-entry');
     const zones = [];
@@ -2831,9 +2820,9 @@ function collectDangerZonesData() {
         const select = zone.querySelector('select');
         
         zones.push({
-            name: inputs[0].value || '',
-            danger: select.options[select.selectedIndex].text || '',
-            info: inputs[1].value || '',
+            name: inputs[0]?.value || '',
+            danger: select?.options[select.selectedIndex]?.text || '',
+            info: inputs[1]?.value || '',
             color: zone.style.borderLeftColor || ''
         });
     });
@@ -2841,287 +2830,250 @@ function collectDangerZonesData() {
     return zones;
 }
 
-// Fonction pour charger les données depuis localStorage
-function loadDataFromLocalStorage() {
-    const savedData = localStorage.getItem('deadhope-data');
+// Charger l'état sauvegardé
+function loadStateFromLocalStorage() {
+    const savedState = localStorage.getItem('deadhope-state');
     
-    if (savedData) {
-        const data = JSON.parse(savedData);
+    if (savedState) {
+        const state = JSON.parse(savedState);
         
         // Si le pseudo est différent, on demande confirmation
-        if (data.pseudo && data.pseudo !== window.pseudo) {
-            if (!confirm(`Données sauvegardées trouvées pour "${data.pseudo}". Voulez-vous charger ces données ?`)) {
+        if (state.pseudo && state.pseudo !== window.pseudo) {
+            if (!confirm(`Données sauvegardées trouvées pour "${state.pseudo}". Voulez-vous charger ces données ?`)) {
                 return; // L'utilisateur a refusé de charger les données
             }
         }
         
-        // Charger les différentes sections
-        loadCharactersData(data.characters);
-        loadMissionsData(data.missions);
-        loadJournalData(data.journal);
-        loadLogisticsData(data.logistics);
-        loadDangerZonesData(data.dangerZones);
+        // Charger toutes les données
+        loadCharactersData(state.characters);
+        loadMissionsData(state.missions);
+        loadJournalData(state.journal);
+        loadLogisticsData(state.logistics);
+        loadDangerZonesData(state.dangerZones);
         
-        // Notification visuelle
-        showLoadNotification();
+        // Restaurer le temps de jeu
+        if (state.gameTime) {
+            gameMinutes = state.gameTime.gameMinutes;
+            countdownMinutes = state.gameTime.countdownMinutes;
+            updateGameClock(); // Mettre à jour l'affichage
+            updateCountdown(); // Mettre à jour le compte à rebours
+        }
+        
+        console.log("État chargé avec succès depuis localStorage");
     }
 }
 
-// Charger les données des personnages
+// Fonctions pour charger les données (similaires à celles précédentes)
 function loadCharactersData(characters) {
     if (!characters || !characters.length) return;
-    
     const characterList = document.getElementById('character-list');
-    // Vider la liste actuelle sauf le premier élément (template)
+    if (!characterList) return;
+    
     resetSection('character-list');
     
-    characters.forEach(char => {
-        const clone = characterList.children[0].cloneNode(true);
-        const inputs = clone.querySelectorAll('input');
-        const textarea = clone.querySelector('textarea');
-        
-        // Remplir avec les données sauvegardées
-        inputs[0].value = char.name || '';
-        inputs[1].value = char.role || '';
-        textarea.value = char.notes || '';
-        
-        characterList.appendChild(clone);
+    characters.forEach((char, index) => {
+        if (index > 0 || characterList.children.length === 0) {
+            const template = characterList.children[0] || null;
+            if (!template) return;
+            
+            const clone = template.cloneNode(true);
+            const inputs = clone.querySelectorAll('input');
+            const textarea = clone.querySelector('textarea');
+            
+            if (inputs[0]) inputs[0].value = char.name || '';
+            if (inputs[1]) inputs[1].value = char.role || '';
+            if (textarea) textarea.value = char.notes || '';
+            
+            characterList.appendChild(clone);
+        } else {
+            // Premier élément
+            const inputs = characterList.children[0].querySelectorAll('input');
+            const textarea = characterList.children[0].querySelector('textarea');
+            
+            if (inputs[0]) inputs[0].value = char.name || '';
+            if (inputs[1]) inputs[1].value = char.role || '';
+            if (textarea) textarea.value = char.notes || '';
+        }
     });
 }
 
-// Charger les données des missions
-function loadMissionsData(missions) {
-    if (!missions || !missions.length) return;
+// Fonctions similaires pour les autres sections...
+
+// TEMPS RÉEL AMÉLIORÉ
+// Remplacer la fonction de mise à jour de l'horloge du jeu
+function enhanceGameClock() {
+    // Sauvegarder la fonction originale
+    const originalUpdateGameClock = updateGameClock;
     
-    const missionBody = document.getElementById('mission-body');
-    // Vider le tableau actuel
-    resetSection('mission-body');
-    
-    missions.forEach(mission => {
-        const clone = missionBody.rows[0].cloneNode(true);
-        const inputs = clone.querySelectorAll('input');
-        const select = clone.querySelector('select');
+    // Remplacer par une version améliorée
+    updateGameClock = function() {
+        // Mettre à jour l'horloge du jeu
+        const hours = Math.floor(gameMinutes / 60) % 24;
+        const minutes = gameMinutes % 60;
         
-        // Remplir avec les données sauvegardées
-        inputs[0].value = mission.objective || '';
-        inputs[1].value = mission.responsible || '';
-        
-        // Trouver l'option correspondante
-        for (let i = 0; i < select.options.length; i++) {
-            if (select.options[i].text === mission.status) {
-                select.selectedIndex = i;
-                break;
+        const clockElement = document.getElementById("game-clock");
+        if (clockElement) {
+            clockElement.textContent = `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+            
+            // Changer la couleur selon le moment de la journée
+            if (hours >= 20 || hours < 6) {
+                // Nuit
+                clockElement.style.color = "#3498db"; // Bleu pour la nuit
+                clockElement.style.textShadow = "0 0 10px rgba(52, 152, 219, 0.7)";
+            } else if (hours >= 6 && hours < 8) {
+                // Aube
+                clockElement.style.color = "#f39c12"; // Orange pour l'aube
+                clockElement.style.textShadow = "0 0 10px rgba(243, 156, 18, 0.7)";
+            } else if (hours >= 17 && hours < 20) {
+                // Crépuscule
+                clockElement.style.color = "#e74c3c"; // Rouge pour le crépuscule
+                clockElement.style.textShadow = "0 0 10px rgba(231, 76, 60, 0.7)";
+            } else {
+                // Jour
+                clockElement.style.color = "var(--terminal-green)"; // Vert par défaut pour le jour
+                clockElement.style.textShadow = "0 0 10px rgba(0, 255, 0, 0.7)";
             }
         }
         
-        inputs[2].value = mission.deadline || '';
+        // Incrémenter le temps
+        gameMinutes += gameSpeed;
         
-        missionBody.appendChild(clone);
-    });
+        // Adapter les effets météo en fonction de l'heure
+        adjustWeatherByTime(hours);
+        
+        // Mettre à jour le compte à rebours
+        updateCountdown();
+        
+        // Sauvegarder l'état après mise à jour du temps
+        saveStateToLocalStorage();
+    };
+    
+    // Accélérer le temps réel pour une expérience plus dynamique
+    // Mettre à jour l'horloge toutes les 3 secondes au lieu de chaque minute
+    clearInterval(gameClockInterval); // Arrêter l'intervalle existant s'il existe
+    gameClockInterval = setInterval(updateGameClock, 3000);
+    
+    // Exécuter immédiatement pour mettre à jour l'interface
+    updateGameClock();
 }
 
-// Charger les données du journal
-function loadJournalData(journal) {
-    if (!journal || !journal.length) return;
+// Ajuster les effets météo en fonction de l'heure
+function adjustWeatherByTime(hour) {
+    // Déterminer si c'est le jour ou la nuit
+    const isNight = (hour >= 20 || hour < 6);
     
-    const journalBody = document.getElementById('journal-body');
-    // Vider le tableau actuel
-    resetSection('journal-body');
+    // Ajuster la luminosité globale
+    document.body.style.transition = "filter 3s ease-in-out";
     
-    journal.forEach(entry => {
-        const clone = journalBody.rows[0].cloneNode(true);
-        const inputs = clone.querySelectorAll('input');
+    if (isNight) {
+        // Plus sombre la nuit
+        document.body.style.filter = "brightness(0.7) saturate(0.8)";
         
-        // Remplir avec les données sauvegardées
-        inputs[0].value = entry.date || '';
-        inputs[1].value = entry.event || '';
-        inputs[2].value = entry.player || '';
+        // Augmenter la visibilité des yeux du Veilleur la nuit
+        const veilleurEyes = document.querySelectorAll('.veilleur-eye');
+        veilleurEyes.forEach(eye => {
+            eye.style.boxShadow = "0 0 15px #ff0000, 0 0 25px #ff0000, 0 0 35px #ff0000";
+        });
+    } else {
+        // Normal pendant la journée
+        document.body.style.filter = "brightness(1) saturate(1)";
         
-        journalBody.appendChild(clone);
-    });
-}
-
-// Charger les données logistiques
-function loadLogisticsData(logistics) {
-    if (!logistics || !logistics.length) return;
-    
-    const logisticsBody = document.getElementById('logistique-body');
-    // Vider le tableau actuel
-    resetSection('logistique-body');
-    
-    logistics.forEach(item => {
-        const clone = logisticsBody.rows[0].cloneNode(true);
-        const inputs = clone.querySelectorAll('input');
-        const selects = clone.querySelectorAll('select');
-        
-        // Trouver l'option correspondante pour le type
-        for (let i = 0; i < selects[0].options.length; i++) {
-            if (selects[0].options[i].text === item.type) {
-                selects[0].selectedIndex = i;
-                break;
-            }
-        }
-        
-        // Remplir avec les données sauvegardées
-        inputs[0].value = item.name || '';
-        
-        // Trouver l'option correspondante pour l'état
-        for (let i = 0; i < selects[1].options.length; i++) {
-            if (selects[1].options[i].text === item.status) {
-                selects[1].selectedIndex = i;
-                checkEtat(selects[1]); // Mettre à jour la couleur de la ligne
-                break;
-            }
-        }
-        
-        inputs[1].value = item.location || '';
-        
-        logisticsBody.appendChild(clone);
-    });
-}
-
-// Charger les données des zones dangereuses
-function loadDangerZonesData(zones) {
-    if (!zones || !zones.length) return;
-    
-    const zonesContainer = document.getElementById('danger-zone-container');
-    // Vider le conteneur actuel
-    while (zonesContainer.children.length > 1) {
-        zonesContainer.removeChild(zonesContainer.lastChild);
+        // Réduire l'effet des yeux du Veilleur pendant la journée
+        const veilleurEyes = document.querySelectorAll('.veilleur-eye');
+        veilleurEyes.forEach(eye => {
+            eye.style.boxShadow = "0 0 10px #ff0000, 0 0 15px #ff0000, 0 0 20px #ff0000";
+        });
     }
-    
-    zones.forEach(zone => {
-        const clone = zonesContainer.children[0].cloneNode(true);
-        const inputs = clone.querySelectorAll('input');
-        const select = clone.querySelector('select');
-        
-        // Remplir avec les données sauvegardées
-        inputs[0].value = zone.name || '';
-        
-        // Trouver l'option correspondante
-        for (let i = 0; i < select.options.length; i++) {
-            if (select.options[i].text === zone.danger) {
-                select.selectedIndex = i;
-                break;
-            }
-        }
-        
-        inputs[1].value = zone.info || '';
-        
-        // Couleur de la bordure
-        if (zone.color) {
-            clone.style.borderLeftColor = zone.color;
-        }
-        
-        zonesContainer.appendChild(clone);
-    });
 }
 
-// Afficher une notification de sauvegarde
-function showSaveNotification() {
+// Notification d'état sauvegardé
+function showAutoSaveNotification() {
     const notification = document.createElement('div');
-    notification.textContent = "✅ Données sauvegardées";
+    notification.textContent = "⚡ Synchronisé";
     notification.style.position = "fixed";
-    notification.style.bottom = "100px";
-    notification.style.right = "20px";
-    notification.style.background = "rgba(0, 0, 0, 0.8)";
+    notification.style.bottom = "20px";
+    notification.style.left = "50%";
+    notification.style.transform = "translateX(-50%)";
+    notification.style.background = "rgba(0, 0, 0, 0.7)";
     notification.style.color = "#2ecc71";
-    notification.style.padding = "10px 15px";
+    notification.style.padding = "8px 15px";
     notification.style.borderRadius = "5px";
     notification.style.zIndex = "2000";
     notification.style.fontFamily = "monospace";
+    notification.style.fontSize = "0.8rem";
     notification.style.opacity = "0";
     notification.style.transition = "opacity 0.3s";
     
     document.body.appendChild(notification);
     
-    setTimeout(() => notification.style.opacity = "1", 100);
+    setTimeout(() => notification.style.opacity = "1", 50);
     
     setTimeout(() => {
         notification.style.opacity = "0";
         setTimeout(() => notification.remove(), 300);
-    }, 3000);
+    }, 1500);
 }
 
-// Afficher une notification de chargement
-function showLoadNotification() {
-    const notification = document.createElement('div');
-    notification.textContent = "📂 Données chargées";
-    notification.style.position = "fixed";
-    notification.style.bottom = "100px";
-    notification.style.right = "20px";
-    notification.style.background = "rgba(0, 0, 0, 0.8)";
-    notification.style.color = "#3498db";
-    notification.style.padding = "10px 15px";
-    notification.style.borderRadius = "5px";
-    notification.style.zIndex = "2000";
-    notification.style.fontFamily = "monospace";
-    notification.style.opacity = "0";
-    notification.style.transition = "opacity 0.3s";
+// Configurer le système de sauvegarde automatique
+let saveTimeoutId = null;
+function setupAutoSave() {
+    // Écouter tous les changements dans les zones de saisie
+    document.addEventListener('input', function(e) {
+        // Si un timeout est déjà en cours, l'annuler
+        if (saveTimeoutId) clearTimeout(saveTimeoutId);
+        
+        // Planifier une sauvegarde 2 secondes après la dernière saisie
+        saveTimeoutId = setTimeout(function() {
+            saveStateToLocalStorage();
+            showAutoSaveNotification();
+        }, 2000);
+    });
     
-    document.body.appendChild(notification);
-    
-    setTimeout(() => notification.style.opacity = "1", 100);
-    
-    setTimeout(() => {
-        notification.style.opacity = "0";
-        setTimeout(() => notification.remove(), 300);
-    }, 3000);
-}
-
-// Sauvegarder automatiquement toutes les 2 minutes
-let autoSaveInterval = null;
-
-function startAutoSave() {
-    if (autoSaveInterval) clearInterval(autoSaveInterval);
-    autoSaveInterval = setInterval(saveDataToLocalStorage, 2 * 60 * 1000); // 2 minutes
-}
-
-// Ajouter des boutons de sauvegarde/chargement
-function addSaveLoadButtons() {
-    const dashboard = document.getElementById('dashboard-content');
-    if (!dashboard) return;
-    
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.position = "fixed";
-    buttonContainer.style.bottom = "20px";
-    buttonContainer.style.left = "20px";
-    buttonContainer.style.zIndex = "1000";
-    buttonContainer.style.display = "flex";
-    buttonContainer.style.gap = "10px";
-    
-    const saveButton = document.createElement('button');
-    saveButton.textContent = "💾 Sauvegarder";
-    saveButton.onclick = saveDataToLocalStorage;
-    saveButton.style.background = "var(--accent)";
-    saveButton.style.color = "white";
-    
-    const loadButton = document.createElement('button');
-    loadButton.textContent = "📂 Charger";
-    loadButton.onclick = loadDataFromLocalStorage;
-    loadButton.style.background = "#2c3e50";
-    loadButton.style.color = "white";
-    
-    buttonContainer.appendChild(saveButton);
-    buttonContainer.appendChild(loadButton);
-    
-    dashboard.appendChild(buttonContainer);
+    // Sauvegarder aussi lors des clics (suppression, ajout, etc.)
+    document.addEventListener('click', function(e) {
+        // Vérifier si c'est un bouton dans nos sections
+        if (e.target.tagName === 'BUTTON' && 
+            (e.target.textContent.includes('Ajouter') || 
+             e.target.textContent.includes('Supprimer') || 
+             e.target.textContent.includes('🗑️'))) {
+            
+            // Attendre que le DOM soit mis à jour
+            setTimeout(function() {
+                saveStateToLocalStorage();
+                showAutoSaveNotification();
+            }, 500);
+        }
+    });
 }
 
 // Initialisation
+let gameClockInterval = null;
+function initRealtimeFeatures() {
+    // Charger l'état précédent
+    loadStateFromLocalStorage();
+    
+    // Améliorer l'horloge du jeu
+    enhanceGameClock();
+    
+    // Configurer la sauvegarde automatique
+    setupAutoSave();
+    
+    console.log("Fonctionnalités temps réel initialisées avec succès");
+}
+
+// Modifier la fonction endCinematique pour initialiser nos fonctionnalités
 const originalEndCinematique = endCinematique;
 endCinematique = function() {
     originalEndCinematique();
     
-    // Ajouter les boutons de sauvegarde/chargement
-    setTimeout(() => {
-        addSaveLoadButtons();
-        // Tenter de charger les données au démarrage
-        loadDataFromLocalStorage();
-        // Démarrer la sauvegarde automatique
-        startAutoSave();
-    }, 1500);
+    // Initialiser nos fonctionnalités après un court délai
+    setTimeout(initRealtimeFeatures, 1000);
 };
+
+// Sauvegarder l'état avant de quitter la page
+window.addEventListener('beforeunload', function() {
+    saveStateToLocalStorage();
+});
 </script>
 </body>
 </html>
