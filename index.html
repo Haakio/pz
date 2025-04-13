@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <!-- Ajoutez ces lignes dans la section <head> de votre document -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>DeadHope - Terminal Avancé</title>
@@ -2899,181 +2902,263 @@ function loadCharactersData(characters) {
 
 // Fonctions similaires pour les autres sections...
 
-// TEMPS RÉEL AMÉLIORÉ
-// Remplacer la fonction de mise à jour de l'horloge du jeu
-function enhanceGameClock() {
-    // Sauvegarder la fonction originale
-    const originalUpdateGameClock = updateGameClock;
-    
-    // Remplacer par une version améliorée
-    updateGameClock = function() {
-        // Mettre à jour l'horloge du jeu
-        const hours = Math.floor(gameMinutes / 60) % 24;
-        const minutes = gameMinutes % 60;
-        
-        const clockElement = document.getElementById("game-clock");
-        if (clockElement) {
-            clockElement.textContent = `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
-            
-            // Changer la couleur selon le moment de la journée
-            if (hours >= 20 || hours < 6) {
-                // Nuit
-                clockElement.style.color = "#3498db"; // Bleu pour la nuit
-                clockElement.style.textShadow = "0 0 10px rgba(52, 152, 219, 0.7)";
-            } else if (hours >= 6 && hours < 8) {
-                // Aube
-                clockElement.style.color = "#f39c12"; // Orange pour l'aube
-                clockElement.style.textShadow = "0 0 10px rgba(243, 156, 18, 0.7)";
-            } else if (hours >= 17 && hours < 20) {
-                // Crépuscule
-                clockElement.style.color = "#e74c3c"; // Rouge pour le crépuscule
-                clockElement.style.textShadow = "0 0 10px rgba(231, 76, 60, 0.7)";
-            } else {
-                // Jour
-                clockElement.style.color = "var(--terminal-green)"; // Vert par défaut pour le jour
-                clockElement.style.textShadow = "0 0 10px rgba(0, 255, 0, 0.7)";
-            }
-        }
-        
-        // Incrémenter le temps
-        gameMinutes += gameSpeed;
-        
-        // Adapter les effets météo en fonction de l'heure
-        adjustWeatherByTime(hours);
-        
-        // Mettre à jour le compte à rebours
-        updateCountdown();
-        
-        // Sauvegarder l'état après mise à jour du temps
-        saveStateToLocalStorage();
+// Ajoutez ce code à la fin de votre fichier JavaScript, juste avant la balise de fermeture </script>
+  <script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
+  authDomain: "deadhope-a1704.firebaseapp.com",
+  databaseURL: "https://deadhope-a1704-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "deadhope-a1704",
+  storageBucket: "deadhope-a1704.firebasestorage.app",
+  messagingSenderId: "1019321338333",
+  appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
+};
+  
+  // Initialiser Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  
+  // Référence à la racine de la base de données
+  const deadhopeRef = database.ref('deadhope');
+  
+  // Fonction pour synchroniser les données avec Firebase
+  function syncDataWithFirebase() {
+    // Collecter toutes les données
+    const appData = {
+      characters: collectCharactersData(),
+      missions: collectMissionsData(),
+      journal: collectJournalData(),
+      logistics: collectLogisticsData(),
+      dangerZones: collectDangerZonesData(),
+      gameTime: {
+        gameMinutes: gameMinutes,
+        countdownMinutes: countdownMinutes
+      },
+      lastUpdated: new Date().toISOString(),
+      lastUpdatedBy: window.pseudo
     };
     
-    // Accélérer le temps réel pour une expérience plus dynamique
-    // Mettre à jour l'horloge toutes les 3 secondes au lieu de chaque minute
-    clearInterval(gameClockInterval); // Arrêter l'intervalle existant s'il existe
-    gameClockInterval = setInterval(updateGameClock, 3000);
+    // Envoyer les données à Firebase
+    deadhopeRef.set(appData);
     
-    // Exécuter immédiatement pour mettre à jour l'interface
-    updateGameClock();
-}
-
-// Ajuster les effets météo en fonction de l'heure
-function adjustWeatherByTime(hour) {
-    // Déterminer si c'est le jour ou la nuit
-    const isNight = (hour >= 20 || hour < 6);
+    // Afficher une notification
+    showSyncNotification("Données synchronisées");
+  }
+  
+  // Collecter les données des personnages
+  function collectCharactersData() {
+    const characters = [];
+    document.querySelectorAll('#character-list .character-card').forEach(card => {
+      const inputs = card.querySelectorAll('input');
+      const textarea = card.querySelector('textarea');
+      characters.push({
+        name: inputs[0]?.value || '',
+        role: inputs[1]?.value || '',
+        notes: textarea?.value || ''
+      });
+    });
+    return characters;
+  }
+  
+  // Fonctions de collecte similaires aux versions précédentes
+  // ...
+  
+  // Fonction pour charger les données depuis Firebase
+  function loadDataFromFirebase() {
+    deadhopeRef.once('value').then(snapshot => {
+      const data = snapshot.val();
+      if (!data) return;
+      
+      // Charger les données dans l'interface
+      loadCharactersData(data.characters);
+      loadMissionsData(data.missions);
+      loadJournalData(data.journal);
+      loadLogisticsData(data.logistics);
+      loadDangerZonesData(data.dangerZones);
+      
+      // Mettre à jour le temps
+      if (data.gameTime) {
+        gameMinutes = data.gameTime.gameMinutes;
+        countdownMinutes = data.gameTime.countdownMinutes;
+        updateGameClock();
+      }
+      
+      // Afficher une notification
+      showSyncNotification(`Données chargées (dernière mise à jour par ${data.lastUpdatedBy || "un utilisateur"})`);
+    });
+  }
+  
+  // Fonctions de chargement similaires aux versions précédentes
+  // ...
+  
+  // Synchronisation en temps réel du chat
+  function setupRealtimeChat() {
+    const chatRef = database.ref('deadhope/chat');
     
-    // Ajuster la luminosité globale
-    document.body.style.transition = "filter 3s ease-in-out";
+    // Modifier la fonction d'envoi de message
+    const originalSendMessage = sendMessage;
+    sendMessage = function() {
+      const input = document.getElementById("chat-input");
+      const text = input.value.trim();
+      
+      if (!text) return;
+      
+      const now = new Date();
+      const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+      
+      // Envoyer le message à Firebase
+      chatRef.push({
+        sender: window.pseudo,
+        message: text,
+        time: time,
+        timestamp: now.getTime()
+      });
+      
+      input.value = "";
+    };
     
-    if (isNight) {
-        // Plus sombre la nuit
-        document.body.style.filter = "brightness(0.7) saturate(0.8)";
+    // Écouter les nouveaux messages
+    chatRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
+      const messageData = snapshot.val();
+      
+      // Créer l'élément de message
+      const chatLog = document.getElementById("chat-log");
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("chat-message", "fade-in");
+      
+      // Déterminer la couleur selon l'expéditeur
+      let color = "#5af"; // Couleur par défaut (bleu)
+      if (messageData.sender === "Système") {
+        color = "#8f8"; // Vert pour le système
+      } else if (messageData.sender !== window.pseudo) {
+        color = "#f55"; // Rouge pour les autres
+      }
+      
+      msgDiv.innerHTML = `<strong style="color:${color}">${messageData.sender}</strong> <span style="color:#888">[${messageData.time}]</span>: ${messageData.message}`;
+      
+      chatLog.appendChild(msgDiv);
+      chatLog.scrollTop = chatLog.scrollHeight;
+      
+      // Jouer le son si ce n'est pas notre propre message
+      if (messageData.sender !== window.pseudo) {
+        document.getElementById("radio-bip").play().catch(() => {});
         
-        // Augmenter la visibilité des yeux du Veilleur la nuit
-        const veilleurEyes = document.querySelectorAll('.veilleur-eye');
-        veilleurEyes.forEach(eye => {
-            eye.style.boxShadow = "0 0 15px #ff0000, 0 0 25px #ff0000, 0 0 35px #ff0000";
-        });
-    } else {
-        // Normal pendant la journée
-        document.body.style.filter = "brightness(1) saturate(1)";
-        
-        // Réduire l'effet des yeux du Veilleur pendant la journée
-        const veilleurEyes = document.querySelectorAll('.veilleur-eye');
-        veilleurEyes.forEach(eye => {
-            eye.style.boxShadow = "0 0 10px #ff0000, 0 0 15px #ff0000, 0 0 20px #ff0000";
-        });
-    }
-}
-
-// Notification d'état sauvegardé
-function showAutoSaveNotification() {
+        // Afficher notification si le chat n'est pas ouvert
+        const chatBox = document.getElementById("radio-chat");
+        if (chatBox.style.display === "none") {
+          const notification = document.querySelector(".msg-notification");
+          if (notification) notification.style.display = "block";
+        }
+      }
+    });
+  }
+  
+  // Notification de synchronisation
+  function showSyncNotification(message) {
     const notification = document.createElement('div');
-    notification.textContent = "⚡ Synchronisé";
+    notification.textContent = "🔄 " + message;
     notification.style.position = "fixed";
-    notification.style.bottom = "20px";
-    notification.style.left = "50%";
-    notification.style.transform = "translateX(-50%)";
-    notification.style.background = "rgba(0, 0, 0, 0.7)";
-    notification.style.color = "#2ecc71";
-    notification.style.padding = "8px 15px";
+    notification.style.bottom = "50px";
+    notification.style.right = "20px";
+    notification.style.background = "rgba(0, 0, 0, 0.8)";
+    notification.style.color = "#3498db";
+    notification.style.padding = "10px 15px";
     notification.style.borderRadius = "5px";
     notification.style.zIndex = "2000";
     notification.style.fontFamily = "monospace";
-    notification.style.fontSize = "0.8rem";
     notification.style.opacity = "0";
     notification.style.transition = "opacity 0.3s";
     
     document.body.appendChild(notification);
     
-    setTimeout(() => notification.style.opacity = "1", 50);
+    setTimeout(() => notification.style.opacity = "1", 100);
     
     setTimeout(() => {
-        notification.style.opacity = "0";
-        setTimeout(() => notification.remove(), 300);
-    }, 1500);
-}
-
-// Configurer le système de sauvegarde automatique
-let saveTimeoutId = null;
-function setupAutoSave() {
-    // Écouter tous les changements dans les zones de saisie
-    document.addEventListener('input', function(e) {
-        // Si un timeout est déjà en cours, l'annuler
-        if (saveTimeoutId) clearTimeout(saveTimeoutId);
-        
-        // Planifier une sauvegarde 2 secondes après la dernière saisie
-        saveTimeoutId = setTimeout(function() {
-            saveStateToLocalStorage();
-            showAutoSaveNotification();
-        }, 2000);
+      notification.style.opacity = "0";
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  }
+  
+  // Configurer les écouteurs d'événements pour la synchronisation
+  function setupSyncListeners() {
+    // Écouter les modifications de Firebase
+    deadhopeRef.on('value', snapshot => {
+      // Ne pas recharger les données si c'est nous qui les avons modifiées
+      if (isLocalUpdate) {
+        isLocalUpdate = false;
+        return;
+      }
+      
+      const data = snapshot.val();
+      if (!data) return;
+      
+      // Charger silencieusement les données
+      loadCharactersData(data.characters);
+      loadMissionsData(data.missions);
+      loadJournalData(data.journal);
+      loadLogisticsData(data.logistics);
+      loadDangerZonesData(data.dangerZones);
+      
+      // Mettre à jour le temps
+      if (data.gameTime) {
+        gameMinutes = data.gameTime.gameMinutes;
+        countdownMinutes = data.gameTime.countdownMinutes;
+        updateGameClock();
+      }
+      
+      // Afficher une notification discrète
+      showSyncNotification(`Mise à jour par ${data.lastUpdatedBy || "un utilisateur"}`);
     });
     
-    // Sauvegarder aussi lors des clics (suppression, ajout, etc.)
+    // Écouter les modifications locales (formulaires)
+    let timeoutId = null;
+    let isLocalUpdate = false;
+    
+    document.addEventListener('input', function() {
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(function() {
+        isLocalUpdate = true;
+        syncDataWithFirebase();
+      }, 2000);
+    });
+    
+    // Écouter les clics sur les boutons d'ajout/suppression
     document.addEventListener('click', function(e) {
-        // Vérifier si c'est un bouton dans nos sections
-        if (e.target.tagName === 'BUTTON' && 
-            (e.target.textContent.includes('Ajouter') || 
-             e.target.textContent.includes('Supprimer') || 
-             e.target.textContent.includes('🗑️'))) {
-            
-            // Attendre que le DOM soit mis à jour
-            setTimeout(function() {
-                saveStateToLocalStorage();
-                showAutoSaveNotification();
-            }, 500);
-        }
+      if (e.target.tagName === 'BUTTON' && 
+          (e.target.textContent.includes('Ajouter') || 
+           e.target.textContent.includes('Supprimer') || 
+           e.target.textContent.includes('🗑️'))) {
+        
+        setTimeout(function() {
+          isLocalUpdate = true;
+          syncDataWithFirebase();
+        }, 500);
+      }
     });
-}
+  }
+  
+  // Initialiser tout
+  loadDataFromFirebase();
+  setupRealtimeChat();
+  setupSyncListeners();
+  
+  // Synchroniser le temps toutes les minutes
+  setInterval(function() {
+    isLocalUpdate = true;
+    syncDataWithFirebase();
+  }, 60000);
+  
+  console.log("Synchronisation Firebase initialisée");
 
-// Initialisation
-let gameClockInterval = null;
-function initRealtimeFeatures() {
-    // Charger l'état précédent
-    loadStateFromLocalStorage();
-    
-    // Améliorer l'horloge du jeu
-    enhanceGameClock();
-    
-    // Configurer la sauvegarde automatique
-    setupAutoSave();
-    
-    console.log("Fonctionnalités temps réel initialisées avec succès");
-}
-
-// Modifier la fonction endCinematique pour initialiser nos fonctionnalités
+// Modifier la fonction endCinematique pour initialiser Firebase
 const originalEndCinematique = endCinematique;
 endCinematique = function() {
-    originalEndCinematique();
-    
-    // Initialiser nos fonctionnalités après un court délai
-    setTimeout(initRealtimeFeatures, 1000);
+  originalEndCinematique();
+  
+  // Initialiser la synchronisation Firebase
+  setTimeout(initFirebaseSync, 1000);
 };
-
-// Sauvegarder l'état avant de quitter la page
-window.addEventListener('beforeunload', function() {
-    saveStateToLocalStorage();
-});
 </script>
 </body>
 </html>
