@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!-- Ajoutez ces lignes dans la section <head> de votre document -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js">
+ <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script>
   // Référence vers la base de données Firebase (Realtime)
   let userRef = null;
 
@@ -2941,7 +2942,151 @@ function loadCharactersData(characters) {
   appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
 };
   
- // Fonctions de chargement des données
+ // Initialiser Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// Référence à la racine de la base de données
+const deadhopeRef = database.ref('deadhope');
+
+// Fonction pour synchroniser les données avec Firebase
+function syncDataWithFirebase() {
+  // Collecter toutes les données
+  const appData = {
+    characters: collectCharactersData(),
+    missions: collectMissionsData(),
+    journal: collectJournalData(),
+    logistics: collectLogisticsData(),
+    dangerZones: collectDangerZonesData(),
+    gameTime: {
+      gameMinutes: gameMinutes,
+      countdownMinutes: countdownMinutes
+    },
+    lastUpdated: new Date().toISOString(),
+    lastUpdatedBy: window.pseudo
+  };
+  
+  // Envoyer les données à Firebase
+  deadhopeRef.set(appData);
+  
+  // Afficher une notification
+  showSyncNotification("Données synchronisées");
+}
+
+// Fonction pour charger les données depuis Firebase
+function loadDataFromFirebase() {
+  deadhopeRef.once('value').then(snapshot => {
+    const data = snapshot.val();
+    if (!data) return;
+    
+    // Charger les données dans l'interface
+    loadCharactersData(data.characters);
+    loadMissionsData(data.missions);
+    loadJournalData(data.journal);
+    loadLogisticsData(data.logistics);
+    loadDangerZonesData(data.dangerZones);
+    
+    // Mettre à jour le temps
+    if (data.gameTime) {
+      gameMinutes = data.gameTime.gameMinutes;
+      countdownMinutes = data.gameTime.countdownMinutes;
+      updateGameClock();
+    }
+    
+    // Afficher une notification
+    showSyncNotification(`Données chargées (dernière mise à jour par ${data.lastUpdatedBy || "un utilisateur"})`);
+  });
+}
+
+// Notification de synchronisation
+function showSyncNotification(message) {
+  const notification = document.createElement('div');
+  notification.textContent = "🔄 " + message;
+  notification.style.position = "fixed";
+  notification.style.bottom = "50px";
+  notification.style.right = "20px";
+  notification.style.background = "rgba(0, 0, 0, 0.8)";
+  notification.style.color = "#3498db";
+  notification.style.padding = "10px 15px";
+  notification.style.borderRadius = "5px";
+  notification.style.zIndex = "2000";
+  notification.style.fontFamily = "monospace";
+  notification.style.opacity = "0";
+  notification.style.transition = "opacity 0.3s";
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => notification.style.opacity = "1", 100);
+  
+  setTimeout(() => {
+    notification.style.opacity = "0";
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Synchronisation en temps réel du chat
+function setupRealtimeChat() {
+  const chatRef = database.ref('deadhope/chat');
+  
+  // Modifier la fonction d'envoi de message
+  window.originalSendMessage = window.sendMessage;
+  window.sendMessage = function() {
+    const input = document.getElementById("chat-input");
+    const text = input.value.trim();
+    
+    if (!text) return;
+    
+    const now = new Date();
+    const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+    
+    // Envoyer le message à Firebase
+    chatRef.push({
+      sender: window.pseudo,
+      message: text,
+      time: time,
+      timestamp: now.getTime()
+    });
+    
+    input.value = "";
+  };
+  
+  // Écouter les nouveaux messages
+  chatRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
+    const messageData = snapshot.val();
+    
+    // Créer l'élément de message
+    const chatLog = document.getElementById("chat-log");
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("chat-message", "fade-in");
+    
+    // Déterminer la couleur selon l'expéditeur
+    let color = "#5af"; // Couleur par défaut (bleu)
+    if (messageData.sender === "Système") {
+      color = "#8f8"; // Vert pour le système
+    } else if (messageData.sender !== window.pseudo) {
+      color = "#f55"; // Rouge pour les autres
+    }
+    
+    msgDiv.innerHTML = `<strong style="color:${color}">${messageData.sender}</strong> <span style="color:#888">[${messageData.time}]</span>: ${messageData.message}`;
+    
+    chatLog.appendChild(msgDiv);
+    chatLog.scrollTop = chatLog.scrollHeight;
+    
+    // Jouer le son si ce n'est pas notre propre message
+    if (messageData.sender !== window.pseudo) {
+      document.getElementById("radio-bip").play().catch(() => {});
+      
+      // Afficher notification si le chat n'est pas ouvert
+      const chatBox = document.getElementById("radio-chat");
+      if (chatBox.style.display === "none") {
+        const notification = document.querySelector(".msg-notification");
+        if (notification) notification.style.display = "block";
+      }
+    }
+  });
+}
+
+
 // Ces fonctions sont évoquées mais pas implémentées complètement dans le code d'origine
 
 // Chargement des données des missions
