@@ -2941,231 +2941,160 @@ function loadCharactersData(characters) {
   appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
 };
   
-  // Initialiser Firebase
-  firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
+ // Fonctions de chargement des données
+// Ces fonctions sont évoquées mais pas implémentées complètement dans le code d'origine
+
+// Chargement des données des missions
+function loadMissionsData(missions) {
+  if (!missions || !missions.length) return;
+  const missionBody = document.getElementById('mission-body');
+  if (!missionBody) return;
   
-  // Référence à la racine de la base de données
-  const deadhopeRef = database.ref('deadhope');
+  // Vider le tableau
+  missionBody.innerHTML = '';
   
-  // Fonction pour synchroniser les données avec Firebase
-  function syncDataWithFirebase() {
-    // Collecter toutes les données
-    const appData = {
-      characters: collectCharactersData(),
-      missions: collectMissionsData(),
-      journal: collectJournalData(),
-      logistics: collectLogisticsData(),
-      dangerZones: collectDangerZonesData(),
-      gameTime: {
-        gameMinutes: gameMinutes,
-        countdownMinutes: countdownMinutes
-      },
-      lastUpdated: new Date().toISOString(),
-      lastUpdatedBy: window.pseudo
-    };
+  // Recréer les entrées de mission
+  missions.forEach(mission => {
+    const row = document.createElement('tr');
     
-    // Envoyer les données à Firebase
-    deadhopeRef.set(appData);
+    // Créer les cellules avec les données
+    row.innerHTML = `
+      <td><input type="text" placeholder="Ex: Fouiller maison au nord" value="${mission.objective || ''}"/></td>
+      <td><input type="text" placeholder="Nom du joueur" value="${mission.responsible || ''}"/></td>
+      <td>
+        <select>
+          <option ${mission.status && mission.status.includes('En cours') ? 'selected' : ''}>🟡 En cours</option>
+          <option ${mission.status && mission.status.includes('Fait') ? 'selected' : ''}>✅ Fait</option>
+          <option ${mission.status && mission.status.includes('Échoué') ? 'selected' : ''}>❌ Échoué</option>
+        </select>
+      </td>
+      <td><input type="date" value="${mission.deadline || ''}"/></td>
+      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+    `;
     
-    // Afficher une notification
-    showSyncNotification("Données synchronisées");
-  }
+    missionBody.appendChild(row);
+  });
+}
+
+// Chargement des données du journal
+function loadJournalData(journal) {
+  if (!journal || !journal.length) return;
+  const journalBody = document.getElementById('journal-body');
+  if (!journalBody) return;
   
-  // Collecter les données des personnages
-  function collectCharactersData() {
-    const characters = [];
-    document.querySelectorAll('#character-list .character-card').forEach(card => {
-      const inputs = card.querySelectorAll('input');
-      const textarea = card.querySelector('textarea');
-      characters.push({
-        name: inputs[0]?.value || '',
-        role: inputs[1]?.value || '',
-        notes: textarea?.value || ''
-      });
-    });
-    return characters;
-  }
+  // Vider le tableau
+  journalBody.innerHTML = '';
   
-  // Fonctions de collecte similaires aux versions précédentes
-  // ...
+  // Recréer les entrées de journal
+  journal.forEach(entry => {
+    const row = document.createElement('tr');
+    
+    // Créer les cellules avec les données
+    row.innerHTML = `
+      <td><input type="date" value="${entry.date || ''}"/></td>
+      <td><input type="text" placeholder="Description" value="${entry.event || ''}"/></td>
+      <td><input type="text" placeholder="Nom du joueur" value="${entry.player || ''}"/></td>
+      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+    `;
+    
+    journalBody.appendChild(row);
+  });
+}
+
+// Chargement des données de logistique
+function loadLogisticsData(logistics) {
+  if (!logistics || !logistics.length) return;
+  const logistiqueBody = document.getElementById('logistique-body');
+  if (!logistiqueBody) return;
   
-  // Fonction pour charger les données depuis Firebase
-  function loadDataFromFirebase() {
-    deadhopeRef.once('value').then(snapshot => {
-      const data = snapshot.val();
-      if (!data) return;
-      
-      // Charger les données dans l'interface
-      loadCharactersData(data.characters);
-      loadMissionsData(data.missions);
-      loadJournalData(data.journal);
-      loadLogisticsData(data.logistics);
-      loadDangerZonesData(data.dangerZones);
-      
-      // Mettre à jour le temps
-      if (data.gameTime) {
-        gameMinutes = data.gameTime.gameMinutes;
-        countdownMinutes = data.gameTime.countdownMinutes;
-        updateGameClock();
-      }
-      
-      // Afficher une notification
-      showSyncNotification(`Données chargées (dernière mise à jour par ${data.lastUpdatedBy || "un utilisateur"})`);
-    });
-  }
+  // Vider le tableau
+  logistiqueBody.innerHTML = '';
   
-  // Fonctions de chargement similaires aux versions précédentes
-  // ...
+  // Recréer les entrées de logistique
+  logistics.forEach(item => {
+    const row = document.createElement('tr');
+    
+    // Définir la couleur de fond selon l'état
+    if (item.status && item.status.includes('❌')) {
+      row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
+    } else if (item.status && item.status.includes('⚠️')) {
+      row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
+    }
+    
+    // Créer les cellules avec les données
+    row.innerHTML = `
+      <td>
+        <select>
+          <option ${item.type && item.type.includes('Arme') ? 'selected' : ''}>🔫 Arme</option>
+          <option ${item.type && item.type.includes('Véhicule') ? 'selected' : ''}>🚗 Véhicule</option>
+          <option ${item.type && item.type.includes('Outil') ? 'selected' : ''}>🧰 Outil</option>
+          <option ${item.type && item.type.includes('Soins') ? 'selected' : ''}>🩹 Soins</option>
+          <option ${item.type && item.type.includes('Électronique') ? 'selected' : ''}>📻 Électronique</option>
+        </select>
+      </td>
+      <td><input type="text" placeholder="Nom ou modèle" value="${item.name || ''}"/></td>
+      <td>
+        <select onchange="checkEtat(this)">
+          <option ${item.status && item.status.includes('Fonctionnel') ? 'selected' : ''}>✅ Fonctionnel</option>
+          <option ${item.status && item.status.includes('Endommagé') ? 'selected' : ''}>⚠️ Endommagé</option>
+          <option ${item.status && item.status.includes('Hors service') ? 'selected' : ''}>❌ Hors service</option>
+        </select>
+      </td>
+      <td><input type="text" placeholder="Où ? ou Avec qui ?" value="${item.location || ''}"/></td>
+      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+    `;
+    
+    logistiqueBody.appendChild(row);
+  });
+}
+
+// Chargement des données des zones dangereuses
+function loadDangerZonesData(zones) {
+  if (!zones || !zones.length) return;
+  const zoneContainer = document.getElementById('danger-zone-container');
+  if (!zoneContainer) return;
   
-  // Synchronisation en temps réel du chat
-  function setupRealtimeChat() {
-    const chatRef = database.ref('deadhope/chat');
-    
-    // Modifier la fonction d'envoi de message
-    const originalSendMessage = sendMessage;
-    sendMessage = function() {
-      const input = document.getElementById("chat-input");
-      const text = input.value.trim();
-      
-      if (!text) return;
-      
-      const now = new Date();
-      const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
-      
-      // Envoyer le message à Firebase
-      chatRef.push({
-        sender: window.pseudo,
-        message: text,
-        time: time,
-        timestamp: now.getTime()
-      });
-      
-      input.value = "";
-    };
-    
-    // Écouter les nouveaux messages
-    chatRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
-      const messageData = snapshot.val();
-      
-      // Créer l'élément de message
-      const chatLog = document.getElementById("chat-log");
-      const msgDiv = document.createElement("div");
-      msgDiv.classList.add("chat-message", "fade-in");
-      
-      // Déterminer la couleur selon l'expéditeur
-      let color = "#5af"; // Couleur par défaut (bleu)
-      if (messageData.sender === "Système") {
-        color = "#8f8"; // Vert pour le système
-      } else if (messageData.sender !== window.pseudo) {
-        color = "#f55"; // Rouge pour les autres
-      }
-      
-      msgDiv.innerHTML = `<strong style="color:${color}">${messageData.sender}</strong> <span style="color:#888">[${messageData.time}]</span>: ${messageData.message}`;
-      
-      chatLog.appendChild(msgDiv);
-      chatLog.scrollTop = chatLog.scrollHeight;
-      
-      // Jouer le son si ce n'est pas notre propre message
-      if (messageData.sender !== window.pseudo) {
-        document.getElementById("radio-bip").play().catch(() => {});
-        
-        // Afficher notification si le chat n'est pas ouvert
-        const chatBox = document.getElementById("radio-chat");
-        if (chatBox.style.display === "none") {
-          const notification = document.querySelector(".msg-notification");
-          if (notification) notification.style.display = "block";
-        }
-      }
-    });
-  }
+  // Vider le conteneur
+  zoneContainer.innerHTML = '';
   
-  // Notification de synchronisation
-  function showSyncNotification(message) {
-    const notification = document.createElement('div');
-    notification.textContent = "🔄 " + message;
-    notification.style.position = "fixed";
-    notification.style.bottom = "50px";
-    notification.style.right = "20px";
-    notification.style.background = "rgba(0, 0, 0, 0.8)";
-    notification.style.color = "#3498db";
-    notification.style.padding = "10px 15px";
-    notification.style.borderRadius = "5px";
-    notification.style.zIndex = "2000";
-    notification.style.fontFamily = "monospace";
-    notification.style.opacity = "0";
-    notification.style.transition = "opacity 0.3s";
+  // Recréer les entrées de zones dangereuses
+  zones.forEach(zone => {
+    const div = document.createElement('div');
+    div.className = 'danger-zone-entry';
     
-    document.body.appendChild(notification);
+    // Définir la couleur de la bordure en fonction du niveau de danger
+    if (zone.danger && zone.danger.includes('Extrême')) {
+      div.style.borderLeft = '4px solid #e74c3c';
+    } else if (zone.danger && zone.danger.includes('Élevé')) {
+      div.style.borderLeft = '4px solid #f39c12';
+    } else if (zone.danger && zone.danger.includes('Modéré')) {
+      div.style.borderLeft = '4px solid #f1c40f';
+    } else if (zone.danger && zone.danger.includes('Faible')) {
+      div.style.borderLeft = '4px solid #2ecc71';
+    } else if (zone.color) {
+      div.style.borderLeft = zone.color;
+    }
     
-    setTimeout(() => notification.style.opacity = "1", 100);
+    // Créer les éléments avec les données
+    div.innerHTML = `
+      <input type="text" placeholder="Nom du lieu" value="${zone.name || ''}"/>
+      <select>
+        <option ${zone.danger && zone.danger.includes('Faible') ? 'selected' : ''}>Faible</option>
+        <option ${zone.danger && zone.danger.includes('Modéré') ? 'selected' : ''}>Modéré</option>
+        <option ${zone.danger && zone.danger.includes('Élevé') ? 'selected' : ''}>Élevé</option>
+        <option ${zone.danger && zone.danger.includes('Extrême') ? 'selected' : ''}>Extrême</option>
+      </select>
+      <input type="text" placeholder="Informations" value="${zone.info || ''}"/>
+      <button onclick="this.parentElement.remove()">🗑️</button>
+    `;
     
-    setTimeout(() => {
-      notification.style.opacity = "0";
-      setTimeout(() => notification.remove(), 300);
-    }, 3000);
-  }
-  
-  // Configurer les écouteurs d'événements pour la synchronisation
-  function setupSyncListeners() {
-    // Écouter les modifications de Firebase
-    deadhopeRef.on('value', snapshot => {
-      // Ne pas recharger les données si c'est nous qui les avons modifiées
-      if (isLocalUpdate) {
-        isLocalUpdate = false;
-        return;
-      }
-      
-      const data = snapshot.val();
-      if (!data) return;
-      
-      // Charger silencieusement les données
-      loadCharactersData(data.characters);
-      loadMissionsData(data.missions);
-      loadJournalData(data.journal);
-      loadLogisticsData(data.logistics);
-      loadDangerZonesData(data.dangerZones);
-      
-      // Mettre à jour le temps
-      if (data.gameTime) {
-        gameMinutes = data.gameTime.gameMinutes;
-        countdownMinutes = data.gameTime.countdownMinutes;
-        updateGameClock();
-      }
-      
-      // Afficher une notification discrète
-      showSyncNotification(`Mise à jour par ${data.lastUpdatedBy || "un utilisateur"}`);
-    });
-    
-    // Écouter les modifications locales (formulaires)
-    let timeoutId = null;
-    let isLocalUpdate = false;
-    
-    document.addEventListener('input', function() {
-      if (timeoutId) clearTimeout(timeoutId);
-      
-      timeoutId = setTimeout(function() {
-        isLocalUpdate = true;
-        syncDataWithFirebase();
-      }, 2000);
-    });
-    
-    // Écouter les clics sur les boutons d'ajout/suppression
-    document.addEventListener('click', function(e) {
-      if (e.target.tagName === 'BUTTON' && 
-          (e.target.textContent.includes('Ajouter') || 
-           e.target.textContent.includes('Supprimer') || 
-           e.target.textContent.includes('🗑️'))) {
-        
-        setTimeout(function() {
-          isLocalUpdate = true;
-          syncDataWithFirebase();
-        }, 500);
-      }
-    });
-  }
-  
-  // Initialiser tout
+    zoneContainer.appendChild(div);
+  });
+}
+
+// Fonction d'initialisation Firebase manquante dans le code original
+function initFirebaseSync() {
+  // Initialiser la synchronisation Firebase
   loadDataFromFirebase();
   setupRealtimeChat();
   setupSyncListeners();
@@ -3176,16 +3105,154 @@ function loadCharactersData(characters) {
     syncDataWithFirebase();
   }, 60000);
   
-  console.log("Synchronisation Firebase initialisée");
-
-// Modifier la fonction endCinematique pour initialiser Firebase
-const originalEndCinematique = endCinematique;
-endCinematique = function() {
-  originalEndCinematique();
+  // Enregistrer la présence de l'utilisateur
+  registerPresence(window.pseudo);
   
-  // Initialiser la synchronisation Firebase
-  setTimeout(initFirebaseSync, 1000);
-};
+  console.log("Synchronisation Firebase initialisée");
+  
+  // Ajouter un message système dans le chat
+  const chatRef = database.ref('deadhope/chat');
+  chatRef.push({
+    sender: "Système",
+    message: `${window.pseudo} a rejoint le terminal.`,
+    time: new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
+    timestamp: Date.now()
+  });
+}
+
+// Variable globale pour gérer les mises à jour locales vs. distantes
+let isLocalUpdate = false;
+
+// Fonction pour gérer les modifications des états des items
+function checkEtat(select) {
+  const row = select.closest("tr");
+  const value = select.value;
+  
+  if (value.includes("❌")) {
+    row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
+  } else if (value.includes("⚠️")) {
+    row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
+  } else {
+    row.style.backgroundColor = "transparent";
+  }
+  
+  // Synchroniser après un changement d'état
+  setTimeout(function() {
+    isLocalUpdate = true;
+    syncDataWithFirebase();
+  }, 100);
+}
+
+// Amélioration de la fonction de mise à jour des zones de danger pour qu'elle mette à jour la couleur de bordure automatiquement
+document.addEventListener('change', function(e) {
+  if (e.target.tagName === 'SELECT' && e.target.closest('.danger-zone-entry')) {
+    const entry = e.target.closest('.danger-zone-entry');
+    const value = e.target.value;
+    
+    if (value === 'Extrême') {
+      entry.style.borderLeft = '4px solid #e74c3c';
+    } else if (value === 'Élevé') {
+      entry.style.borderLeft = '4px solid #f39c12';
+    } else if (value === 'Modéré') {
+      entry.style.borderLeft = '4px solid #f1c40f';
+    } else if (value === 'Faible') {
+      entry.style.borderLeft = '4px solid #2ecc71';
+    }
+    
+    // Synchroniser après un changement de niveau de danger
+    setTimeout(function() {
+      isLocalUpdate = true;
+      syncDataWithFirebase();
+    }, 100);
+  }
+});
+
+// Remplacement complet de la fonction setupSyncListeners pour une meilleure gestion des événements
+function setupSyncListeners() {
+  // Écouter les modifications de Firebase
+  deadhopeRef.on('value', snapshot => {
+    // Ne pas recharger les données si c'est nous qui les avons modifiées
+    if (isLocalUpdate) {
+      isLocalUpdate = false;
+      return;
+    }
+    
+    const data = snapshot.val();
+    if (!data) return;
+    
+    // Charger silencieusement les données
+    loadCharactersData(data.characters);
+    loadMissionsData(data.missions);
+    loadJournalData(data.journal);
+    loadLogisticsData(data.logistics);
+    loadDangerZonesData(data.dangerZones);
+    
+    // Mettre à jour le temps
+    if (data.gameTime) {
+      gameMinutes = data.gameTime.gameMinutes;
+      countdownMinutes = data.gameTime.countdownMinutes;
+      updateGameClock();
+    }
+    
+    // Afficher une notification discrète
+    if (data.lastUpdatedBy !== window.pseudo) {
+      showSyncNotification(`Mise à jour par ${data.lastUpdatedBy || "un utilisateur"}`);
+    }
+  });
+  
+  // Ajouter un débounce pour les modifications
+  let timeoutId = null;
+  
+  // Observer les modifications sur les inputs et selects
+  document.addEventListener('input', function(e) {
+    if (timeoutId) clearTimeout(timeoutId);
+    
+    timeoutId = setTimeout(function() {
+      isLocalUpdate = true;
+      syncDataWithFirebase();
+    }, 1000); // Réduit à 1 seconde pour une réactivité améliorée
+  });
+  
+  // Observer les changements de select
+  document.addEventListener('change', function(e) {
+    if (e.target.tagName === 'SELECT') {
+      if (timeoutId) clearTimeout(timeoutId);
+      
+      timeoutId = setTimeout(function() {
+        isLocalUpdate = true;
+        syncDataWithFirebase();
+      }, 500); // Plus rapide pour les sélections
+    }
+  });
+  
+  // Écouter les clics sur les boutons d'ajout/suppression
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName === 'BUTTON' && 
+        (e.target.textContent.includes('Ajouter') || 
+         e.target.textContent.includes('Supprimer') || 
+         e.target.textContent.includes('🗑️'))) {
+      
+      setTimeout(function() {
+        isLocalUpdate = true;
+        syncDataWithFirebase();
+      }, 300);
+    }
+  });
+}
+
+// Fonction pour notifier automatiquement quand un utilisateur se connecte
+document.addEventListener('DOMContentLoaded', function() {
+  // Écouter les présences des utilisateurs
+  const presenceRef = database.ref("presence");
+  presenceRef.on("value", (snapshot) => {
+    const users = snapshot.val() || {};
+    const userList = Object.keys(users);
+    const container = document.querySelector("#connected-users span");
+    if (container) {
+      container.textContent = userList.length > 0 ? userList.join(", ") : "Aucun";
+    }
+  });
+});
 </script>
 </body>
 </html>
