@@ -30,6 +30,9 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>DeadHope - Terminal Avancé</title>
+<!-- Liens Leaflet pour la carte interactive -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <style>
 :root {
 --bg: #0a0a0a;
@@ -665,257 +668,6 @@ animation: glitch-appear 15s infinite;
 96%, 99% { opacity: 0.8; transform: translateY(var(--pos, 100px)); }
 }
 
-/* Custom map style instead of iframe */
-.custom-map {
-width: 100%;
-height: 600px;
-border-radius: 8px;
-background-color: #1a1a1a;
-position: relative;
-overflow: hidden;
-box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-
-.map-grid {
-position: absolute;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background-image: 
-linear-gradient(#222 1px, transparent 1px),
-linear-gradient(90deg, #222 1px, transparent 1px);
-background-size: 30px 30px;
-z-index: 1;
-}
-
-.map-title {
-position: absolute;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-font-size: 3rem;
-font-family: 'Courier New', monospace;
-color: #ddd;
-text-transform: uppercase;
-letter-spacing: 3px;
-z-index: 5;
-text-align: center;
-width: 100%;
-}
-
-.map-error {
-position: absolute;
-top: 40%;
-left: 50%;
-transform: translate(-50%, -50%);
-padding: 15px 30px;
-background: #8b0000;
-color: white;
-border-radius: 5px;
-font-family: monospace;
-font-weight: bold;
-z-index: 10;
-}
-
-.map-message {
-position: absolute;
-top: 60%;
-left: 50%;
-transform: translate(-50%, -50%);
-color: #aaa;
-font-size: 0.9rem;
-text-align: center;
-max-width: 80%;
-line-height: 1.5;
-z-index: 10;
-}
-
-.map-warning {
-position: absolute;
-width: 50px;
-height: 50px;
-z-index: 10;
-}
-
-.warning-left {
-top: 50%;
-left: 10%;
-transform: translateY(-50%);
-}
-
-.warning-right {
-top: 50%;
-right: 10%;
-transform: translateY(-50%);
-}
-
-.warning-triangle {
-width: 100%;
-height: 100%;
-background: transparent;
-position: relative;
-}
-
-.warning-triangle::before {
-content: "⚠️";
-font-size: 48px;
-position: absolute;
-top: 50%;
-left: 50%;
-transform: translate(-50%, -50%);
-color: #3498db;
-}
-
-.map-location {
-position: absolute;
-width: 20px;
-height: 20px;
-background: transparent;
-border-radius: 50%;
-z-index: 5;
-}
-
-.location-1 {
-top: 30%;
-left: 20%;
-background: #e74c3c;
-box-shadow: 0 0 10px #e74c3c;
-}
-
-.location-2 {
-top: 60%;
-left: 70%;
-background: #2ecc71;
-box-shadow: 0 0 10px #2ecc71;
-}
-
-.location-3 {
-top: 20%;
-left: 80%;
-background: #3498db;
-box-shadow: 0 0 10px #3498db;
-}
-
-.location-4 {
-top: 75%;
-left: 35%;
-background: #f1c40f;
-box-shadow: 0 0 10px #f1c40f;
-}
-
-.location-pulse {
-position: absolute;
-width: 100%;
-height: 100%;
-border-radius: 50%;
-animation: pulse-location 2s infinite;
-}
-
-@keyframes pulse-location {
-0% { transform: scale(1); opacity: 1; }
-100% { transform: scale(3); opacity: 0; }
-}
-
-.map-legend {
-position: absolute;
-top: 10px;
-left: 10px;
-background: rgba(0, 0, 0, 0.7);
-padding: 15px;
-border-radius: 5px;
-border: 1px solid #333;
-z-index: 10;
-}
-
-.legend-title {
-color: #e74c3c;
-margin-bottom: 10px;
-font-weight: bold;
-}
-
-.legend-item {
-margin-bottom: 5px;
-display: flex;
-align-items: center;
-gap: 10px;
-}
-
-.legend-circle {
-width: 12px;
-height: 12px;
-border-radius: 50%;
-}
-
-.stat-container {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-gap: 1.5rem;
-margin: 2rem 0;
-}
-
-.stat-card {
-background: rgba(20, 20, 20, 0.8);
-border-radius: 8px;
-padding: 1.5rem;
-position: relative;
-overflow: hidden;
-border: 1px solid #333;
-}
-
-.stat-value {
-font-size: 2.5rem;
-color: var(--terminal-green);
-margin: 0.5rem 0;
-text-align: center;
-text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-}
-
-.stat-label {
-text-align: center;
-color: #aaa;
-font-size: 0.9rem;
-}
-
-.progress-bar {
-width: 100%;
-height: 10px;
-background: #222;
-border-radius: 5px;
-overflow: hidden;
-margin-top: 1rem;
-}
-
-.progress-fill {
-height: 100%;
-background: linear-gradient(90deg, var(--accent), #ff5555);
-width: var(--fill, 50%);
-border-radius: 5px;
-}
-
-/* Mission countdown */
-.countdown {
-text-align: center;
-margin: 1rem 0;
-padding: 1rem;
-background: rgba(139, 0, 0, 0.2);
-border-radius: 8px;
-position: relative;
-}
-
-.countdown-value {
-font-size: 3rem;
-font-family: monospace;
-color: var(--accent);
-text-shadow: 0 0 15px rgba(139, 0, 0, 0.7);
-}
-
-.countdown-label {
-font-size: 0.9rem;
-color: #aaa;
-margin-top: 0.5rem;
-}
-
 /* Message notification */
 .msg-notification {
 position: absolute;
@@ -1508,7 +1260,6 @@ transition: all 0.5s ease-in-out;
           50% { box-shadow: 0 0 8px #ff0000, 0 0 15px #ff0000, 0 0 25px #ff0000; opacity: 1; }
           100% { box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000, 0 0 15px #ff0000; opacity: 0.7; }
         }
-
 </style>
 </head>
 
@@ -1964,37 +1715,37 @@ transition: all 0.5s ease-in-out;
                 </g>
                 
                 <!-- Camp position -->
-                <g transform="translate(100, 100)">
-                    <path d="M0,-15 L10,5 L-10,5 Z" fill="#00bcd4"></path>
-                    <circle cx="0" cy="0" r="20" fill="none" stroke="#00bcd4" stroke-width="2" opacity="0.7">
-                        <animate attributeName="r" from="20" to="30" dur="2s" repeatCount="indefinite" />
-                        <animate attributeName="opacity" from="0.7" to="0" dur="2s" repeatCount="indefinite" />
-                    </circle>
-                    <text x="15" y="5" fill="#00bcd4" font-size="14" font-weight="bold" font-family="monospace">CAMP</text>
-                </g>
+<g transform="translate(100, 100)">
+    <path d="M0,-15 L10,5 L-10,5 Z" fill="#00bcd4"></path>
+    <circle cx="0" cy="0" r="20" fill="none" stroke="#00bcd4" stroke-width="2" opacity="0.7">
+        <animate attributeName="r" from="20" to="30" dur="2s" repeatCount="indefinite" />
+        <animate attributeName="opacity" from="0.7" to="0" dur="2s" repeatCount="indefinite" />
+    </circle>
+    <text x="15" y="5" fill="#00bcd4" font-size="14" font-weight="bold" font-family="monospace">CAMP</text>
+ </g>
                 
-                <!-- Gradient definitions -->
-                <defs>
-                    <radialGradient id="danger-extreme" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                        <stop offset="0%" stop-color="#e74c3c" />
-                        <stop offset="100%" stop-color="transparent" />
-                    </radialGradient>
-                    
-                    <radialGradient id="danger-high" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                        <stop offset="0%" stop-color="#f39c12" />
-                        <stop offset="100%" stop-color="transparent" />
-                    </radialGradient>
-                    
-                    <radialGradient id="danger-medium" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                        <stop offset="0%" stop-color="#f1c40f" />
-                        <stop offset="100%" stop-color="transparent" />
-                    </radialGradient>
-                    
-                    <radialGradient id="danger-low" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                        <stop offset="0%" stop-color="#2ecc71" />
-                        <stop offset="100%" stop-color="transparent" />
-                    </radialGradient>
-                </defs>
+ <!-- Gradient definitions -->
+ <defs>
+    <radialGradient id="danger-extreme" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+        <stop offset="0%" stop-color="#e74c3c" />
+        <stop offset="100%" stop-color="transparent" />
+    </radialGradient>
+    
+    <radialGradient id="danger-high" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+        <stop offset="0%" stop-color="#f39c12" />
+        <stop offset="100%" stop-color="transparent" />
+    </radialGradient>
+    
+    <radialGradient id="danger-medium" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+        <stop offset="0%" stop-color="#f1c40f" />
+        <stop offset="100%" stop-color="transparent" />
+    </radialGradient>
+    
+    <radialGradient id="danger-low" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+        <stop offset="0%" stop-color="#2ecc71" />
+        <stop offset="100%" stop-color="transparent" />
+    </radialGradient>
+ </defs>
             </svg>
             
             <div class="map-legend" style="display: flex; justify-content: space-around; margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 4px;">
@@ -2018,64 +1769,82 @@ transition: all 0.5s ease-in-out;
         </div>
     </div>
     </section>
-
-    <!-- Interactive map section avec carte personnalisée au lieu de l'iframe qui ne fonctionne pas -->
-<section id="map">
+ 
+    <!-- Nouvelle section de carte interactive -->
+ <section id="map">
     <h2>🗺️ CARTE INTERACTIVE</h2>
     
-    <div class="custom-map">
-        <!-- Map grid background -->
-        <div class="map-grid"></div>
-        
-        <!-- Error message instead of iframe -->
-        <div class="map-error">ERR_BLOCKED_BY_CSP</div>
-        <div class="map-title">MAP.PROJECTZOMBOID.COM<br/>EST BLOQUÉ</div>
-        <div class="map-message">Ce contenu est bloqué. Pour résoudre le problème, contactez le propriétaire du site.</div>
-        
-        <!-- Warning symbols -->
-        <div class="map-warning warning-left">
-            <div class="warning-triangle"></div>
-        </div>
-        <div class="map-warning warning-right">
-            <div class="warning-triangle"></div>
-        </div>
-        
-        <!-- Custom interactive map locations -->
-        <div class="map-location location-1">
-            <div class="location-pulse" style="background: #e74c3c;"></div>
-        </div>
-        <div class="map-location location-2">
-            <div class="location-pulse" style="background: #2ecc71;"></div>
-        </div>
-        <div class="map-location location-3">
-            <div class="location-pulse" style="background: #3498db;"></div>
-        </div>
-        <div class="map-location location-4">
-            <div class="location-pulse" style="background: #f1c40f;"></div>
-        </div>
-        
-        <!-- Map legend -->
-        <div class="map-legend">
-            <div class="legend-title">LÉGENDE</div>
-            <div class="legend-item">
-                <div class="legend-circle" style="background: #e74c3c;"></div>
-                <span>Zone infestée</span>
+    <div class="map-controls" style="margin-bottom: 10px; display: flex; gap: 10px;">
+        <button id="toggle-satellite" onclick="toggleMapLayer('satellite')">🛰️ Vue Satellite</button>
+        <button id="toggle-terrain" onclick="toggleMapLayer('terrain')">🏔️ Vue Terrain</button>
+        <button id="toggle-markers" onclick="toggleMapMarkers()">📍 Marqueurs</button>
+        <button id="add-marker-btn" onclick="startAddingMarker()">➕ Ajouter un point</button>
+    </div>
+    
+    <!-- Container de la carte -->
+    <div id="interactive-map" style="width: 100%; height: 600px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);"></div>
+    
+    <!-- Panel d'informations sur les marqueurs -->
+    <div id="marker-info-panel" style="margin-top: 15px; background: rgba(20, 20, 20, 0.8); padding: 15px; border-radius: 8px; display: none;">
+        <h3 style="margin-top: 0; color: #f39c12;">Informations sur le point</h3>
+        <div id="marker-info-content"></div>
+    </div>
+    
+    <!-- Formulaire d'ajout de marqueur -->
+    <div id="add-marker-form" style="margin-top: 15px; background: rgba(20, 20, 20, 0.8); padding: 15px; border-radius: 8px; display: none;">
+        <h3 style="margin-top: 0; color: #3498db;">Ajouter un nouveau point</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+            <div>
+                <label for="marker-name" style="display: block; margin-bottom: 5px;">Nom du lieu</label>
+                <input id="marker-name" type="text" placeholder="Ex: Pharmacie abandonnée" style="width: 100%;">
             </div>
-            <div class="legend-item">
-                <div class="legend-circle" style="background: #2ecc71;"></div>
-                <span>Zone sécurisée</span>
+            <div>
+                <label for="marker-type" style="display: block; margin-bottom: 5px;">Type</label>
+                <select id="marker-type" style="width: 100%;">
+                    <option value="danger">⚠️ Zone dangereuse</option>
+                    <option value="resource">📦 Ressources</option>
+                    <option value="shelter">🏠 Abri</option>
+                    <option value="poi">🔍 Point d'intérêt</option>
+                </select>
             </div>
-            <div class="legend-item">
-                <div class="legend-circle" style="background: #3498db;"></div>
+        </div>
+        <div>
+            <label for="marker-description" style="display: block; margin-bottom: 5px;">Description</label>
+            <textarea id="marker-description" placeholder="Description du lieu..." style="width: 100%; min-height: 80px;"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+            <button onclick="cancelAddMarker()">Annuler</button>
+            <button onclick="saveNewMarker()" style="background: linear-gradient(to bottom, #2980b9, #2c3e50);">Enregistrer</button>
+        </div>
+    </div>
+    
+    <!-- Légende de la carte -->
+    <div style="margin-top: 15px; background: rgba(20, 20, 20, 0.8); padding: 15px; border-radius: 8px;">
+        <h3 style="margin-top: 0; color: #e74c3c;">LÉGENDE</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 20px; height: 20px; background: #e74c3c; border-radius: 50%;"></div>
+                <span>Zone dangereuse</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 20px; height: 20px; background: #2ecc71; border-radius: 50%;"></div>
+                <span>Ressources</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 20px; height: 20px; background: #3498db; border-radius: 50%;"></div>
+                <span>Abri</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 20px; height: 20px; background: #f39c12; border-radius: 50%;"></div>
                 <span>Point d'intérêt</span>
             </div>
         </div>
     </div>
-    </section>
+ </section>
     </main>
-
+ 
     <!-- Chat radio button with notification -->
-<button id="chat-toggle" onclick="toggleChat()">
+ <button id="chat-toggle" onclick="toggleChat()">
     💬
     <span class="msg-notification">3</span>
     </button>
@@ -2117,7 +1886,7 @@ transition: all 0.5s ease-in-out;
     <audio id="radio-bip" preload="auto">
     <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
     </audio>
-
+ 
     <script>
         // Store the user's pseudo
         window.pseudo = "Anonyme";
@@ -2180,189 +1949,189 @@ transition: all 0.5s ease-in-out;
         ];
         
         let dialogueIndex = 0;
-
+ 
         // Start dashboard after authentication
-function startDashboard() {
-const input = document.getElementById("input-pseudo");
-const pseudo = input.value.trim();
-
-if (!pseudo) {
-input.style.border = "1px solid #e74c3c";
-input.placeholder = "⚠️ PSEUDO REQUIS!";
-return;
-}
-
-input.disabled = true;
-window.pseudo = pseudo;
-
-// Play confirmation sound
-document.getElementById("confirm-sound").play().catch(() => {});
-
-const terminal = document.getElementById("terminal-lines");
-terminal.innerHTML += `\n\nBienvenue, OPÉRATEUR: <span style="color: #8b0000; font-weight: bold">${pseudo.toUpperCase()}</span>\nInitialisation du terminal tactique...`;
-
-// Add a loading animation
-const loadingDiv = document.createElement("div");
-loadingDiv.innerHTML = "<div style='margin-top: 10px; display: flex; justify-content: center;'><div class='typing-indicator'>■</div></div>";
-terminal.appendChild(loadingDiv);
-
-// Lancer la cinématique au lieu d'aller directement au tableau de bord
-setTimeout(() => {
-document.getElementById("welcome-screen").style.display = "none";
-startCinematique();
-}, 2000);
-}
-
-// Fonction pour démarrer la cinématique
-function startCinematique() {
-const container = document.getElementById("cinematique-container");
-container.style.display = "flex";
-
-// Ajout des étoiles dans le ciel nocturne
-const nightSky = document.querySelector('.night-sky');
-for (let i = 0; i < 50; i++) {
-const star = document.createElement('div');
-star.classList.add('star');
-star.style.top = Math.random() * 100 + '%';
-star.style.left = Math.random() * 100 + '%';
-star.style.animationDelay = Math.random() * 4 + 's';
-nightSky.appendChild(star);
-}
-
-setTimeout(() => {
-container.style.opacity = "1";
-showDialogue(0);
-
-// Jouer sons ambiants de la cinématique
-document.getElementById("background-sound").volume = 0.3;
-document.getElementById("background-sound").play().catch(() => {});
-}, 100);
-}
-
-// Afficher le dialogue actuel
-function showDialogue(index) {
-let text = dialogues[index];
-
-// Ajouter le pseudo au dernier dialogue
-if (index === dialogues.length - 1) {
-text += window.pseudo + ". Que la mort ne soit pas ton espoir final.";
-}
-
-const element = document.getElementById("dialogue-text");
-element.innerHTML = "";
-
-// Effets spéciaux pour certains dialogues
-if (index === 5) {
-// Montrer les factions
-document.getElementById("dialogue-faction").style.display = "block";
-} else {
-document.getElementById("dialogue-faction").style.display = "none";
-}
-
-// Afficher la carte des factions
-if (index === 6) {
-document.getElementById("faction-map").style.opacity = "0.8";
-showTerritoryMarker("lion");
-} else if (index === 7) {
-showTerritoryMarker("shark");
-} else if (index === 8) {
-showTerritoryMarker("gator");
-} else if (index === 9) {
-showTerritoryMarker("pigz");
-} else if (index === 10) {
-showTerritoryMarker("eagle");
-} else if (index === 11) {
-showTerritoryMarker("bearz");
-} else if (index === 12) {
-showTerritoryMarker("kobra");
-} else if (index === 13) {
-showTerritoryMarker("beez");
-} else if (index > 13 || index < 6) {
-document.getElementById("faction-map").style.opacity = "0";
-document.querySelectorAll(".territory-marker").forEach(marker => {
+ function startDashboard() {
+ const input = document.getElementById("input-pseudo");
+ const pseudo = input.value.trim();
+ 
+ if (!pseudo) {
+ input.style.border = "1px solid #e74c3c";
+ input.placeholder = "⚠️ PSEUDO REQUIS!";
+ return;
+ }
+ 
+ input.disabled = true;
+ window.pseudo = pseudo;
+ 
+ // Play confirmation sound
+ document.getElementById("confirm-sound").play().catch(() => {});
+ 
+ const terminal = document.getElementById("terminal-lines");
+ terminal.innerHTML += `\n\nBienvenue, OPÉRATEUR: <span style="color: #8b0000; font-weight: bold">${pseudo.toUpperCase()}</span>\nInitialisation du terminal tactique...`;
+ 
+ // Add a loading animation
+ const loadingDiv = document.createElement("div");
+ loadingDiv.innerHTML = "<div style='margin-top: 10px; display: flex; justify-content: center;'><div class='typing-indicator'>■</div></div>";
+ terminal.appendChild(loadingDiv);
+ 
+ // Lancer la cinématique au lieu d'aller directement au tableau de bord
+ setTimeout(() => {
+ document.getElementById("welcome-screen").style.display = "none";
+ startCinematique();
+ }, 2000);
+ }
+ 
+ // Fonction pour démarrer la cinématique
+ function startCinematique() {
+ const container = document.getElementById("cinematique-container");
+ container.style.display = "flex";
+ 
+ // Ajout des étoiles dans le ciel nocturne
+ const nightSky = document.querySelector('.night-sky');
+ for (let i = 0; i < 50; i++) {
+ const star = document.createElement('div');
+ star.classList.add('star');
+ star.style.top = Math.random() * 100 + '%';
+ star.style.left = Math.random() * 100 + '%';
+ star.style.animationDelay = Math.random() * 4 + 's';
+ nightSky.appendChild(star);
+ }
+ 
+ setTimeout(() => {
+ container.style.opacity = "1";
+ showDialogue(0);
+ 
+ // Jouer sons ambiants de la cinématique
+ document.getElementById("background-sound").volume = 0.3;
+ document.getElementById("background-sound").play().catch(() => {});
+ }, 100);
+ }
+ 
+ // Afficher le dialogue actuel
+ function showDialogue(index) {
+ let text = dialogues[index];
+ 
+ // Ajouter le pseudo au dernier dialogue
+ if (index === dialogues.length - 1) {
+ text += window.pseudo + ". Que la mort ne soit pas ton espoir final.";
+ }
+ 
+ const element = document.getElementById("dialogue-text");
+ element.innerHTML = "";
+ 
+ // Effets spéciaux pour certains dialogues
+ if (index === 5) {
+ // Montrer les factions
+ document.getElementById("dialogue-faction").style.display = "block";
+ } else {
+ document.getElementById("dialogue-faction").style.display = "none";
+ }
+ 
+ // Afficher la carte des factions
+ if (index === 6) {
+ document.getElementById("faction-map").style.opacity = "0.8";
+ showTerritoryMarker("lion");
+ } else if (index === 7) {
+ showTerritoryMarker("shark");
+ } else if (index === 8) {
+ showTerritoryMarker("gator");
+ } else if (index === 9) {
+ showTerritoryMarker("pigz");
+ } else if (index === 10) {
+ showTerritoryMarker("eagle");
+ } else if (index === 11) {
+ showTerritoryMarker("bearz");
+ } else if (index === 12) {
+ showTerritoryMarker("kobra");
+ } else if (index === 13) {
+ showTerritoryMarker("beez");
+ } else if (index > 13 || index < 6) {
+ document.getElementById("faction-map").style.opacity = "0";
+ document.querySelectorAll(".territory-marker").forEach(marker => {
     marker.classList.remove("visible");
-});
-}
-
-// Animation d'écriture du texte
-let i = 0;
-const typeInterval = setInterval(() => {
-if (i < text.length) {
+ });
+ }
+ 
+ // Animation d'écriture du texte
+ let i = 0;
+ const typeInterval = setInterval(() => {
+ if (i < text.length) {
     element.innerHTML += text[i++];
-} else {
+ } else {
     clearInterval(typeInterval);
-}
-}, 30);
-}
-
-// Afficher marqueur de territoire
-function showTerritoryMarker(faction) {
-document.querySelectorAll(".territory-marker").forEach(marker => {
-marker.classList.remove("visible");
-});
-
-const marker = document.querySelector(`.territory-marker[data-faction="${faction}"]`);
-if (marker) {
-marker.classList.add("visible");
-}
-}
-
-// Passer au dialogue suivant
-function nextDialogue() {
-dialogueIndex++;
-
-if (dialogueIndex >= dialogues.length) {
-// Fin de la cinématique, passer au tableau de bord
-endCinematique();
-return;
-}
-
-// Jouer son de transition
-document.getElementById("radio-bip").play().catch(() => {});
-showDialogue(dialogueIndex);
-}
-
-// Passer la cinématique
-function skipCinematique() {
-document.getElementById("confirm-sound").play().catch(() => {});
-endCinematique();
-}
-
-// Terminer la cinématique et montrer le tableau de bord
-function endCinematique() {
-const container = document.getElementById("cinematique-container");
-container.style.opacity = "0";
-
-setTimeout(() => {
-container.style.display = "none";
-document.getElementById("dashboard-content").style.display = "block";
-document.getElementById("background-sound").play().catch(() => {});
-updateTimestamp();
-}, 1000);
-}
-
-// Utility functions
-function updateTimestamp() {
-const now = new Date();
-const formatted = now.toLocaleString("fr-FR");
-document.getElementById("last-updated").textContent = formatted;
-}
-
-function filterTable(inputId, tableBodyId) {
-const input = document.getElementById(inputId).value.toLowerCase();
-const rows = document.getElementById(tableBodyId).querySelectorAll("tr");
-
-rows.forEach(row => {
-const text = row.innerText.toLowerCase();
-row.style.display = text.includes(input) ? "" : "none";
-});
-}
-
-function resetSection(sectionId) {
-const el = document.getElementById(sectionId);
-
-if (el) {
-if (sectionId.includes('body')) {
+ }
+ }, 30);
+ }
+ 
+ // Afficher marqueur de territoire
+ function showTerritoryMarker(faction) {
+ document.querySelectorAll(".territory-marker").forEach(marker => {
+ marker.classList.remove("visible");
+ });
+ 
+ const marker = document.querySelector(`.territory-marker[data-faction="${faction}"]`);
+ if (marker) {
+ marker.classList.add("visible");
+ }
+ }
+ 
+ // Passer au dialogue suivant
+ function nextDialogue() {
+ dialogueIndex++;
+ 
+ if (dialogueIndex >= dialogues.length) {
+ // Fin de la cinématique, passer au tableau de bord
+ endCinematique();
+ return;
+ }
+ 
+ // Jouer son de transition
+ document.getElementById("radio-bip").play().catch(() => {});
+ showDialogue(dialogueIndex);
+ }
+ 
+ // Passer la cinématique
+ function skipCinematique() {
+ document.getElementById("confirm-sound").play().catch(() => {});
+ endCinematique();
+ }
+ 
+ // Terminer la cinématique et montrer le tableau de bord
+ function endCinematique() {
+ const container = document.getElementById("cinematique-container");
+ container.style.opacity = "0";
+ 
+ setTimeout(() => {
+ container.style.display = "none";
+ document.getElementById("dashboard-content").style.display = "block";
+ document.getElementById("background-sound").play().catch(() => {});
+ updateTimestamp();
+ }, 1000);
+ }
+ 
+ // Utility functions
+ function updateTimestamp() {
+ const now = new Date();
+ const formatted = now.toLocaleString("fr-FR");
+ document.getElementById("last-updated").textContent = formatted;
+ }
+ 
+ function filterTable(inputId, tableBodyId) {
+ const input = document.getElementById(inputId).value.toLowerCase();
+ const rows = document.getElementById(tableBodyId).querySelectorAll("tr");
+ 
+ rows.forEach(row => {
+ const text = row.innerText.toLowerCase();
+ row.style.display = text.includes(input) ? "" : "none";
+ });
+ }
+ 
+ function resetSection(sectionId) {
+ const el = document.getElementById(sectionId);
+ 
+ if (el) {
+ if (sectionId.includes('body')) {
     // For tables, keep first row as template
     const firstRow = el.querySelector('tr');
     el.innerHTML = '';
@@ -2373,7 +2142,7 @@ if (sectionId.includes('body')) {
         newRow.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
         el.appendChild(newRow);
     }
-} else {
+ } else {
     // For other containers
     const firstItem = el.children[0];
     el.innerHTML = '';
@@ -2384,151 +2153,151 @@ if (sectionId.includes('body')) {
         newItem.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
         el.appendChild(newItem);
     }
-}
-}
-}
-
-// Check equipment status and change row color
-function checkEtat(select) {
-const row = select.closest("tr");
-const value = select.value;
-
-if (value.includes("❌")) {
-row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
-} else if (value.includes("⚠️")) {
-row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
-} else {
-row.style.backgroundColor = "transparent";
-}
-}
-
-// Add new entries to tables
-function ajouterFichePerso() {
-const list = document.getElementById("character-list");
-const original = list.children[0];
-const clone = original.cloneNode(true);
-
-clone.querySelectorAll("input, textarea").forEach(el => el.value = "");
-clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
-
-list.appendChild(clone);
-}
-
-function ajouterJournal() {
-const tbody = document.getElementById("journal-body");
-const clone = tbody.rows[0].cloneNode(true);
-
-clone.querySelectorAll("input").forEach(el => el.value = "");
-tbody.appendChild(clone);
-}
-
-function ajouterMission() {
-const tbody = document.getElementById("mission-body");
-const clone = tbody.rows[0].cloneNode(true);
-
-clone.querySelectorAll("input").forEach(el => el.value = "");
-clone.querySelector("select").selectedIndex = 0;
-
-tbody.appendChild(clone);
-}
-
-function ajouterLogistique() {
-const tbody = document.getElementById("logistique-body");
-const clone = tbody.rows[0].cloneNode(true);
-
-clone.querySelectorAll("input").forEach(el => el.value = "");
-clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
-clone.style.backgroundColor = "transparent";
-
-tbody.appendChild(clone);
-}
-
-function ajouterZoneDangereuse() {
-const container = document.getElementById("danger-zone-container");
-const clone = container.firstElementChild.cloneNode(true);
-
-clone.querySelectorAll("input").forEach(input => input.value = "");
-clone.style.borderLeftColor = "#333";
-
-container.appendChild(clone);
-}
-
-// Chat functions
-function toggleChat() {
-const box = document.getElementById("radio-chat");
-box.style.display = box.style.display === "none" ? "block" : "none";
-
-// Remove notification when opening chat
-if (box.style.display === "block") {
-const notification = document.querySelector(".msg-notification");
-if (notification) notification.style.display = "none";
-}
-}
-
-function sendMessage() {
-const input = document.getElementById("chat-input");
-const text = input.value.trim();
-
-if (!text) return;
-
-const chatLog = document.getElementById("chat-log");
-const now = new Date();
-const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
-
-const msgDiv = document.createElement("div");
-msgDiv.classList.add("chat-message", "fade-in");
-msgDiv.innerHTML = `<strong style="color:#5af">${window.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${text}`;
-
-chatLog.appendChild(msgDiv);
-chatLog.scrollTop = chatLog.scrollHeight;
-
-input.value = "";
-
-// Play radio sound
-document.getElementById("radio-bip").play().catch(() => {});
-}
-
-// Game clock update
-let gameMinutes = 8 * 60;
-const gameSpeed = 2; // Minutes per real minute
-
-function updateGameClock() {
-const hours = Math.floor(gameMinutes / 60) % 24;
-const minutes = gameMinutes % 60;
-
-document.getElementById("game-clock").textContent = `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
-
-gameMinutes += gameSpeed;
-
-// Update countdowns and other time-based elements
-updateCountdown();
-}
-
-// Countdown to next event
-let countdownMinutes = 47 * 60 + 23 * 60 + 12; // 47:23:12
-
-function updateCountdown() {
-if (countdownMinutes <= 0) {
-// Reset countdown or trigger event
-countdownMinutes = Math.floor(Math.random() * 24 * 60 * 60); // Random time within 24 hours
-}
-
-const hours = Math.floor(countdownMinutes / 3600);
-const minutes = Math.floor((countdownMinutes % 3600) / 60);
-const seconds = countdownMinutes % 60;
-
-document.getElementById("next-event-countdown").textContent = 
-`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-countdownMinutes--;
-}
-
-// Map location interaction
-function setupMapInteraction() {
-const locations = document.querySelectorAll('.map-location');
-
-locations.forEach(location => {
-location.addEventListener('click', function() {
+ }
+ }
+ }
+ 
+ // Check equipment status and change row color
+ function checkEtat(select) {
+ const row = select.closest("tr");
+ const value = select.value;
+ 
+ if (value.includes("❌")) {
+ row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
+ } else if (value.includes("⚠️")) {
+ row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
+ } else {
+ row.style.backgroundColor = "transparent";
+ }
+ }
+ 
+ // Add new entries to tables
+ function ajouterFichePerso() {
+ const list = document.getElementById("character-list");
+ const original = list.children[0];
+ const clone = original.cloneNode(true);
+ 
+ clone.querySelectorAll("input, textarea").forEach(el => el.value = "");
+ clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+ 
+ list.appendChild(clone);
+ }
+ 
+ function ajouterJournal() {
+ const tbody = document.getElementById("journal-body");
+ const clone = tbody.rows[0].cloneNode(true);
+ 
+ clone.querySelectorAll("input").forEach(el => el.value = "");
+ tbody.appendChild(clone);
+ }
+ 
+ function ajouterMission() {
+ const tbody = document.getElementById("mission-body");
+ const clone = tbody.rows[0].cloneNode(true);
+ 
+ clone.querySelectorAll("input").forEach(el => el.value = "");
+ clone.querySelector("select").selectedIndex = 0;
+ 
+ tbody.appendChild(clone);
+ }
+ 
+ function ajouterLogistique() {
+ const tbody = document.getElementById("logistique-body");
+ const clone = tbody.rows[0].cloneNode(true);
+ 
+ clone.querySelectorAll("input").forEach(el => el.value = "");
+ clone.querySelectorAll("select").forEach(el => el.selectedIndex = 0);
+ clone.style.backgroundColor = "transparent";
+ 
+ tbody.appendChild(clone);
+ }
+ 
+ function ajouterZoneDangereuse() {
+ const container = document.getElementById("danger-zone-container");
+ const clone = container.firstElementChild.cloneNode(true);
+ 
+ clone.querySelectorAll("input").forEach(input => input.value = "");
+ clone.style.borderLeftColor = "#333";
+ 
+ container.appendChild(clone);
+ }
+ 
+ // Chat functions
+ function toggleChat() {
+ const box = document.getElementById("radio-chat");
+ box.style.display = box.style.display === "none" ? "block" : "none";
+ 
+ // Remove notification when opening chat
+ if (box.style.display === "block") {
+ const notification = document.querySelector(".msg-notification");
+ if (notification) notification.style.display = "none";
+ }
+ }
+ 
+ function sendMessage() {
+ const input = document.getElementById("chat-input");
+ const text = input.value.trim();
+ 
+ if (!text) return;
+ 
+ const chatLog = document.getElementById("chat-log");
+ const now = new Date();
+ const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+ 
+ const msgDiv = document.createElement("div");
+ msgDiv.classList.add("chat-message", "fade-in");
+ msgDiv.innerHTML = `<strong style="color:#5af">${window.pseudo}</strong> <span style="color:#888">[${time}]</span>: ${text}`;
+ 
+ chatLog.appendChild(msgDiv);
+ chatLog.scrollTop = chatLog.scrollHeight;
+ 
+ input.value = "";
+ 
+ // Play radio sound
+ document.getElementById("radio-bip").play().catch(() => {});
+ }
+ 
+ // Game clock update
+ let gameMinutes = 8 * 60;
+ const gameSpeed = 2; // Minutes per real minute
+ 
+ function updateGameClock() {
+ const hours = Math.floor(gameMinutes / 60) % 24;
+ const minutes = gameMinutes % 60;
+ 
+ document.getElementById("game-clock").textContent = `${hours.toString().padStart(2, '0')}h${minutes.toString().padStart(2, '0')}`;
+ 
+ gameMinutes += gameSpeed;
+ 
+ // Update countdowns and other time-based elements
+ updateCountdown();
+ }
+ 
+ // Countdown to next event
+ let countdownMinutes = 47 * 60 + 23 * 60 + 12; // 47:23:12
+ 
+ function updateCountdown() {
+ if (countdownMinutes <= 0) {
+ // Reset countdown or trigger event
+ countdownMinutes = Math.floor(Math.random() * 24 * 60 * 60); // Random time within 24 hours
+ }
+ 
+ const hours = Math.floor(countdownMinutes / 3600);
+ const minutes = Math.floor((countdownMinutes % 3600) / 60);
+ const seconds = countdownMinutes % 60;
+ 
+ document.getElementById("next-event-countdown").textContent = 
+ `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+ 
+ countdownMinutes--;
+ }
+ 
+ // Map location interaction
+ function setupMapInteraction() {
+ const locations = document.querySelectorAll('.map-location');
+ 
+ locations.forEach(location => {
+ location.addEventListener('click', function() {
     // Show a simple tooltip with information
     let tooltip = document.createElement('div');
     tooltip.style.position = 'absolute';
@@ -2559,60 +2328,60 @@ location.addEventListener('click', function() {
     setTimeout(() => {
         tooltip.remove();
     }, 3000);
-});
-});
-}
-
-// Animate truck in welcome screen
-function animateTruck() {
-const truck = document.querySelector('.truck');
-
-// Add some subtle motion to the truck
-truck.style.animation = 'truckIdle 2s infinite alternate';
-
-// Define the animation in stylesheet
-const style = document.createElement('style');
-style.textContent = `
-@keyframes truckIdle {
+ });
+ });
+ }
+ 
+ // Animate truck in welcome screen
+ function animateTruck() {
+ const truck = document.querySelector('.truck');
+ 
+ // Add some subtle motion to the truck
+ truck.style.animation = 'truckIdle 2s infinite alternate';
+ 
+ // Define the animation in stylesheet
+ const style = document.createElement('style');
+ style.textContent = `
+ @keyframes truckIdle {
     0% { transform: translateY(0); }
     100% { transform: translateY(-3px); }
-}
-`;
-document.head.appendChild(style);
-}
-
-// Weather simulation effect
-function simulateWeather() {
-// Create a random weather effect (rain, fog, clear)
-const weatherTypes = ['rain', 'fog', 'clear'];
-const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
-const weatherTemp = Math.floor(Math.random() * 30 - 5); // -5 to 25 degrees
-
-document.getElementById("weather-info").textContent = `${weatherTemp}°C`;
-
-// Add visual effect based on weather
-const style = document.createElement('style');
-
-if (randomWeather === 'rain') {
+ }
+ `;
+ document.head.appendChild(style);
+ }
+ 
+ // Weather simulation effect
+ function simulateWeather() {
+ // Create a random weather effect (rain, fog, clear)
+ const weatherTypes = ['rain', 'fog', 'clear'];
+ const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+ const weatherTemp = Math.floor(Math.random() * 30 - 5); // -5 to 25 degrees
+ 
+ document.getElementById("weather-info").textContent = `${weatherTemp}°C`;
+ 
+ // Add visual effect based on weather
+ const style = document.createElement('style');
+ 
+ if (randomWeather === 'rain') {
 document.getElementById("weather-info").textContent = `🌧️ ${weatherTemp}°C`;
 style.textContent = `
-    body::before {
-        background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8));
-    }
+   body::before {
+       background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8));
+   }
 `;
 } else if (randomWeather === 'fog') {
 document.getElementById("weather-info").textContent = `🌫️ ${weatherTemp}°C`;
 style.textContent = `
-    body::before {
-        background: linear-gradient(rgba(20,20,30,0.8), rgba(20,20,30,0.8));
-    }
+   body::before {
+       background: linear-gradient(rgba(20,20,30,0.8), rgba(20,20,30,0.8));
+   }
 `;
 } else {
 document.getElementById("weather-info").textContent = `☀️ ${weatherTemp}°C`;
 style.textContent = `
-    body::before {
-        background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6));
-    }
+   body::before {
+       background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6));
+   }
 `;
 }
 
@@ -2623,24 +2392,24 @@ document.head.appendChild(style);
 function addBloodSplatterEffect() {
 document.body.addEventListener('click', function(e) {
 if (Math.random() > 0.7) { // 30% chance on any click
-    const splatter = document.createElement('div');
-    splatter.classList.add('blood-splatter');
-    splatter.style.left = (e.clientX - 50) + 'px';
-    splatter.style.top = (e.clientY - 50) + 'px';
-    document.body.appendChild(splatter);
-    
-    // Animate and remove
-    setTimeout(() => {
-        splatter.style.transform = 'scale(1.5)';
-        splatter.style.opacity = '0.7';
-        
-        setTimeout(() => {
-            splatter.style.opacity = '0';
-            setTimeout(() => {
-                splatter.remove();
-            }, 500);
-        }, 100);
-    }, 10);
+   const splatter = document.createElement('div');
+   splatter.classList.add('blood-splatter');
+   splatter.style.left = (e.clientX - 50) + 'px';
+   splatter.style.top = (e.clientY - 50) + 'px';
+   document.body.appendChild(splatter);
+   
+   // Animate and remove
+   setTimeout(() => {
+       splatter.style.transform = 'scale(1.5)';
+       splatter.style.opacity = '0.7';
+       
+       setTimeout(() => {
+           splatter.style.opacity = '0';
+           setTimeout(() => {
+               splatter.remove();
+           }, 500);
+       }, 100);
+   }, 10);
 }
 });
 }
@@ -2674,730 +2443,1022 @@ if (e.key === "Enter") sendMessage();
 // Initialisation des interactions avec les factions
 document.querySelectorAll('.faction-icon').forEach(icon => {
 icon.addEventListener('mouseover', function() {
-    this.style.transform = 'scale(1.1)';
-    this.style.boxShadow = '0 0 20px ' + getComputedStyle(this).backgroundColor;
+   this.style.transform = 'scale(1.1)';
+   this.style.boxShadow = '0 0 20px ' + getComputedStyle(this).backgroundColor;
 });
 
 icon.addEventListener('mouseout', function() {
-    this.style.transform = '';
-    this.style.boxShadow = '';
+   this.style.transform = '';
+   this.style.boxShadow = '';
 });
 
 icon.addEventListener('click', function() {
-    // Ajouter un effet visuel au clic
-    const pulse = document.createElement('div');
-    pulse.style.position = 'absolute';
-    pulse.style.top = '0';
-    pulse.style.left = '0';
-    pulse.style.right = '0';
-    pulse.style.bottom = '0';
-    pulse.style.borderRadius = '50%';
-    pulse.style.background = 'rgba(255,255,255,0.3)';
-    pulse.style.transform = 'scale(0)';
-    pulse.style.transition = 'all 0.5s';
-    
-    this.appendChild(pulse);
-    
-    setTimeout(() => {
-        pulse.style.transform = 'scale(3)';
-        pulse.style.opacity = '0';
-        setTimeout(() => pulse.remove(), 500);
-    }, 10);
-    
-    // Afficher des infos sur la faction
-    const factionName = this.getAttribute('data-name');
-    const dialogueElement = document.getElementById('dialogue-text');
-    let factionDescription = '';
-    
-    switch(factionName) {
-        case 'LIONS':
-            factionDescription = "Les Lions - Force militaire dominante. Ils maintiennent l'ordre par la force et contrôlent les anciens sites gouvernementaux.";
-            break;
-        case 'SHARKS':
-            factionDescription = "Les Sharks - Maîtres des océans et des côtes. Leur réseau maritime est vital pour le commerce et les communications entre les zones isolées.";
-            break;
-        case 'GATORS':
-            factionDescription = "Les Gators - Survivalistes des marais. Experts en médecine naturelle et en techniques de chasse. Ils sont impitoyables envers les intrus.";
-            break;
-        case 'PIGZ':
-            factionDescription = "Les Pigz - Cette faction contrôle le divertissement et le luxe. Sous leurs airs festifs se cache un réseau d'espionnage redoutable.";
-            break;
-        case 'EAGLES':
-            factionDescription = "Les Eagles - Technocrates et scientifiques. Ils recherchent un remède tout en développant des technologies pour surveiller et contrôler les zones infectées.";
-            break;
-        case 'BEARZ':
-            factionDescription = "Les Bearz - Communautés des montagnes. Autosuffisants et isolationnistes, ils offrent refuge mais exigent loyauté absolue.";
-            break;
-        case 'KOBRA':
-            factionDescription = "Les Kobra - Culte mystique qui vénère l'infection comme une évolution divine. Leurs agents sont infiltrés dans toutes les autres factions.";
-            break;
-        case 'BEEZ':
-            factionDescription = "Les Beez - Société collectiviste organisée en ruche. Efficaces et pragmatiques, ils reconstruisent méthodiquement tout en sacrifiant l'individualité.";
-            break;
-    }
-    
-    dialogueElement.innerHTML = factionDescription;
-    
-    // Afficher le territoire sur la carte
-    showTerritoryMarker(factionName.toLowerCase());
-    
-     });
-   });
- });
-
-// SYSTÈME DE SYNCHRONISATION EN TEMPS RÉEL
-
-// Fonction pour sauvegarder l'état complet de l'application
-function saveStateToLocalStorage() {
-    // Collecter toutes les données de l'application
-    const appState = {
-        characters: collectCharactersData(),
-        missions: collectMissionsData(),
-        journal: collectJournalData(),
-        logistics: collectLogisticsData(),
-        dangerZones: collectDangerZonesData(),
-        gameTime: {
-            gameMinutes: gameMinutes,
-            countdownMinutes: countdownMinutes
-        },
-        lastSaved: new Date().toISOString(),
-        pseudo: window.pseudo
-    };
-    
-    // Sauvegarder dans localStorage
-    localStorage.setItem('deadhope-state', JSON.stringify(appState));
-}
-
-// Fonctions pour collecter les données (identiques au code précédent)
-function collectCharactersData() {
-    const characterCards = document.querySelectorAll('#character-list .character-card');
-    const characters = [];
-    
-    characterCards.forEach(card => {
-        const inputs = card.querySelectorAll('input');
-        const textarea = card.querySelector('textarea');
-        
-        characters.push({
-            name: inputs[0]?.value || '',
-            role: inputs[1]?.value || '',
-            notes: textarea?.value || ''
-        });
+   // Ajouter un effet visuel au clic
+   const pulse = document.createElement('div');
+   pulse.style.position = 'absolute';
+   pulse.style.top = '0';
+   pulse.style.left = '0';
+   pulse.style.right = '0';
+   pulse.style.bottom = '0';
+   pulse.style.borderRadius = '50%';
+   pulse.style.background = 'rgba(255,255,255,0.3)';
+   pulse.style.transform = 'scale(0)';
+   pulse.style.transition = 'all 0.5s';
+   
+   this.appendChild(pulse);
+   
+   setTimeout(() => {
+       pulse.style.transform = 'scale(3)';
+       pulse.style.opacity = '0';
+       setTimeout(() => pulse.remove(), 500);
+   }, 10);
+   
+   // Afficher des infos sur la faction
+   const factionName = this.getAttribute('data-name');
+   const dialogueElement = document.getElementById('dialogue-text');
+   let factionDescription = '';
+   
+   switch(factionName) {
+       case 'LIONS':
+           factionDescription = "Les Lions - Force militaire dominante. Ils maintiennent l'ordre par la force et contrôlent les anciens sites gouvernementaux.";
+           break;
+       case 'SHARKS':
+           factionDescription = "Les Sharks - Maîtres des océans et des côtes. Leur réseau maritime est vital pour le commerce et les communications entre les zones isolées.";
+           break;
+       case 'GATORS':
+           factionDescription = "Les Gators - Survivalistes des marais. Experts en médecine naturelle et en techniques de chasse. Ils sont impitoyables envers les intrus.";
+           break;
+       case 'PIGZ':
+           factionDescription = "Les Pigz - Cette faction contrôle le divertissement et le luxe. Sous leurs airs festifs se cache un réseau d'espionnage redoutable.";
+           break;
+       case 'EAGLES':
+           factionDescription = "Les Eagles - Technocrates et scientifiques. Ils recherchent un remède tout en développant des technologies pour surveiller et contrôler les zones infectées.";
+           break;
+       case 'BEARZ':
+           factionDescription = "Les Bearz - Communautés des montagnes. Autosuffisants et isolationnistes, ils offrent refuge mais exigent loyauté absolue.";
+           break;
+       case 'KOBRA':
+           factionDescription = "Les Kobra - Culte mystique qui vénère l'infection comme une évolution divine. Leurs agents sont infiltrés dans toutes les autres factions.";
+           break;
+       case 'BEEZ':
+           factionDescription = "Les Beez - Société collectiviste organisée en ruche. Efficaces et pragmatiques, ils reconstruisent méthodiquement tout en sacrifiant l'individualité.";
+           break;
+   }
+   
+   dialogueElement.innerHTML = factionDescription;
+   
+   // Afficher le territoire sur la carte
+   showTerritoryMarker(factionName.toLowerCase());
+   
     });
-    
-    return characters;
-}
+  });
 
-function collectMissionsData() {
-    const missionRows = document.querySelectorAll('#mission-body tr');
-    const missions = [];
-    
-    missionRows.forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        const select = row.querySelector('select');
-        
-        missions.push({
-            objective: inputs[0]?.value || '',
-            responsible: inputs[1]?.value || '',
-            status: select?.options[select.selectedIndex]?.text || '',
-            deadline: inputs[2]?.value || ''
-        });
-    });
-    
-    return missions;
-}
+// Initialiser la synchronisation Firebase
+initFirebaseSync();
 
-function collectJournalData() {
-    const journalRows = document.querySelectorAll('#journal-body tr');
-    const journal = [];
-    
-    journalRows.forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        
-        journal.push({
-            date: inputs[0]?.value || '',
-            event: inputs[1]?.value || '',
-            player: inputs[2]?.value || ''
-        });
-    });
-    
-    return journal;
-}
+// Initialiser la carte interactive
+initMapOnLoad();
+});
 
-function collectLogisticsData() {
-    const logisticsRows = document.querySelectorAll('#logistique-body tr');
-    const logistics = [];
-    
-    logisticsRows.forEach(row => {
-        const inputs = row.querySelectorAll('input');
-        const selects = row.querySelectorAll('select');
-        
-        logistics.push({
-            type: selects[0]?.options[selects[0].selectedIndex]?.text || '',
-            name: inputs[0]?.value || '',
-            status: selects[1]?.options[selects[1].selectedIndex]?.text || '',
-            location: inputs[1]?.value || ''
-        });
-    });
-    
-    return logistics;
-}
-
-function collectDangerZonesData() {
-    const zoneEntries = document.querySelectorAll('#danger-zone-container .danger-zone-entry');
-    const zones = [];
-    
-    zoneEntries.forEach(zone => {
-        const inputs = zone.querySelectorAll('input');
-        const select = zone.querySelector('select');
-        
-        zones.push({
-            name: inputs[0]?.value || '',
-            danger: select?.options[select.selectedIndex]?.text || '',
-            info: inputs[1]?.value || '',
-            color: zone.style.borderLeftColor || ''
-        });
-    });
-    
-    return zones;
-}
-
-// Charger l'état sauvegardé
-function loadStateFromLocalStorage() {
-    const savedState = localStorage.getItem('deadhope-state');
-    
-    if (savedState) {
-        const state = JSON.parse(savedState);
-        
-        // Si le pseudo est différent, on demande confirmation
-        if (state.pseudo && state.pseudo !== window.pseudo) {
-            if (!confirm(`Données sauvegardées trouvées pour "${state.pseudo}". Voulez-vous charger ces données ?`)) {
-                return; // L'utilisateur a refusé de charger les données
-            }
-        }
-        
-        // Charger toutes les données
-        loadCharactersData(state.characters);
-        loadMissionsData(state.missions);
-        loadJournalData(state.journal);
-        loadLogisticsData(state.logistics);
-        loadDangerZonesData(state.dangerZones);
-        
-        // Restaurer le temps de jeu
-        if (state.gameTime) {
-            gameMinutes = state.gameTime.gameMinutes;
-            countdownMinutes = state.gameTime.countdownMinutes;
-            updateGameClock(); // Mettre à jour l'affichage
-            updateCountdown(); // Mettre à jour le compte à rebours
-        }
-        
-        console.log("État chargé avec succès depuis localStorage");
-    }
-}
-
-// Fonctions pour charger les données (similaires à celles précédentes)
-function loadCharactersData(characters) {
-    if (!characters || !characters.length) return;
-    const characterList = document.getElementById('character-list');
-    if (!characterList) return;
-    
-    resetSection('character-list');
-    
-    characters.forEach((char, index) => {
-        if (index > 0 || characterList.children.length === 0) {
-            const template = characterList.children[0] || null;
-            if (!template) return;
-            
-            const clone = template.cloneNode(true);
-            const inputs = clone.querySelectorAll('input');
-            const textarea = clone.querySelector('textarea');
-            
-            if (inputs[0]) inputs[0].value = char.name || '';
-            if (inputs[1]) inputs[1].value = char.role || '';
-            if (textarea) textarea.value = char.notes || '';
-            
-            characterList.appendChild(clone);
-        } else {
-            // Premier élément
-            const inputs = characterList.children[0].querySelectorAll('input');
-            const textarea = characterList.children[0].querySelector('textarea');
-            
-            if (inputs[0]) inputs[0].value = char.name || '';
-            if (inputs[1]) inputs[1].value = char.role || '';
-            if (textarea) textarea.value = char.notes || '';
-        }
-    });
-}
-
-// Fonctions similaires pour les autres sections...
-
-// Ajoutez ce code à la fin de votre fichier JavaScript, juste avant la balise de fermeture </script>
-  <script>
-  const firebaseConfig = {
-  apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
-  authDomain: "deadhope-a1704.firebaseapp.com",
-  databaseURL: "https://deadhope-a1704-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "deadhope-a1704",
-  storageBucket: "deadhope-a1704.firebasestorage.app",
-  messagingSenderId: "1019321338333",
-  appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
+// Configuration Firebase
+const firebaseConfig = {
+ apiKey: "AIzaSyDuh0RYk2LHPp_Dc7JCyu-lTOP1kD45xDw",
+ authDomain: "deadhope-a1704.firebaseapp.com",
+ databaseURL: "https://deadhope-a1704-default-rtdb.europe-west1.firebasedatabase.app",
+ projectId: "deadhope-a1704",
+ storageBucket: "deadhope-a1704.firebasestorage.app",
+ messagingSenderId: "1019321338333",
+ appId: "1:1019321338333:web:2d2924304d90b0e0f94e34"
 };
-  
- // Initialiser Firebase
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
 
-// Référence à la racine de la base de données
-const deadhopeRef = database.ref('deadhope');
+// Fonction d'initialisation Firebase
+function initFirebaseSync() {
+ console.log("Initialisation de la synchronisation Firebase...");
+ 
+ // S'assurer que Firebase est initialisé
+ if (!firebase.apps.length) {
+   try {
+     firebase.initializeApp(firebaseConfig);
+   } catch (e) {
+     console.error("Erreur d'initialisation Firebase:", e);
+     return;
+   }
+ }
+ 
+ // Initialiser la base de données
+ const database = firebase.database();
+ window.database = database; // Rendre accessible globalement
+ 
+ // Référence à la racine des données
+ const deadhopeRef = database.ref('deadhope');
+ window.deadhopeRef = deadhopeRef;
+ 
+ // Charger les données existantes
+ loadDataFromFirebase();
+ 
+ // Configurer le chat en temps réel
+ setupRealtimeChat();
+ 
+ // Configurer les écouteurs de synchronisation
+ setupSyncListeners();
+ 
+ // Synchroniser périodiquement (toutes les 30 secondes)
+ setInterval(function() {
+   window.isLocalUpdate = true;
+   syncDataWithFirebase();
+ }, 30000);
+ 
+ // Enregistrer la présence de l'utilisateur
+ registerPresence(window.pseudo);
+ 
+ // Ajouter un message système dans le chat
+ const chatRef = database.ref('deadhope/chat');
+ chatRef.push({
+   sender: "Système",
+   message: `${window.pseudo} a rejoint le terminal.`,
+   time: new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
+   timestamp: Date.now()
+ });
+ 
+ console.log("Synchronisation Firebase initialisée avec succès");
+}
 
 // Fonction pour synchroniser les données avec Firebase
 function syncDataWithFirebase() {
-  // Collecter toutes les données
-  const appData = {
-    characters: collectCharactersData(),
-    missions: collectMissionsData(),
-    journal: collectJournalData(),
-    logistics: collectLogisticsData(),
-    dangerZones: collectDangerZonesData(),
-    gameTime: {
-      gameMinutes: gameMinutes,
-      countdownMinutes: countdownMinutes
-    },
-    lastUpdated: new Date().toISOString(),
-    lastUpdatedBy: window.pseudo
-  };
-  
-  // Envoyer les données à Firebase
-  deadhopeRef.set(appData);
-  
-  // Afficher une notification
-  showSyncNotification("Données synchronisées");
+ console.log("Synchronisation des données...");
+ 
+ try {
+   // Collecter toutes les données
+   const appData = {
+     characters: collectCharactersData(),
+     missions: collectMissionsData(),
+     journal: collectJournalData(),
+     logistics: collectLogisticsData(),
+     dangerZones: collectDangerZonesData(),
+     gameTime: {
+       gameMinutes: gameMinutes,
+       countdownMinutes: countdownMinutes
+     },
+     lastUpdated: new Date().toISOString(),
+     lastUpdatedBy: window.pseudo
+   };
+   
+   // Vérifier si deadhopeRef est défini
+   if (!window.deadhopeRef) {
+     window.deadhopeRef = firebase.database().ref('deadhope');
+   }
+   
+   // Envoyer les données à Firebase (utiliser update au lieu de set pour éviter d'écraser d'autres données)
+   window.deadhopeRef.update(appData, function(error) {
+     if (error) {
+       console.error("Erreur de synchronisation:", error);
+       showSyncNotification("Erreur de synchronisation", true);
+     } else {
+       console.log("Données synchronisées avec succès");
+       showSyncNotification("Données synchronisées");
+     }
+   });
+ } catch (e) {
+   console.error("Erreur lors de la synchronisation:", e);
+   showSyncNotification("Erreur de synchronisation", true);
+ }
 }
 
-// Fonction pour charger les données depuis Firebase
-function loadDataFromFirebase() {
-  deadhopeRef.once('value').then(snapshot => {
-    const data = snapshot.val();
-    if (!data) return;
-    
-    // Charger les données dans l'interface
-    loadCharactersData(data.characters);
-    loadMissionsData(data.missions);
-    loadJournalData(data.journal);
-    loadLogisticsData(data.logistics);
-    loadDangerZonesData(data.dangerZones);
-    
-    // Mettre à jour le temps
-    if (data.gameTime) {
-      gameMinutes = data.gameTime.gameMinutes;
-      countdownMinutes = data.gameTime.countdownMinutes;
-      updateGameClock();
-    }
-    
-    // Afficher une notification
-    showSyncNotification(`Données chargées (dernière mise à jour par ${data.lastUpdatedBy || "un utilisateur"})`);
-  });
+// Fonction pour configurer les écouteurs de synchronisation
+function setupSyncListeners() {
+ console.log("Configuration des écouteurs de synchronisation");
+ 
+ // Variable pour suivre si les mises à jour sont locales ou distantes
+ window.isLocalUpdate = false;
+ 
+ // Écouter les modifications de Firebase
+ deadhopeRef.on('value', snapshot => {
+   // Ne pas recharger les données si c'est nous qui les avons modifiées
+   if (window.isLocalUpdate) {
+     window.isLocalUpdate = false;
+     return;
+   }
+   
+   console.log("Réception de données de synchronisation");
+   
+   const data = snapshot.val();
+   if (!data) return;
+   
+   // Charger silencieusement les données
+   loadCharactersData(data.characters);
+   loadMissionsData(data.missions);
+   loadJournalData(data.journal);
+   loadLogisticsData(data.logistics);
+   loadDangerZonesData(data.dangerZones);
+   
+   // Mettre à jour le temps
+   if (data.gameTime) {
+     gameMinutes = data.gameTime.gameMinutes;
+     countdownMinutes = data.gameTime.countdownMinutes;
+     updateGameClock();
+     updateCountdown();
+   }
+   
+   // Afficher une notification discrète
+   if (data.lastUpdatedBy && data.lastUpdatedBy !== window.pseudo) {
+     showSyncNotification(`Mise à jour par ${data.lastUpdatedBy || "un utilisateur"}`);
+   }
+ });
+ 
+ // Debounce les modifications pour éviter trop de requêtes
+ let timeoutId = null;
+ 
+ // Observer les modifications sur tous les éléments interactifs
+ document.addEventListener('input', function(e) {
+   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+     if (timeoutId) clearTimeout(timeoutId);
+     
+     timeoutId = setTimeout(function() {
+       window.isLocalUpdate = true;
+       syncDataWithFirebase();
+     }, 500);
+   }
+ });
+ 
+ // Écouter les clics sur les boutons d'ajout/suppression
+ document.addEventListener('click', function(e) {
+   if (e.target.tagName === 'BUTTON' && 
+       (e.target.textContent.includes('Ajouter') || 
+        e.target.textContent.includes('Supprimer') || 
+        e.target.textContent.includes('🗑️'))) {
+     
+     setTimeout(function() {
+       window.isLocalUpdate = true;
+       syncDataWithFirebase();
+     }, 300);
+   }
+ });
+ 
+ console.log("Écouteurs de synchronisation configurés");
 }
 
-// Notification de synchronisation
-function showSyncNotification(message) {
-  const notification = document.createElement('div');
-  notification.textContent = "🔄 " + message;
-  notification.style.position = "fixed";
-  notification.style.bottom = "50px";
-  notification.style.right = "20px";
-  notification.style.background = "rgba(0, 0, 0, 0.8)";
-  notification.style.color = "#3498db";
-  notification.style.padding = "10px 15px";
-  notification.style.borderRadius = "5px";
-  notification.style.zIndex = "2000";
-  notification.style.fontFamily = "monospace";
-  notification.style.opacity = "0";
-  notification.style.transition = "opacity 0.3s";
-  
-  document.body.appendChild(notification);
-  
-  setTimeout(() => notification.style.opacity = "1", 100);
-  
-  setTimeout(() => {
-    notification.style.opacity = "0";
-    setTimeout(() => notification.remove(), 300);
-  }, 3000);
-}
-
-// Synchronisation en temps réel du chat
+// Configurer le chat en temps réel
 function setupRealtimeChat() {
-  const chatRef = database.ref('deadhope/chat');
-  
-  // Modifier la fonction d'envoi de message
-  window.originalSendMessage = window.sendMessage;
-  window.sendMessage = function() {
-    const input = document.getElementById("chat-input");
-    const text = input.value.trim();
-    
-    if (!text) return;
-    
-    const now = new Date();
-    const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
-    
-    // Envoyer le message à Firebase
-    chatRef.push({
-      sender: window.pseudo,
-      message: text,
-      time: time,
-      timestamp: now.getTime()
-    });
-    
-    input.value = "";
-  };
-  
-  // Écouter les nouveaux messages
-  chatRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
-    const messageData = snapshot.val();
-    
-    // Créer l'élément de message
-    const chatLog = document.getElementById("chat-log");
-    const msgDiv = document.createElement("div");
-    msgDiv.classList.add("chat-message", "fade-in");
-    
-    // Déterminer la couleur selon l'expéditeur
-    let color = "#5af"; // Couleur par défaut (bleu)
-    if (messageData.sender === "Système") {
-      color = "#8f8"; // Vert pour le système
-    } else if (messageData.sender !== window.pseudo) {
-      color = "#f55"; // Rouge pour les autres
-    }
-    
-    msgDiv.innerHTML = `<strong style="color:${color}">${messageData.sender}</strong> <span style="color:#888">[${messageData.time}]</span>: ${messageData.message}`;
-    
-    chatLog.appendChild(msgDiv);
-    chatLog.scrollTop = chatLog.scrollHeight;
-    
-    // Jouer le son si ce n'est pas notre propre message
-    if (messageData.sender !== window.pseudo) {
-      document.getElementById("radio-bip").play().catch(() => {});
-      
-      // Afficher notification si le chat n'est pas ouvert
-      const chatBox = document.getElementById("radio-chat");
-      if (chatBox.style.display === "none") {
-        const notification = document.querySelector(".msg-notification");
-        if (notification) notification.style.display = "block";
-      }
-    }
-  });
+ const chatRef = database.ref('deadhope/chat');
+ 
+ // Modifier la fonction d'envoi de message
+ window.originalSendMessage = window.sendMessage;
+ window.sendMessage = function() {
+   const input = document.getElementById("chat-input");
+   const text = input.value.trim();
+   
+   if (!text) return;
+   
+   const now = new Date();
+   const time = now.toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' });
+   
+   // Envoyer le message à Firebase
+   chatRef.push({
+     sender: window.pseudo,
+     message: text,
+     time: time,
+     timestamp: now.getTime()
+   });
+   
+   input.value = "";
+ };
+ 
+ // Écouter les nouveaux messages
+ chatRef.orderByChild('timestamp').limitToLast(50).on('child_added', snapshot => {
+   const messageData = snapshot.val();
+   
+   // Créer l'élément de message
+   const chatLog = document.getElementById("chat-log");
+   const msgDiv = document.createElement("div");
+   msgDiv.classList.add("chat-message", "fade-in");
+   
+   // Déterminer la couleur selon l'expéditeur
+   let color = "#5af"; // Couleur par défaut (bleu)
+   if (messageData.sender === "Système") {
+     color = "#8f8"; // Vert pour le système
+   } else if (messageData.sender !== window.pseudo) {
+     color = "#f55"; // Rouge pour les autres
+   }
+   
+   msgDiv.innerHTML = `<strong style="color:${color}">${messageData.sender}</strong> <span style="color:#888">[${messageData.time}]</span>: ${messageData.message}`;
+   
+   chatLog.appendChild(msgDiv);
+   chatLog.scrollTop = chatLog.scrollHeight;
+   
+   // Jouer le son si ce n'est pas notre propre message
+   if (messageData.sender !== window.pseudo) {
+     document.getElementById("radio-bip").play().catch(() => {});
+     
+     // Afficher notification si le chat n'est pas ouvert
+     const chatBox = document.getElementById("radio-chat");
+     if (chatBox.style.display === "none") {
+       const notification = document.querySelector(".msg-notification");
+       if (notification) notification.style.display = "block";
+     }
+   }
+ });
 }
 
+// Fonction de notification de synchronisation
+function showSyncNotification(message, isError = false) {
+ const notification = document.createElement('div');
+ notification.textContent = isError ? "❌ " + message : "🔄 " + message;
+ notification.style.position = "fixed";
+ notification.style.bottom = "20px";
+ notification.style.right = "20px";
+ notification.style.background = isError ? "rgba(231, 76, 60, 0.9)" : "rgba(0, 0, 0, 0.8)";
+ notification.style.color = isError ? "white" : "#3498db";
+ notification.style.padding = "10px 15px";
+ notification.style.borderRadius = "5px";
+ notification.style.zIndex = "2000";
+ notification.style.fontFamily = "monospace";
+ notification.style.fontSize = "14px";
+ notification.style.opacity = "0";
+ notification.style.transition = "opacity 0.3s";
+ notification.style.boxShadow = "0 0 10px rgba(0,0,0,0.5)";
+ 
+ document.body.appendChild(notification);
+ 
+ setTimeout(() => notification.style.opacity = "1", 100);
+ 
+ setTimeout(() => {
+   notification.style.opacity = "0";
+   setTimeout(() => notification.remove(), 300);
+ }, 3000);
+}
 
-// Ces fonctions sont évoquées mais pas implémentées complètement dans le code d'origine
+// Collecter les données des personnages
+function collectCharactersData() {
+ const characterCards = document.querySelectorAll('#character-list .character-card');
+ const characters = [];
+ 
+ characterCards.forEach(card => {
+   const inputs = card.querySelectorAll('input');
+   const textarea = card.querySelector('textarea');
+   
+   characters.push({
+     name: inputs[0]?.value || '',
+     role: inputs[1]?.value || '',
+     notes: textarea?.value || ''
+   });
+ });
+ 
+ return characters;
+}
+
+// Collecter les données des missions
+function collectMissionsData() {
+ const missionRows = document.querySelectorAll('#mission-body tr');
+ const missions = [];
+ 
+ missionRows.forEach(row => {
+   const inputs = row.querySelectorAll('input');
+   const select = row.querySelector('select');
+   
+   missions.push({
+     objective: inputs[0]?.value || '',
+     responsible: inputs[1]?.value || '',
+     status: select?.options[select.selectedIndex]?.text || '',
+     deadline: inputs[2]?.value || ''
+   });
+ });
+ 
+ return missions;
+}
+
+// Collecter les données du journal
+function collectJournalData() {
+ const journalRows = document.querySelectorAll('#journal-body tr');
+ const journal = [];
+ 
+ journalRows.forEach(row => {
+   const inputs = row.querySelectorAll('input');
+   
+   journal.push({
+     date: inputs[0]?.value || '',
+     event: inputs[1]?.value || '',
+     player: inputs[2]?.value || ''
+   });
+ });
+ 
+ return journal;
+}
+
+// Collecter les données de logistique
+function collectLogisticsData() {
+ const logisticsRows = document.querySelectorAll('#logistique-body tr');
+ const logistics = [];
+ 
+ logisticsRows.forEach(row => {
+   const inputs = row.querySelectorAll('input');
+   const selects = row.querySelectorAll('select');
+   
+   logistics.push({
+     type: selects[0]?.options[selects[0].selectedIndex]?.text || '',
+     name: inputs[0]?.value || '',
+     status: selects[1]?.options[selects[1].selectedIndex]?.text || '',
+     location: inputs[1]?.value || ''
+   });
+ });
+ 
+ return logistics;
+}
+
+// Collecter les données des zones dangereuses
+function collectDangerZonesData() {
+ const zoneEntries = document.querySelectorAll('#danger-zone-container .danger-zone-entry');
+ const zones = [];
+ 
+ zoneEntries.forEach(zone => {
+   const inputs = zone.querySelectorAll('input');
+   const select = zone.querySelector('select');
+   
+   zones.push({
+     name: inputs[0]?.value || '',
+     danger: select?.options[select.selectedIndex]?.text || '',
+     info: inputs[1]?.value || '',
+     color: zone.style.borderLeftColor || ''
+   });
+ });
+ 
+ return zones;
+}
+
+// Charger les données depuis Firebase
+function loadDataFromFirebase() {
+ deadhopeRef.once('value').then(snapshot => {
+   const data = snapshot.val();
+   if (!data) return;
+   
+   // Charger les données dans l'interface
+   loadCharactersData(data.characters);
+   loadMissionsData(data.missions);
+   loadJournalData(data.journal);
+   loadLogisticsData(data.logistics);
+   loadDangerZonesData(data.dangerZones);
+   
+   // Mettre à jour le temps
+   if (data.gameTime) {
+     gameMinutes = data.gameTime.gameMinutes;
+     countdownMinutes = data.gameTime.countdownMinutes;
+     updateGameClock();
+   }
+   
+   // Afficher une notification
+   showSyncNotification(`Données chargées (dernière mise à jour par ${data.lastUpdatedBy || "un utilisateur"})`);
+ });
+}
+
+// Fonctions pour charger les données dans l'interface
+
+// Chargement des données des personnages
+function loadCharactersData(characters) {
+ if (!characters || !characters.length) return;
+ const characterList = document.getElementById('character-list');
+ if (!characterList) return;
+ 
+ resetSection('character-list');
+ 
+ characters.forEach((char, index) => {
+   if (index > 0 || characterList.children.length === 0) {
+     const template = characterList.children[0] || null;
+     if (!template) return;
+     
+     const clone = template.cloneNode(true);
+     const inputs = clone.querySelectorAll('input');
+     const textarea = clone.querySelector('textarea');
+     
+     if (inputs[0]) inputs[0].value = char.name || '';
+     if (inputs[1]) inputs[1].value = char.role || '';
+     if (textarea) textarea.value = char.notes || '';
+     
+     characterList.appendChild(clone);
+   } else {
+     // Premier élément
+     const inputs = characterList.children[0].querySelectorAll('input');
+     const textarea = characterList.children[0].querySelector('textarea');
+     
+     if (inputs[0]) inputs[0].value = char.name || '';
+     if (inputs[1]) inputs[1].value = char.role || '';
+     if (textarea) textarea.value = char.notes || '';
+   }
+ });
+}
 
 // Chargement des données des missions
 function loadMissionsData(missions) {
-  if (!missions || !missions.length) return;
-  const missionBody = document.getElementById('mission-body');
-  if (!missionBody) return;
-  
-  // Vider le tableau
-  missionBody.innerHTML = '';
-  
-  // Recréer les entrées de mission
-  missions.forEach(mission => {
-    const row = document.createElement('tr');
-    
-    // Créer les cellules avec les données
-    row.innerHTML = `
-      <td><input type="text" placeholder="Ex: Fouiller maison au nord" value="${mission.objective || ''}"/></td>
-      <td><input type="text" placeholder="Nom du joueur" value="${mission.responsible || ''}"/></td>
-      <td>
-        <select>
-          <option ${mission.status && mission.status.includes('En cours') ? 'selected' : ''}>🟡 En cours</option>
-          <option ${mission.status && mission.status.includes('Fait') ? 'selected' : ''}>✅ Fait</option>
-          <option ${mission.status && mission.status.includes('Échoué') ? 'selected' : ''}>❌ Échoué</option>
-        </select>
-      </td>
-      <td><input type="date" value="${mission.deadline || ''}"/></td>
-      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-    `;
-    
-    missionBody.appendChild(row);
-  });
+ if (!missions || !missions.length) return;
+ const missionBody = document.getElementById('mission-body');
+ if (!missionBody) return;
+ 
+ // Vider le tableau
+ missionBody.innerHTML = '';
+ 
+ // Recréer les entrées de mission
+ missions.forEach(mission => {
+   const row = document.createElement('tr');
+   
+   // Créer les cellules avec les données
+   row.innerHTML = `
+     <td><input type="text" placeholder="Ex: Fouiller maison au nord" value="${mission.objective || ''}"/></td>
+     <td><input type="text" placeholder="Nom du joueur" value="${mission.responsible || ''}"/></td>
+     <td>
+       <select>
+         <option ${mission.status && mission.status.includes('En cours') ? 'selected' : ''}>🟡 En cours</option>
+         <option ${mission.status && mission.status.includes('Fait') ? 'selected' : ''}>✅ Fait</option>
+         <option ${mission.status && mission.status.includes('Échoué') ? 'selected' : ''}>❌ Échoué</option>
+       </select>
+     </td>
+     <td><input type="date" value="${mission.deadline || ''}"/></td>
+     <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+   `;
+   
+   missionBody.appendChild(row);
+ });
 }
 
 // Chargement des données du journal
 function loadJournalData(journal) {
-  if (!journal || !journal.length) return;
-  const journalBody = document.getElementById('journal-body');
-  if (!journalBody) return;
-  
-  // Vider le tableau
-  journalBody.innerHTML = '';
-  
-  // Recréer les entrées de journal
-  journal.forEach(entry => {
-    const row = document.createElement('tr');
-    
-    // Créer les cellules avec les données
-    row.innerHTML = `
-      <td><input type="date" value="${entry.date || ''}"/></td>
-      <td><input type="text" placeholder="Description" value="${entry.event || ''}"/></td>
-      <td><input type="text" placeholder="Nom du joueur" value="${entry.player || ''}"/></td>
-      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-    `;
-    
-    journalBody.appendChild(row);
-  });
+ if (!journal || !journal.length) return;
+ const journalBody = document.getElementById('journal-body');
+ if (!journalBody) return;
+ 
+ // Vider le tableau
+ journalBody.innerHTML = '';
+ 
+ // Recréer les entrées de journal
+ journal.forEach(entry => {
+   const row = document.createElement('tr');
+   
+   // Créer les cellules avec les données
+   row.innerHTML = `
+     <td><input type="date" value="${entry.date || ''}"/></td>
+     <td><input type="text" placeholder="Description" value="${entry.event || ''}"/></td>
+     <td><input type="text" placeholder="Nom du joueur" value="${entry.player || ''}"/></td>
+     <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+   `;
+   
+   journalBody.appendChild(row);
+ });
 }
 
 // Chargement des données de logistique
 function loadLogisticsData(logistics) {
-  if (!logistics || !logistics.length) return;
-  const logistiqueBody = document.getElementById('logistique-body');
-  if (!logistiqueBody) return;
-  
-  // Vider le tableau
-  logistiqueBody.innerHTML = '';
-  
-  // Recréer les entrées de logistique
-  logistics.forEach(item => {
-    const row = document.createElement('tr');
-    
-    // Définir la couleur de fond selon l'état
-    if (item.status && item.status.includes('❌')) {
-      row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
-    } else if (item.status && item.status.includes('⚠️')) {
-      row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
-    }
-    
-    // Créer les cellules avec les données
-    row.innerHTML = `
-      <td>
-        <select>
-          <option ${item.type && item.type.includes('Arme') ? 'selected' : ''}>🔫 Arme</option>
-          <option ${item.type && item.type.includes('Véhicule') ? 'selected' : ''}>🚗 Véhicule</option>
-          <option ${item.type && item.type.includes('Outil') ? 'selected' : ''}>🧰 Outil</option>
-          <option ${item.type && item.type.includes('Soins') ? 'selected' : ''}>🩹 Soins</option>
-          <option ${item.type && item.type.includes('Électronique') ? 'selected' : ''}>📻 Électronique</option>
-        </select>
-      </td>
-      <td><input type="text" placeholder="Nom ou modèle" value="${item.name || ''}"/></td>
-      <td>
-        <select onchange="checkEtat(this)">
-          <option ${item.status && item.status.includes('Fonctionnel') ? 'selected' : ''}>✅ Fonctionnel</option>
-          <option ${item.status && item.status.includes('Endommagé') ? 'selected' : ''}>⚠️ Endommagé</option>
-          <option ${item.status && item.status.includes('Hors service') ? 'selected' : ''}>❌ Hors service</option>
-        </select>
-      </td>
-      <td><input type="text" placeholder="Où ? ou Avec qui ?" value="${item.location || ''}"/></td>
-      <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
-    `;
-    
-    logistiqueBody.appendChild(row);
-  });
+ if (!logistics || !logistics.length) return;
+ const logistiqueBody = document.getElementById('logistique-body');
+ if (!logistiqueBody) return;
+ 
+ // Vider le tableau
+ logistiqueBody.innerHTML = '';
+ 
+ // Recréer les entrées de logistique
+ logistics.forEach(item => {
+   const row = document.createElement('tr');
+   
+   // Définir la couleur de fond selon l'état
+   if (item.status && item.status.includes('❌')) {
+     row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
+   } else if (item.status && item.status.includes('⚠️')) {
+     row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
+   }
+   
+   // Créer les cellules avec les données
+   row.innerHTML = `
+     <td>
+       <select>
+         <option ${item.type && item.type.includes('Arme') ? 'selected' : ''}>🔫 Arme</option>
+         <option ${item.type && item.type.includes('Véhicule') ? 'selected' : ''}>🚗 Véhicule</option>
+         <option ${item.type && item.type.includes('Outil') ? 'selected' : ''}>🧰 Outil</option>
+         <option ${item.type && item.type.includes('Soins') ? 'selected' : ''}>🩹 Soins</option>
+         <option ${item.type && item.type.includes('Électronique') ? 'selected' : ''}>📻 Électronique</option>
+       </select>
+     </td>
+     <td><input type="text" placeholder="Nom ou modèle" value="${item.name || ''}"/></td>
+     <td>
+       <select onchange="checkEtat(this)">
+         <option ${item.status && item.status.includes('Fonctionnel') ? 'selected' : ''}>✅ Fonctionnel</option>
+         <option ${item.status && item.status.includes('Endommagé') ? 'selected' : ''}>⚠️ Endommagé</option>
+         <option ${item.status && item.status.includes('Hors service') ? 'selected' : ''}>❌ Hors service</option>
+       </select>
+     </td>
+     <td><input type="text" placeholder="Où ? ou Avec qui ?" value="${item.location || ''}"/></td>
+     <td><button onclick="this.closest('tr').remove()">🗑️</button></td>
+   `;
+   
+   logistiqueBody.appendChild(row);
+ });
 }
 
 // Chargement des données des zones dangereuses
 function loadDangerZonesData(zones) {
-  if (!zones || !zones.length) return;
-  const zoneContainer = document.getElementById('danger-zone-container');
-  if (!zoneContainer) return;
-  
-  // Vider le conteneur
-  zoneContainer.innerHTML = '';
-  
-  // Recréer les entrées de zones dangereuses
-  zones.forEach(zone => {
-    const div = document.createElement('div');
-    div.className = 'danger-zone-entry';
-    
-    // Définir la couleur de la bordure en fonction du niveau de danger
-    if (zone.danger && zone.danger.includes('Extrême')) {
-      div.style.borderLeft = '4px solid #e74c3c';
-    } else if (zone.danger && zone.danger.includes('Élevé')) {
-      div.style.borderLeft = '4px solid #f39c12';
-    } else if (zone.danger && zone.danger.includes('Modéré')) {
-      div.style.borderLeft = '4px solid #f1c40f';
-    } else if (zone.danger && zone.danger.includes('Faible')) {
-      div.style.borderLeft = '4px solid #2ecc71';
-    } else if (zone.color) {
-      div.style.borderLeft = zone.color;
-    }
-    
-    // Créer les éléments avec les données
-    div.innerHTML = `
-      <input type="text" placeholder="Nom du lieu" value="${zone.name || ''}"/>
-      <select>
-        <option ${zone.danger && zone.danger.includes('Faible') ? 'selected' : ''}>Faible</option>
-        <option ${zone.danger && zone.danger.includes('Modéré') ? 'selected' : ''}>Modéré</option>
-        <option ${zone.danger && zone.danger.includes('Élevé') ? 'selected' : ''}>Élevé</option>
-        <option ${zone.danger && zone.danger.includes('Extrême') ? 'selected' : ''}>Extrême</option>
-      </select>
-      <input type="text" placeholder="Informations" value="${zone.info || ''}"/>
-      <button onclick="this.parentElement.remove()">🗑️</button>
-    `;
-    
-    zoneContainer.appendChild(div);
-  });
+ if (!zones || !zones.length) return;
+ const zoneContainer = document.getElementById('danger-zone-container');
+ if (!zoneContainer) return;
+ 
+ // Vider le conteneur
+ zoneContainer.innerHTML = '';
+ 
+ // Recréer les entrées de zones dangereuses
+ zones.forEach(zone => {
+   const div = document.createElement('div');
+   div.className = 'danger-zone-entry';
+   
+   // Définir la couleur de la bordure en fonction du niveau de danger
+   if (zone.danger && zone.danger.includes('Extrême')) {
+     div.style.borderLeft = '4px solid #e74c3c';
+   } else if (zone.danger && zone.danger.includes('Élevé')) {
+     div.style.borderLeft = '4px solid #f39c12';
+   } else if (zone.danger && zone.danger.includes('Modéré')) {
+     div.style.borderLeft = '4px solid #f1c40f';
+   } else if (zone.danger && zone.danger.includes('Faible')) {
+     div.style.borderLeft = '4px solid #2ecc71';
+   } else if (zone.color) {
+     div.style.borderLeft = zone.color;
+   }
+   
+   // Créer les éléments avec les données
+   div.innerHTML = `
+     <input type="text" placeholder="Nom du lieu" value="${zone.name || ''}"/>
+     <select>
+       <option ${zone.danger && zone.danger.includes('Faible') ? 'selected' : ''}>Faible</option>
+       <option ${zone.danger && zone.danger.includes('Modéré') ? 'selected' : ''}>Modéré</option>
+       <option ${zone.danger && zone.danger.includes('Élevé') ? 'selected' : ''}>Élevé</option>
+       <option ${zone.danger && zone.danger.includes('Extrême') ? 'selected' : ''}>Extrême</option>
+     </select>
+     <input type="text" placeholder="Informations" value="${zone.info || ''}"/>
+     <button onclick="this.parentElement.remove()">🗑️</button>
+   `;
+   
+   zoneContainer.appendChild(div);
+ });
 }
 
-// Fonction d'initialisation Firebase manquante dans le code original
-function initFirebaseSync() {
-  // Initialiser la synchronisation Firebase
-  loadDataFromFirebase();
-  setupRealtimeChat();
-  setupSyncListeners();
-  
-  // Synchroniser le temps toutes les minutes
-  setInterval(function() {
-    isLocalUpdate = true;
-    syncDataWithFirebase();
-  }, 60000);
-  
-  // Enregistrer la présence de l'utilisateur
-  registerPresence(window.pseudo);
-  
-  console.log("Synchronisation Firebase initialisée");
-  
-  // Ajouter un message système dans le chat
-  const chatRef = database.ref('deadhope/chat');
-  chatRef.push({
-    sender: "Système",
-    message: `${window.pseudo} a rejoint le terminal.`,
-    time: new Date().toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' }),
-    timestamp: Date.now()
-  });
-}
+// ================ Code pour la carte interactive Leaflet ================
 
-// Variable globale pour gérer les mises à jour locales vs. distantes
-let isLocalUpdate = false;
+// Variables globales pour la carte
+let map;
+let markersLayer;
+let currentMarkers = [];
+let isAddingMarker = false;
+let tempMarker = null;
+let mapLayers = {
+   base: null,
+   satellite: null,
+   terrain: null
+};
 
-// Fonction pour gérer les modifications des états des items
-function checkEtat(select) {
-  const row = select.closest("tr");
-  const value = select.value;
-  
-  if (value.includes("❌")) {
-    row.style.backgroundColor = "rgba(74, 28, 28, 0.4)";
-  } else if (value.includes("⚠️")) {
-    row.style.backgroundColor = "rgba(74, 60, 28, 0.4)";
-  } else {
-    row.style.backgroundColor = "transparent";
-  }
-  
-  // Synchroniser après un changement d'état
-  setTimeout(function() {
-    isLocalUpdate = true;
-    syncDataWithFirebase();
-  }, 100);
-}
-
-// Amélioration de la fonction de mise à jour des zones de danger pour qu'elle mette à jour la couleur de bordure automatiquement
-document.addEventListener('change', function(e) {
-  if (e.target.tagName === 'SELECT' && e.target.closest('.danger-zone-entry')) {
-    const entry = e.target.closest('.danger-zone-entry');
-    const value = e.target.value;
-    
-    if (value === 'Extrême') {
-      entry.style.borderLeft = '4px solid #e74c3c';
-    } else if (value === 'Élevé') {
-      entry.style.borderLeft = '4px solid #f39c12';
-    } else if (value === 'Modéré') {
-      entry.style.borderLeft = '4px solid #f1c40f';
-    } else if (value === 'Faible') {
-      entry.style.borderLeft = '4px solid #2ecc71';
-    }
-    
-    // Synchroniser après un changement de niveau de danger
-    setTimeout(function() {
-      isLocalUpdate = true;
-      syncDataWithFirebase();
-    }, 100);
-  }
+// Initialisation de la carte
+function initInteractiveMap() {
+   console.log("Initialisation de la carte interactive...");
+   
+   // Créer la carte Leaflet
+   map = L.map('interactive-map').setView([45.5, -73.6], 13); // Position par défaut
+   
+   // Ajouter les couches de carte
+   mapLayers.base = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+       maxZoom: 19
+   }).addTo(map);
+   
+   mapLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+   attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+   maxZoom: 19
 });
 
-// Remplacement complet de la fonction setupSyncListeners pour une meilleure gestion des événements
-function setupSyncListeners() {
-  // Écouter les modifications de Firebase
-  deadhopeRef.on('value', snapshot => {
-    // Ne pas recharger les données si c'est nous qui les avons modifiées
-    if (isLocalUpdate) {
-      isLocalUpdate = false;
-      return;
-    }
-    
-    const data = snapshot.val();
-    if (!data) return;
-    
-    // Charger silencieusement les données
-    loadCharactersData(data.characters);
-    loadMissionsData(data.missions);
-    loadJournalData(data.journal);
-    loadLogisticsData(data.logistics);
-    loadDangerZonesData(data.dangerZones);
-    
-    // Mettre à jour le temps
-    if (data.gameTime) {
-      gameMinutes = data.gameTime.gameMinutes;
-      countdownMinutes = data.gameTime.countdownMinutes;
-      updateGameClock();
-    }
-    
-    // Afficher une notification discrète
-    if (data.lastUpdatedBy !== window.pseudo) {
-      showSyncNotification(`Mise à jour par ${data.lastUpdatedBy || "un utilisateur"}`);
-    }
-  });
-  
-  // Ajouter un débounce pour les modifications
-  let timeoutId = null;
-  
-  // Observer les modifications sur les inputs et selects
-  document.addEventListener('input', function(e) {
-    if (timeoutId) clearTimeout(timeoutId);
-    
-    timeoutId = setTimeout(function() {
-      isLocalUpdate = true;
-      syncDataWithFirebase();
-    }, 1000); // Réduit à 1 seconde pour une réactivité améliorée
-  });
-  
-  // Observer les changements de select
-  document.addEventListener('change', function(e) {
-    if (e.target.tagName === 'SELECT') {
-      if (timeoutId) clearTimeout(timeoutId);
-      
-      timeoutId = setTimeout(function() {
-        isLocalUpdate = true;
-        syncDataWithFirebase();
-      }, 500); // Plus rapide pour les sélections
-    }
-  });
-  
-  // Écouter les clics sur les boutons d'ajout/suppression
-  document.addEventListener('click', function(e) {
-    if (e.target.tagName === 'BUTTON' && 
-        (e.target.textContent.includes('Ajouter') || 
-         e.target.textContent.includes('Supprimer') || 
-         e.target.textContent.includes('🗑️'))) {
-      
-      setTimeout(function() {
-        isLocalUpdate = true;
-        syncDataWithFirebase();
-      }, 300);
-    }
-  });
+mapLayers.terrain = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+   attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>',
+   maxZoom: 17
+});
+
+// Créer la couche pour les marqueurs
+markersLayer = L.layerGroup().addTo(map);
+
+// Charger les marqueurs depuis Firebase
+loadMapMarkersFromFirebase();
+
+// Ajouter événement de clic sur la carte
+map.on('click', function(e) {
+   if (isAddingMarker) {
+       addTempMarker(e.latlng);
+       document.getElementById('add-marker-form').style.display = 'block';
+   }
+});
+
+console.log("Carte initialisée avec succès");
 }
 
-// Fonction pour notifier automatiquement quand un utilisateur se connecte
-document.addEventListener('DOMContentLoaded', function() {
-  // Écouter les présences des utilisateurs
-  const presenceRef = database.ref("presence");
-  presenceRef.on("value", (snapshot) => {
-    const users = snapshot.val() || {};
-    const userList = Object.keys(users);
-    const container = document.querySelector("#connected-users span");
-    if (container) {
-      container.textContent = userList.length > 0 ? userList.join(", ") : "Aucun";
-    }
-  });
+// Changer la couche de fond de carte
+function toggleMapLayer(layerType) {
+// Retirer toutes les couches de fond
+if (map.hasLayer(mapLayers.base)) map.removeLayer(mapLayers.base);
+if (map.hasLayer(mapLayers.satellite)) map.removeLayer(mapLayers.satellite);
+if (map.hasLayer(mapLayers.terrain)) map.removeLayer(mapLayers.terrain);
+
+// Ajouter la couche sélectionnée
+switch(layerType) {
+   case 'satellite':
+       mapLayers.satellite.addTo(map);
+       break;
+   case 'terrain':
+       mapLayers.terrain.addTo(map);
+       break;
+   default:
+       mapLayers.base.addTo(map);
+}
+}
+
+// Activer/désactiver l'affichage des marqueurs
+function toggleMapMarkers() {
+if (map.hasLayer(markersLayer)) {
+   map.removeLayer(markersLayer);
+   document.getElementById('toggle-markers').textContent = "🔍 Afficher marqueurs";
+} else {
+   markersLayer.addTo(map);
+   document.getElementById('toggle-markers').textContent = "📍 Marqueurs";
+}
+}
+
+// Passer en mode ajout de marqueur
+function startAddingMarker() {
+isAddingMarker = true;
+map.getContainer().style.cursor = 'crosshair';
+document.getElementById('add-marker-btn').textContent = "➕ Cliquez sur la carte";
+
+// Notification
+showSyncNotification("Cliquez sur la carte pour placer un marqueur");
+}
+
+// Ajouter un marqueur temporaire
+function addTempMarker(latlng) {
+// Supprimer l'ancien marqueur temporaire s'il existe
+if (tempMarker) markersLayer.removeLayer(tempMarker);
+
+// Créer un nouveau marqueur temporaire
+tempMarker = L.marker(latlng, {
+   icon: L.divIcon({
+       className: 'custom-div-icon',
+       html: "<div style='background-color:#3498db;width:15px;height:15px;border-radius:50%;border:2px solid white;'></div>",
+       iconSize: [20, 20],
+       iconAnchor: [10, 10]
+   })
+}).addTo(markersLayer);
+
+// Stocker les coordonnées pour utilisation ultérieure
+window.tempLatLng = latlng;
+}
+
+// Annuler l'ajout d'un marqueur
+function cancelAddMarker() {
+// Réinitialiser le mode d'ajout
+isAddingMarker = false;
+map.getContainer().style.cursor = '';
+document.getElementById('add-marker-btn').textContent = "➕ Ajouter un point";
+
+// Cacher le formulaire
+document.getElementById('add-marker-form').style.display = 'none';
+
+// Supprimer le marqueur temporaire
+if (tempMarker) markersLayer.removeLayer(tempMarker);
+tempMarker = null;
+}
+
+// Sauvegarder un nouveau marqueur
+function saveNewMarker() {
+// Vérifier si les données sont valides
+const name = document.getElementById('marker-name').value.trim();
+if (!name) {
+   alert("Veuillez donner un nom au marqueur");
+   return;
+}
+
+// Récupérer les autres données
+const type = document.getElementById('marker-type').value;
+const description = document.getElementById('marker-description').value.trim();
+
+// Créer l'objet marqueur
+const markerData = {
+   name: name,
+   type: type,
+   description: description,
+   lat: window.tempLatLng.lat,
+   lng: window.tempLatLng.lng,
+   createdBy: window.pseudo,
+   createdAt: new Date().toISOString()
+};
+
+// Sauvegarder dans Firebase
+saveMarkerToFirebase(markerData);
+
+// Remplacer le marqueur temporaire par un marqueur permanent
+createMapMarker(markerData);
+
+// Réinitialiser le mode d'ajout
+cancelAddMarker();
+
+// Réinitialiser le formulaire
+document.getElementById('marker-name').value = '';
+document.getElementById('marker-description').value = '';
+
+// Notification
+showSyncNotification("Point ajouté avec succès");
+}
+
+// Sauvegarder un marqueur dans Firebase
+function saveMarkerToFirebase(markerData) {
+// Vérifier si Firebase est disponible
+if (!firebase || !firebase.database) {
+   console.error("Firebase n'est pas disponible");
+   return;
+}
+
+// Référence à la collection de marqueurs
+const markersRef = firebase.database().ref('deadhope/mapMarkers');
+
+// Ajouter le marqueur
+markersRef.push(markerData, function(error) {
+   if (error) {
+       console.error("Erreur lors de la sauvegarde du marqueur:", error);
+   } else {
+       console.log("Marqueur sauvegardé avec succès");
+   }
 });
+}
+
+// Charger les marqueurs depuis Firebase
+function loadMapMarkersFromFirebase() {
+// Vérifier si Firebase est disponible
+if (!firebase || !firebase.database) {
+   console.error("Firebase n'est pas disponible");
+   setTimeout(loadMapMarkersFromFirebase, 1000); // Réessayer plus tard
+   return;
+}
+
+// Référence à la collection de marqueurs
+const markersRef = firebase.database().ref('deadhope/mapMarkers');
+
+// Écouter les changements
+markersRef.on('value', function(snapshot) {
+   // Effacer tous les marqueurs actuels
+   markersLayer.clearLayers();
+   currentMarkers = [];
+   
+   // Parcourir les données
+   const data = snapshot.val();
+   if (data) {
+       Object.keys(data).forEach(key => {
+           const marker = data[key];
+           marker.id = key; // Stocker l'ID pour utilisation ultérieure
+           createMapMarker(marker);
+       });
+   }
+});
+}
+
+// Créer un marqueur sur la carte
+function createMapMarker(markerData) {
+// Déterminer l'icône selon le type
+let iconColor, markerColor;
+
+switch(markerData.type) {
+   case 'danger':
+       iconColor = '#e74c3c';
+       markerColor = 'red';
+       break;
+   case 'resource':
+       iconColor = '#2ecc71';
+       markerColor = 'green';
+       break;
+   case 'shelter':
+       iconColor = '#3498db';
+       markerColor = 'blue';
+       break;
+   default:
+       iconColor = '#f39c12';
+       markerColor = 'orange';
+}
+
+// Créer le marqueur
+const marker = L.marker([markerData.lat, markerData.lng], {
+   icon: L.divIcon({
+       className: 'custom-div-icon',
+       html: `<div style='background-color:${iconColor};width:15px;height:15px;border-radius:50%;border:2px solid white;'></div>`,
+       iconSize: [20, 20],
+       iconAnchor: [10, 10]
+   })
+}).addTo(markersLayer);
+
+// Ajouter une popup avec le nom
+marker.bindTooltip(markerData.name);
+
+// Ajouter un événement de clic
+marker.on('click', function() {
+   showMarkerInfo(markerData);
+});
+
+// Stocker le marqueur
+currentMarkers.push({
+   data: markerData,
+   marker: marker
+});
+}
+
+// Afficher les informations d'un marqueur
+function showMarkerInfo(markerData) {
+// Récupérer le conteneur d'informations
+const panel = document.getElementById('marker-info-panel');
+const content = document.getElementById('marker-info-content');
+
+// Icône selon le type
+let typeIcon, typeLabel;
+switch(markerData.type) {
+   case 'danger':
+       typeIcon = '⚠️';
+       typeLabel = 'Zone dangereuse';
+       break;
+   case 'resource':
+       typeIcon = '📦';
+       typeLabel = 'Ressources';
+       break;
+   case 'shelter':
+       typeIcon = '🏠';
+       typeLabel = 'Abri';
+       break;
+   default:
+       typeIcon = '🔍';
+       typeLabel = 'Point d\'intérêt';
+}
+
+// Préparer le HTML du contenu
+let html = `
+   <h4 style="margin-top: 0; color: #f1c40f;">${markerData.name}</h4>
+   <div style="margin-bottom: 10px;">
+       <span style="background: rgba(0,0,0,0.3); padding: 3px 8px; border-radius: 10px; font-size: 0.9em;">
+           ${typeIcon} ${typeLabel}
+       </span>
+       <span style="margin-left: 10px; font-size: 0.8em; color: #aaa;">
+           Ajouté par ${markerData.createdBy || "Inconnu"}
+       </span>
+   </div>
+`;
+
+// Ajouter la description si elle existe
+if (markerData.description) {
+   html += `
+       <div style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+           ${markerData.description}
+       </div>
+   `;
+}
+
+// Ajouter les coordonnées et les boutons d'action
+html += `
+   <div style="font-size: 0.8em; color: #aaa; margin-bottom: 10px;">
+       Coordonnées: ${markerData.lat.toFixed(5)}, ${markerData.lng.toFixed(5)}
+   </div>
+   <div style="display: flex; justify-content: flex-end; gap: 10px;">
+       <button onclick="document.getElementById('marker-info-panel').style.display='none'">Fermer</button>
+       <button onclick="deleteMapMarker('${markerData.id}')" style="background: linear-gradient(to bottom, #c0392b, #922b21);">
+           🗑️ Supprimer
+       </button>
+   </div>
+`;
+
+// Mettre à jour le contenu et afficher le panel
+content.innerHTML = html;
+panel.style.display = 'block';
+}
+
+// Supprimer un marqueur
+function deleteMapMarker(markerId) {
+// Demander confirmation
+if (!confirm("Êtes-vous sûr de vouloir supprimer ce point ?")) {
+   return;
+}
+
+// Supprimer de Firebase
+const markerRef = firebase.database().ref(`deadhope/mapMarkers/${markerId}`);
+markerRef.remove()
+   .then(() => {
+       console.log("Marqueur supprimé avec succès");
+       // Cacher le panel d'info
+       document.getElementById('marker-info-panel').style.display = 'none';
+       // Notification
+       showSyncNotification("Point supprimé avec succès");
+   })
+   .catch(error => {
+       console.error("Erreur lors de la suppression:", error);
+       alert("Erreur lors de la suppression du point.");
+   });
+}
+
+// Fonction pour initialiser la carte lors du chargement de la page
+function initMapOnLoad() {
+// Vérifier si l'élément de carte existe
+if (document.getElementById('interactive-map')) {
+   // Initialiser la carte après un court délai pour s'assurer que Leaflet est chargé
+   setTimeout(initInteractiveMap, 500);
+}
+}
 </script>
 </body>
 </html>
