@@ -1,1346 +1,3104 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeadHope - Maintenance en cours</title>
-    <style>
-        :root {
-            --bg: #0a0a0a;
-            --fg: #e0e0e0;
-            --accent: #8b0000;
-            --terminal-green: #00ff00;
-            --money-color: #ffcc00;
-        }
-        
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Courier New', monospace;
-            background-color: var(--bg);
-            color: var(--fg);
-            overflow-x: hidden;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        /* CRT Overlay effect */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: 
-                linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 2px, 3px 100%;
-            pointer-events: none;
-            z-index: 2;
-            animation: flicker 0.15s infinite;
-        }
-        
-        @keyframes flicker {
-            0% { opacity: 0.97; }
-            5% { opacity: 0.95; }
-            10% { opacity: 0.97; }
-            15% { opacity: 0.94; }
-            20% { opacity: 0.98; }
-            25% { opacity: 0.95; }
-            30% { opacity: 0.97; }
-            35% { opacity: 0.96; }
-            40% { opacity: 0.97; }
-            45% { opacity: 0.95; }
-            50% { opacity: 0.98; }
-            55% { opacity: 0.97; }
-            60% { opacity: 0.95; }
-            65% { opacity: 0.97; }
-            70% { opacity: 0.96; }
-            75% { opacity: 0.94; }
-            80% { opacity: 0.98; }
-            85% { opacity: 0.97; }
-            90% { opacity: 0.95; }
-            95% { opacity: 0.96; }
-            100% { opacity: 0.97; }
-        }
-        
-        /* Scanline effect */
-        .scanline {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.1);
-            z-index: 3;
-            animation: scanline 6s linear infinite;
-            pointer-events: none;
-        }
-        
-        @keyframes scanline {
-            0% { top: 0%; }
-            100% { top: 100%; }
-        }
-        
-        .container {
-            text-align: center;
-            max-width: 800px;
-            padding: 0 20px;
-            position: relative;
-            z-index: 1;
-        }
-        
-        h1 {
-            font-size: 3rem;
-            color: var(--accent);
-            margin-bottom: 0.5rem;
-            text-shadow: 0 0 10px rgba(139, 0, 0, 0.7);
-        }
-        
-        .subtitle {
-            font-size: 1.5rem;
-            color: var(--terminal-green);
-            margin-bottom: 2rem;
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-        }
-        
-        .message {
-            background: rgba(0, 0, 0, 0.7);
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            border: 1px solid #333;
-            line-height: 1.6;
-        }
-        
-        .countdown {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .time {
-            font-size: 2rem;
-            color: var(--terminal-green);
-            font-family: monospace;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 5px 15px;
-            border-radius: 5px;
-            display: inline-block;
-            margin: 10px 0;
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-        }
-        
-        .game-container {
-            display: flex;
-            width: 100%;
-            max-width: 1000px;
-            margin-bottom: 2rem;
-        }
-        
-        .game-scene {
-            flex: 3;
-            height: 250px;
-            background-color: #111;
-            position: relative;
-            overflow: hidden;
-            border: 4px solid #333;
-            border-radius: 8px;
-            background-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 80%, #000 100%);
-        }
-        
-        .shop-panel {
-            flex: 1;
-            background: rgba(0, 0, 0, 0.7);
-            border: 4px solid #333;
-            border-radius: 8px;
-            padding: 10px;
-            margin-left: 10px;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            max-height: 250px;
-        }
-        
-        .shop-panel h3 {
-            color: var(--money-color);
-            border-bottom: 1px solid #444;
-            padding-bottom: 5px;
-            margin-top: 0;
-            text-align: center;
-        }
-        
-        .shop-item {
-            background: rgba(30, 30, 30, 0.7);
-            border: 1px solid #444;
-            border-radius: 5px;
-            padding: 5px 8px;
-            margin-bottom: 8px;
-            transition: all 0.3s;
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .shop-item:hover {
-            background: rgba(50, 50, 50, 0.7);
-            transform: translateY(-2px);
-        }
-        
-        .shop-item-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .shop-item-name {
-            font-weight: bold;
-            color: #fff;
-        }
-        
-        .shop-item-cost {
-            color: var(--money-color);
-            font-family: monospace;
-        }
-        
-        .shop-item-description {
-            font-size: 0.8em;
-            color: #aaa;
-            margin-top: 3px;
-        }
-        
-        .shop-item-level {
-            display: flex;
-            align-items: center;
-            margin-top: 5px;
-        }
-        
-        .level-bar {
-            flex: 1;
-            height: 5px;
-            background: #333;
-            border-radius: 3px;
-            overflow: hidden;
-            margin-right: 8px;
-        }
-        
-        .level-fill {
-            height: 100%;
-            background: var(--accent);
-            width: 0%;
-        }
-        
-        .level-text {
-            font-size: 0.8em;
-            color: #ccc;
-        }
-        
-        .shop-item.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        .road {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 40px;
-            background-color: #222;
-            border-top: 2px solid #444;
-        }
-        
-        .road::before {
-            content: "";
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, #555 0%, #555 50%, transparent 50%, transparent 100%);
-            background-size: 30px 100%;
-            transform: translateY(-50%);
-            animation: moveRoad 0.5s linear infinite;
-        }
-        
-        @keyframes moveRoad {
-            0% { background-position: 0 0; }
-            100% { background-position: -30px 0; }
-        }
-        
-        .survivor {
-            width: 60px;
-            height: 100px;
-            position: absolute;
-            bottom: 40px;
-            left: 100px;
-            z-index: 10;
-        }
-        
-        .survivor-body {
-            width: 30px;
-            height: 60px;
-            background: #2c3e50;
-            position: absolute;
-            bottom: 0;
-            left: 15px;
-            border-radius: 5px 5px 0 0;
-        }
-        
-        .survivor-head {
-            width: 25px;
-            height: 25px;
-            background: #34495e;
-            position: absolute;
-            top: 0;
-            left: 17px;
-            border-radius: 50%;
-        }
-        
-        .survivor-arm {
-            width: 30px;
-            height: 8px;
-            background: #2c3e50;
-            position: absolute;
-            top: 30px;
-            left: 40px;
-            transform-origin: left center;
-            transform: rotate(0deg);
-            z-index: 11;
-        }
-        
-        .survivor-gun {
-            width: 25px;
-            height: 5px;
-            background: #111;
-            position: absolute;
-            top: 1.5px;
-            left: 30px;
-            transform-origin: left center;
-        }
-        
-        /* Classes pour différentes armes */
-        .gun-pistol .survivor-gun {
-            width: 15px;
-            height: 5px;
-        }
-        
-        .gun-smg .survivor-gun {
-            width: 25px;
-            height: 6px;
-        }
-        
-        .gun-rifle .survivor-gun {
-            width: 35px;
-            height: 6px;
-        }
-        
-        .gun-sniper .survivor-gun {
-            width: 45px;
-            height: 7px;
-        }
-        
-        .survivor.shooting .survivor-arm {
-            animation: armRecoil 0.3s ease-out;
-        }
-        
-        @keyframes armRecoil {
-            0% { transform: rotate(0deg); }
-            20% { transform: rotate(15deg); }
-            100% { transform: rotate(0deg); }
-        }
-        
-        .bullet {
-            width: 6px;
-            height: 2px;
-            background: #ff0;
-            position: absolute;
-            border-radius: 2px;
-            z-index: 9;
-            animation: bulletFly 0.5s linear forwards;
-        }
-        
-        /* Crosshair avec précision variable */
-        .crosshair {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 1px solid rgba(255, 255, 255, 0.7);
-            pointer-events: none;
-            z-index: 100;
-            display: none;
-        }
-        
-        .crosshair::before,
-        .crosshair::after {
-            content: "";
-            position: absolute;
-            background: rgba(255, 255, 255, 0.7);
-        }
-        
-        .crosshair::before {
-            top: 50%;
-            left: -5px;
-            right: -5px;
-            height: 1px;
-        }
-        
-        .crosshair::after {
-            left: 50%;
-            top: -5px;
-            bottom: -5px;
-            width: 1px;
-        }
-        
-        @keyframes bulletFly {
-            0% { transform: translateX(0); opacity: 1; }
-            80% { opacity: 1; }
-            100% { transform: translateX(1500px); opacity: 0; }
-        }
-        
-        .muzzle-flash {
-            width: 10px;
-            height: 10px;
-            background: radial-gradient(circle, rgba(255,255,0,1) 0%, rgba(255,165,0,0.8) 50%, rgba(255,0,0,0) 100%);
-            position: absolute;
-            border-radius: 50%;
-            z-index: 10;
-            opacity: 0;
-        }
-        
-        .muzzle-flash.active {
-            animation: flash 0.2s ease-out;
-        }
-        
-        @keyframes flash {
-            0% { opacity: 1; transform: scale(1); }
-            100% { opacity: 0; transform: scale(2); }
-        }
-        
-        .zombie {
-            width: 40px;
-            height: 80px;
-            position: absolute;
-            bottom: 40px;
-            right: -50px;
-            z-index: 8;
-            animation: zombieWalk linear forwards;
-        }
-        
-        .zombie-body {
-            width: 25px;
-            height: 50px;
-            background: #506273;
-            position: absolute;
-            bottom: 0;
-            left: 7px;
-            border-radius: 3px 3px 0 0;
-        }
-        
-        .zombie-head {
-            width: 20px;
-            height: 20px;
-            background: #617487;
-            position: absolute;
-            top: 0;
-            left: 10px;
-            border-radius: 5px;
-        }
-        
-        .zombie-arm {
-            width: 20px;
-            height: 6px;
-            background: #506273;
-            position: absolute;
-            top: 25px;
-            z-index: 7;
-        }
-        
-        .zombie-arm-left {
-            left: 0;
-            transform-origin: right center;
-            animation: zombieArmLeft 0.5s infinite alternate;
-        }
-        
-        .zombie-arm-right {
-            right: 0;
-            transform-origin: left center;
-            animation: zombieArmRight 0.5s infinite alternate;
-        }
-        
-        @keyframes zombieArmLeft {
-            0% { transform: rotate(-30deg); }
-            100% { transform: rotate(10deg); }
-        }
-        
-        @keyframes zombieArmRight {
-            0% { transform: rotate(30deg); }
-            100% { transform: rotate(-10deg); }
-        }
-        
-        @keyframes zombieWalk {
-            0% { right: -50px; }
-            100% { right: 105%; }
-        }
-        
-        .zombie.hit {
-            animation-play-state: paused;
-        }
-        
-        .zombie.hit .zombie-head,
-        .zombie.hit .zombie-body,
-        .zombie.hit .zombie-arm {
-            background: #8b0000;
-        }
-        
-        .zombie.hit::before {
-            content: "+$30";
-            position: absolute;
-            top: -20px;
-            left: 0;
-            color: var(--money-color);
-            font-family: monospace;
-            font-weight: bold;
-            animation: scoreFloat 1s ease-out forwards;
-        }
-        
-        @keyframes scoreFloat {
-            0% { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-30px); opacity: 0; }
-        }
-        
-        .blood-splatter {
-            position: absolute;
-            z-index: 12;
-            pointer-events: none;
-            width: 30px;
-            height: 30px;
-            background: radial-gradient(circle, rgba(139,0,0,0.8) 0%, rgba(139,0,0,0) 70%);
-            opacity: 0;
-            animation: blood 0.5s ease-out forwards;
-        }
-        
-        @keyframes blood {
-            0% { transform: scale(0.5); opacity: 1; }
-            100% { transform: scale(1.5); opacity: 0; }
-        }
-        
-        .money-counter {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            color: var(--money-color);
-            z-index: 20;
-            display: flex;
-            align-items: center;
-        }
-        
-        .money-counter::before {
-            content: "$";
-            margin-right: 5px;
-            font-weight: bold;
-        }
-        
-        #terminal-text {
-            font-family: monospace;
-            color: var(--terminal-green);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 15px;
-            border-radius: 5px;
-            width: 100%;
-            max-width: 600px;
-            text-align: left;
-            height: 150px;
-            overflow: hidden;
-            margin-top: 20px;
-            position: relative;
-        }
-        
-        .cursor {
-            display: inline-block;
-            width: 10px;
-            height: 1.2em;
-            background-color: var(--terminal-green);
-            animation: blink 1s step-end infinite;
-        }
-        
-        .social-links {
-            margin-top: 1rem;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        
-        .social-link {
-            display: inline-block;
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            color: var(--fg);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            transition: all 0.3s;
-        }
-        
-        .social-link:hover {
-            background: var(--accent);
-            transform: translateY(-3px);
-            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
-        }
-        
-        /* Notifications */
-        .notification {
-            position: absolute;
-            background: rgba(0, 0, 0, 0.8);
-            color: #fff;
-            padding: 10px 15px;
-            border-radius: 5px;
-            border-left: 4px solid var(--accent);
-            z-index: 1000;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: monospace;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .notification.show {
-            opacity: 1;
-        }
-        
-        /* Difficulté progressive */
-        .difficulty-indicator {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            color: #ff3333;
-            z-index: 20;
-        }
-        
-        .wave-indicator {
-            font-size: 0.8em;
-            color: #ccc;
-            margin-top: 2px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .game-container {
-                flex-direction: column;
-            }
-            
-            .shop-panel {
-                margin-left: 0;
-                margin-top: 10px;
-                max-height: 200px;
-            }
-            
-            .game-scene {
-                height: 200px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Strategic Kingdoms 2025</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      image-rendering: pixelated;
+    }
+
+    #ui-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    #top-panel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 100;
+    }
+
+    #resources {
+      display: flex;
+      gap: 20px;
+      font-size: 16px;
+    }
+
+    .resource {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(40, 40, 40, 0.7);
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .resource:hover {
+      transform: scale(1.05);
+      background: rgba(60, 60, 60, 0.7);
+    }
+
+    .resource-icon {
+      font-size: 20px;
+    }
+
+    #side-panel {
+      position: absolute;
+      top: 60px;
+      right: 10px;
+      width: 260px;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(5px);
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+      pointer-events: auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      z-index: 90;
+    }
+
+    .panel-section {
+      padding: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .panel-title {
+      margin: 0 0 10px 0;
+      font-size: 16px;
+      color: #ccc;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-title::after {
+      content: '';
+      flex-grow: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    button {
+      background: linear-gradient(to bottom, #404040, #303030);
+      color: #e0e0e0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 5px;
+      padding: 10px 5px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    button:hover:not(:disabled) {
+      background: linear-gradient(to bottom, #505050, #404040);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-icon {
+      font-size: 18px;
+    }
+
+    .resource-cost {
+      display: flex;
+      font-size: 11px;
+      gap: 5px;
+      color: #aaa;
+    }
+
+    #minimap {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 230px;
+      height: 180px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+      transition: transform 0.3s, box-shadow 0.3s;
+      overflow: hidden;
+      z-index: 80;
+    }
+
+    #minimap:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+    }
+
+    #minimap-canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 10px;
+    }
+
+    #status-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      font-size: 14px;
+      backdrop-filter: blur(5px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 100;
+    }
+
+    #tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      padding: 10px;
+      pointer-events: none;
+      max-width: 250px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.2s;
+      z-index: 200;
+    }
+
+    .tooltip-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #fff;
+    }
+
+    .tooltip-description {
+      color: #aaa;
+    }
+
+    #loading-screen {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0a0a0a;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      transition: opacity 1s;
+    }
+
+    #loading-logo {
+      font-size: 40px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    #loading-progress {
+      width: 300px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    #loading-bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(to right, #4CAF50, #8BC34A);
+      transition: width 0.3s;
+    }
+
+    #loading-text {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #aaa;
+    }
+
+    .unit-selection {
+      position: absolute;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .health-bar {
+      position: absolute;
+      height: 4px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .health-fill {
+      height: 100%;
+      background: linear-gradient(to right, #f00, #f70);
+    }
+
+    .building-health-bar {
+      position: absolute;
+      height: 5px;
+      background: rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+
+    .resource-indicator {
+      position: absolute;
+      font-size: 12px;
+      color: white;
+      pointer-events: none;
+      text-shadow: 0px 0px 2px black, 0px 0px 4px black;
+      animation: float-up 1.5s forwards ease-out;
+      opacity: 0;
+    }
+
+    @keyframes float-up {
+      0% {
+        transform: translateY(0);
+        opacity: 0;
+      }
+      20% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-25px);
+        opacity: 0;
+      }
+    }
+
+    .selection-box {
+      position: absolute;
+      border: 1px solid rgba(100, 200, 255, 0.7);
+      background: rgba(100, 200, 255, 0.1);
+      pointer-events: none;
+    }
+
+    .building-ghost {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    /* Animations */
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+
+    .pulse {
+      animation: pulse 0.5s;
+    }
+  </style>
 </head>
 <body>
-    <div class="scanline"></div>
-    
-    <div class="container">
-        <h1>☣️ DeadHope ☣️</h1>
-        <div class="subtitle">MAINTENANCE EN COURS</div>
-        
-        <div class="message">
-            <p>Notre terminal tactique est actuellement en cours de mise à jour pour améliorer ses performances et sa sécurité. Les équipes travaillent d'arrache-pied pour remettre le système en ligne dès que possible.</p>
-            <p>En attendant, défendez votre position contre les hordes de zombies. Gagnez de l'argent et améliorez votre équipement pour survivre !</p>
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+
+  <div id="ui-overlay">
+    <div id="top-panel">
+      <div id="resources">
+        <div class="resource">
+          <span class="resource-icon">🌾</span>
+          <span id="food">100</span>
         </div>
-        
-        <div class="countdown">
-            <div>TEMPS ESTIMÉ AVANT RETOUR EN LIGNE</div>
-            <div class="time" id="countdown">00:00:00</div>
+        <div class="resource">
+          <span class="resource-icon">🪵</span>
+          <span id="wood">100</span>
         </div>
-        
-        <div class="game-container">
-            <div class="game-scene">
-                <div class="difficulty-indicator">
-                    <div>MENACE: <span id="difficulty-level">Niveau 1</span></div>
-                    <div class="wave-indicator">Vague: <span id="wave-number">1</span></div>
-                </div>
-                <div class="money-counter" id="money">0</div>
-                <div class="crosshair" id="crosshair"></div>
-                
-                <div class="survivor gun-pistol">
-                    <div class="survivor-head"></div>
-                    <div class="survivor-body"></div>
-                    <div class="survivor-arm">
-                        <div class="survivor-gun"></div>
-                        <div class="muzzle-flash"></div>
-                    </div>
-                </div>
-                
-                <div class="road"></div>
-            </div>
-            
-            <div class="shop-panel">
-                <h3>AMÉLIORATIONS</h3>
-                
-                <div class="shop-item" id="accuracy-upgrade">
-                    <div class="shop-item-header">
-                        <div class="shop-item-name">Visée</div>
-                        <div class="shop-item-cost">$100</div>
-                    </div>
-                    <div class="shop-item-description">Améliore la précision de tir (Max: 10)</div>
-                    <div class="shop-item-level">
-                        <div class="level-bar">
-                            <div class="level-fill" style="width: 10%"></div>
-                        </div>
-                        <div class="level-text">1/10</div>
-                    </div>
-                </div>
-                
-                <div class="shop-item" id="fire-rate-upgrade">
-                    <div class="shop-item-header">
-                        <div class="shop-item-name">Cadence de tir</div>
-                        <div class="shop-item-cost">$150</div>
-                    </div>
-                    <div class="shop-item-description">Tire plus rapidement</div>
-                    <div class="shop-item-level">
-                        <div class="level-bar">
-                            <div class="level-fill" style="width: 10%"></div>
-                        </div>
-                        <div class="level-text">1/5</div>
-                    </div>
-                </div>
-                
-                <div class="shop-item disabled" id="smg-upgrade">
-                    <div class="shop-item-header">
-                        <div class="shop-item-name">SMG</div>
-                        <div class="shop-item-cost">$500</div>
-                    </div>
-                    <div class="shop-item-description">Arme à feu automatique</div>
-                    <div class="shop-item-level">
-                        <div class="level-bar">
-                            <div class="level-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="level-text">Non acquis</div>
-                    </div>
-                </div>
-                
-                <div class="shop-item disabled" id="rifle-upgrade">
-                    <div class="shop-item-header">
-                        <div class="shop-item-name">Fusil d'assaut</div>
-                        <div class="shop-item-cost">$1000</div>
-                    </div>
-                    <div class="shop-item-description">Puissant et précis</div>
-                    <div class="shop-item-level">
-                        <div class="level-bar">
-                            <div class="level-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="level-text">Non acquis</div>
-                    </div>
-                </div>
-                
-                <div class="shop-item disabled" id="sniper-upgrade">
-                    <div class="shop-item-header">
-                        <div class="shop-item-name">Sniper</div>
-                        <div class="shop-item-cost">$2000</div>
-                    </div>
-                    <div class="shop-item-description">Haute précision, haute puissance</div>
-                    <div class="shop-item-level">
-                        <div class="level-bar">
-                            <div class="level-fill" style="width: 0%"></div>
-                        </div>
-                        <div class="level-text">Non acquis</div>
-                    </div>
-                </div>
-            </div>
+        <div class="resource">
+          <span class="resource-icon">⛏️</span>
+          <span id="stone">50</span>
         </div>
-        
-        <div id="terminal-text"></div>
+        <div class="resource">
+          <span class="resource-icon">👥</span>
+          <span id="population">0/10</span>
+        </div>
+      </div>
     </div>
-    
-    <div class="notification" id="notification"></div>
-    
-    <div class="social-links">
-        <a href="#" class="social-link">📱</a>
-        <a href="#" class="social-link">📧</a>
-        <a href="#" class="social-link">🌐</a>
+
+    <div id="side-panel">
+      <div class="panel-section">
+        <h3 class="panel-title">Unités</h3>
+        <div class="button-grid">
+          <button id="villager-btn" onclick="spawnVillager()">
+            <span class="btn-icon">👨‍🌾</span>
+            Villageois
+            <div class="resource-cost">
+              <span>🌾 5</span>
+            </div>
+          </button>
+          <button id="soldier-btn" onclick="spawnSoldier()">
+            <span class="btn-icon">⚔️</span>
+            Soldat
+            <div class="resource-cost">
+              <span>🌾 10</span>
+              <span>🪵 5</span>
+            </div>
+          </button>
+          <button id="archer-btn" onclick="spawnArcher()">
+            <span class="btn-icon">🏹</span>
+            Archer
+            <div class="resource-cost">
+              <span>🌾 10</span>
+              <span>🪵 10</span>
+            </div>
+          </button>
+          <button id="knight-btn" onclick="spawnKnight()">
+            <span class="btn-icon">🛡️</span>
+            Chevalier
+            <div class="resource-cost">
+              <span>🌾 20</span>
+              <span>⛏️ 15</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-section">
+        <h3 class="panel-title">Bâtiments</h3>
+        <div class="button-grid">
+          <button id="house-btn" onclick="buildStructure('house')">
+            <span class="btn-icon">🏠</span>
+            Maison
+            <div class="resource-cost">
+              <span>🪵 10</span>
+            </div>
+          </button>
+          <button id="farm-btn" onclick="buildStructure('farm')">
+            <span class="btn-icon">🌾</span>
+            Ferme
+            <div class="resource-cost">
+              <span>🪵 5</span>
+              <span>⛏️ 3</span>
+            </div>
+          </button>
+          <button id="lumbermill-btn" onclick="buildStructure('lumbermill')">
+            <span class="btn-icon">🪓</span>
+            Scierie
+            <div class="resource-cost">
+              <span>🪵 8</span>
+              <span>⛏️ 5</span>
+            </div>
+          </button>
+          <button id="quarry-btn" onclick="buildStructure('quarry')">
+            <span class="btn-icon">🔨</span>
+            Carrière
+            <div class="resource-cost">
+              <span>🪵 10</span>
+              <span>⛏️ 5</span>
+            </div>
+          </button>
+          <button id="barracks-btn" onclick="buildStructure('barracks')">
+            <span class="btn-icon">⚔️</span>
+            Caserne
+            <div class="resource-cost">
+              <span>🪵 15</span>
+              <span>⛏️ 10</span>
+            </div>
+          </button>
+          <button id="archery-btn" onclick="buildStructure('archery')">
+            <span class="btn-icon">🏹</span>
+            Stand de tir
+            <div class="resource-cost">
+              <span>🪵 15</span>
+              <span>⛏️ 8</span>
+            </div>
+          </button>
+        </div>
+      </div>
     </div>
-    
-    <script>
-        // ===== Paramètres du jeu =====
-        const GAME = {
-            money: 0,
-            difficultyLevel: 1,
-            waveNumber: 1,
-            zombiesKilled: 0,
-            zombiesRequired: 10, // Zombies requis pour passer à la vague suivante
-            zombieInterval: 3000, // Intervalle initial entre les zombies (ms)
-            zombieSpeed: 10, // Seconds to cross the screen
-            upgrades: {
-                accuracy: {
-                    level: 1,
-                    max: 10,
-                    cost: 100,
-                    costMultiplier: 1.5
-                },
-                fireRate: {
-                    level: 1,
-                    max: 5,
-                    cost: 150,
-                    costMultiplier: 1.8,
-                    cooldown: 300 // ms entre les tirs
-                }
-            },
-            weapons: {
-                pistol: { owned: true, damage: 1 },
-                smg: { owned: false, cost: 500, damage: 1.5, fireRateBonus: 2 },
-                rifle: { owned: false, cost: 1000, damage: 2, fireRateBonus: 1.5 },
-                sniper: { owned: false, cost: 2000, damage: 3, fireRateBonus: 0.7 }
-            },
-            currentWeapon: 'pistol',
-            canShoot: true
-        };
-        
-        // ===== Éléments DOM =====
-        const gameScene = document.querySelector('.game-scene');
-        const survivor = document.querySelector('.survivor');
-        const moneyDisplay = document.getElementById('money');
-        const difficultyDisplay = document.getElementById('difficulty-level');
-        const waveDisplay = document.getElementById('wave-number');
-        const crosshair = document.getElementById('crosshair');
-        let zombies = [];
-        let bullets = [];
-        
-        // ===== Fonctions du jeu =====
-        
-        // Mise à jour de l'affichage de l'argent
-        function updateMoneyDisplay() {
-            moneyDisplay.textContent = GAME.money;
+
+    <div id="minimap">
+      <canvas id="minimap-canvas"></canvas>
+    </div>
+
+    <div id="status-bar">
+      Bienvenue dans Strategic Kingdoms 2025! Commencez par construire des bâtiments et créer des unités.
+    </div>
+
+    <div id="tooltip">
+      <div class="tooltip-title">Villageois</div>
+      <div class="tooltip-description">Une unité de base qui peut récolter des ressources et construire des bâtiments.</div>
+    </div>
+  </div>
+
+  <div id="loading-screen">
+    <div id="loading-logo">STRATEGIC KINGDOMS 2025</div>
+    <div id="loading-progress">
+      <div id="loading-bar"></div>
+    </div>
+    <div id="loading-text">Chargement des ressources...</div>
+  </div>
+</div>
+
+<script>
+// Configuration du jeu
+const config = {
+  tileSize: 64,
+  mapWidth: 50,
+  mapHeight: 40,
+  updateInterval: 16, // 60 FPS
+  resourceGatherRate: 1,
+  resourceGatherInterval: 500,
+  enemySpawnInterval: 30000,
+  enemyDamage: 2,
+  soldierDamage: 3,
+  archerDamage: 2,
+  archerRange: 5,
+  knightDamage: 5,
+  villagerDamage: 1,
+  maxPopulation: 10,
+  fogOfWarEnabled: true,
+  soundEnabled: true,
+  musicEnabled: true
+};
+
+// Assets à charger
+const assets = {
+  images: {
+    // Terrain
+    grassTile: 'https://i.imgur.com/B1nV2HT.png',
+    waterTile: 'https://i.imgur.com/kWw36HA.png',
+    sandTile: 'https://i.imgur.com/Bqlv6c5.png',
+    stoneTile: 'https://i.imgur.com/0iLH8tN.png',
+    dirtTile: 'https://i.imgur.com/MKjEg5m.png',
+    mountainTile: 'https://i.imgur.com/ZK0BcLs.png',
+
+    // Ressources
+    tree: 'https://i.imgur.com/pfC0lO8.png',
+    berry: 'https://i.imgur.com/JTLqR5N.png',
+    stone: 'https://i.imgur.com/8qLjUww.png',
+
+    // Unités
+    villager: 'https://i.imgur.com/YBo9e26.png',
+    soldier: 'https://i.imgur.com/2wTXcSV.png',
+    archer: 'https://i.imgur.com/R7PiJRn.png',
+    knight: 'https://i.imgur.com/Lrd2V8S.png',
+    enemy: 'https://i.imgur.com/HQExWME.png',
+
+    // Bâtiments
+    house: 'https://i.imgur.com/v9uRHVF.png',
+    farm: 'https://i.imgur.com/4EmNlNH.png',
+    lumbermill: 'https://i.imgur.com/7M5KrJM.png',
+    quarry: 'https://i.imgur.com/dIlAT2o.png',
+    barracks: 'https://i.imgur.com/WP68q97.png',
+    archery: 'https://i.imgur.com/ZK0BcLs.png',
+    towncenter: 'https://i.imgur.com/JZrxkBG.png',
+
+    // Effets
+    selectionCircle: 'https://i.imgur.com/iLvjmZ7.png',
+    selectionSquare: 'https://i.imgur.com/JJy7yL3.png',
+    constructionEffect: 'https://i.imgur.com/bpMJRGZ.png',
+    attackEffect: 'https://i.imgur.com/C9NeZdw.png',
+    treeDestructionEffect: 'https://i.imgur.com/VRCN5bX.png',
+    fogOfWar: 'https://i.imgur.com/0WUE4UB.png'
+  },
+  sounds: {
+    villagerCreate: 'https://assets.mixkit.co/sfx/download/mixkit-quick-jump-arcade-game-239.wav',
+    villagerAcknowledge: 'https://assets.mixkit.co/sfx/download/mixkit-positive-interface-beep-221.wav',
+    villagerHarvest: 'https://assets.mixkit.co/sfx/download/mixkit-metal-hit-woosh-1485.wav',
+    soldierCreate: 'https://assets.mixkit.co/sfx/download/mixkit-sword-blade-slide-2788.wav',
+    soldierAcknowledge: 'https://assets.mixkit.co/sfx/download/mixkit-extra-bonus-in-a-video-game-2045.wav',
+    soldierAttack: 'https://assets.mixkit.co/sfx/download/mixkit-sword-cut-swoosh-1476.wav',
+    buildingPlace: 'https://assets.mixkit.co/sfx/download/mixkit-arcade-game-jump-coin-216.wav',
+    buildingDestroy: 'https://assets.mixkit.co/sfx/download/mixkit-falling-game-over-1942.wav',
+    treeChop: 'https://assets.mixkit.co/sfx/download/mixkit-hitting-wood-with-metal-2178.wav',
+    rockMine: 'https://assets.mixkit.co/sfx/download/mixkit-hitting-a-rock-with-a-pick-2879.wav',
+    berryPick: 'https://assets.mixkit.co/sfx/download/mixkit-plastic-bubble-click-1343.wav',
+    enemySpawn: 'https://assets.mixkit.co/sfx/download/mixkit-sword-slash-swoosh-1476.wav',
+    enemyDeath: 'https://assets.mixkit.co/sfx/download/mixkit-dramatic-metal-explosion-impact-1687.wav',
+    buttonClick: 'https://assets.mixkit.co/sfx/download/mixkit-select-click-1109.wav',
+    errorSound: 'https://assets.mixkit.co/sfx/download/mixkit-wrong-answer-fail-notification-946.wav'
+  },
+  music: {
+    gameTheme: 'https://assets.mixkit.co/music/download/mixkit-games-worldbeat-668.mp3'
+  }
+};
+
+// État du jeu
+const gameState = {
+  map: [],
+  resources: { food: 100, wood: 100, stone: 50, population: 0, maxPopulation: 10 },
+  trees: [],
+  stones: [],
+  berries: [],
+  units: {
+    villagers: [],
+    soldiers: [],
+    archers: [],
+    knights: []
+  },
+  enemies: [],
+  buildings: [],
+  selected: [],
+  buildMode: null,
+  camera: { x: 0, y: 0, targetX: 0, targetY: 0, speed: 0.1 },
+  selectionBox: null,
+  gameTime: 0,
+  effectsQueue: [],
+  revealedMap: [], // Pour le brouillard de guerre
+  lastFrameTime: 0,
+  deltaTime: 0,
+  tooltip: { target: null, x: 0, y: 0 },
+  soundsLoaded: 0,
+  soundsToLoad: 0,
+  imagesLoaded: 0,
+  imagesToLoad: 0,
+  loadingComplete: false,
+  spritesheets: {}
+};
+
+// Cache des ressources
+const resourceCache = {
+  images: {},
+  sounds: {},
+  music: {}
+};
+
+// Initialisation du canvas et du contexte
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+const minimap = document.getElementById('minimap-canvas');
+const minimapCtx = minimap.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+const statusBar = document.getElementById('status-bar');
+const loadingBar = document.getElementById('loading-bar');
+const loadingText = document.getElementById('loading-text');
+const loadingScreen = document.getElementById('loading-screen');
+
+// Adapter la taille du canvas à la fenêtre
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  minimap.width = 230;
+  minimap.height = 180;
+
+  // Redessiner après redimensionnement
+  if (gameState.loadingComplete) {
+    draw();
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+// Charger les ressources
+function loadResources() {
+  // Compter le nombre total d'assets à charger
+  gameState.imagesToLoad = Object.keys(assets.images).length;
+  gameState.soundsToLoad = Object.keys(assets.sounds).length + Object.keys(assets.music).length;
+
+  // Charger les images
+  for (const key in assets.images) {
+    const img = new Image();
+    img.src = assets.images[key];
+    img.onload = () => {
+      resourceCache.images[key] = img;
+      gameState.imagesLoaded++;
+      updateLoadingProgress();
+    };
+    img.onerror = () => {
+      console.error(`Failed to load image: ${key}`);
+      gameState.imagesLoaded++;
+      updateLoadingProgress();
+    };
+  }
+
+  // Charger les sons
+  for (const key in assets.sounds) {
+    const sound = new Audio();
+    sound.src = assets.sounds[key];
+    sound.oncanplaythrough = () => {
+      resourceCache.sounds[key] = sound;
+      gameState.soundsLoaded++;
+      updateLoadingProgress();
+    };
+    sound.onerror = () => {
+      console.error(`Failed to load sound: ${key}`);
+      gameState.soundsLoaded++;
+      updateLoadingProgress();
+    };
+  }
+
+  // Charger la musique
+  for (const key in assets.music) {
+    const music = new Audio();
+    music.src = assets.music[key];
+    music.loop = true;
+    music.oncanplaythrough = () => {
+      resourceCache.music[key] = music;
+      gameState.soundsLoaded++;
+      updateLoadingProgress();
+    };
+    music.onerror = () => {
+      console.error(`Failed to load music: ${key}`);
+      gameState.soundsLoaded++;
+      updateLoadingProgress();
+    };
+  }
+}
+
+// Mettre à jour la barre de progression
+function updateLoadingProgress() {
+  const totalAssets = gameState.imagesToLoad + gameState.soundsToLoad;
+  const loadedAssets = gameState.imagesLoaded + gameState.soundsLoaded;
+  const progress = Math.floor((loadedAssets / totalAssets) * 100);
+
+  loadingBar.style.width = `${progress}%`;
+  loadingText.textContent = `Chargement des ressources... ${progress}%`;
+
+  if (loadedAssets >= totalAssets) {
+    // Tout est chargé, on peut initialiser le jeu
+    setTimeout(() => {
+      gameState.loadingComplete = true;
+      loadingScreen.style.opacity = '0';
+      setTimeout(() => {
+        loadingScreen.style.display = 'none';
+        initGame();
+      }, 1000);
+    }, 500);
+  }
+}
+
+// Jouer un son avec contrôle du volume
+function playSound(key, volume = 1.0) {
+  if (!config.soundEnabled || !resourceCache.sounds[key]) return;
+
+  // Cloner le son pour pouvoir jouer plusieurs instances en même temps
+  const sound = resourceCache.sounds[key].cloneNode();
+  sound.volume = volume;
+  sound.play();
+}
+
+// Jouer la musique de fond
+function playMusic(key, volume = 0.3) {
+  if (!config.musicEnabled || !resourceCache.music[key]) return;
+
+  const music = resourceCache.music[key];
+  music.volume = volume;
+  music.currentTime = 0;
+  music.play();
+}
+
+// Arrêter la musique de fond
+function stopMusic(key) {
+  if (!resourceCache.music[key]) return;
+
+  const music = resourceCache.music[key];
+  music.pause();
+  music.currentTime = 0;
+}
+
+// Initialisation de la carte
+function initMap() {
+  console.log("Initialisation de la carte aléatoire...");
+
+  // Réinitialiser les tableaux
+  gameState.map = [];
+  gameState.trees = [];
+  gameState.stones = [];
+  gameState.berries = [];
+  gameState.revealedMap = [];
+
+  // Générer la carte de manière aléatoire
+  const mapData = generateRandomMap(config.mapWidth, config.mapHeight);
+
+  // Convertir mapData en map du jeu
+  for (let y = 0; y < mapData.length; y++) {
+    const row = [];
+    const revealedRow = [];
+
+    for (let x = 0; x < mapData[y].length; x++) {
+      let tile;
+
+      switch(mapData[y][x]) {
+        case 1: tile = 'water'; break;
+        case 2: tile = 'sand'; break;
+        case 3: tile = 'stone'; break;
+        case 4: tile = 'mountain'; break;
+        default: tile = 'grass';
+      }
+
+      row.push(tile);
+
+      // Tout est visible au début
+      revealedRow.push(2);
+    }
+
+    gameState.map.push(row);
+    gameState.revealedMap.push(revealedRow);
+  }
+
+  // Configurer les dimensions de la carte
+  config.mapWidth = mapData[0].length;
+  config.mapHeight = mapData.length;
+
+  // Ajouter les ressources
+  addResourcesToMap();
+
+  // Ajouter des villageois de départ
+  spawnUnit(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2), 'villager');
+  spawnUnit(Math.floor(config.mapWidth / 2) + 1, Math.floor(config.mapHeight / 2), 'villager');
+
+  console.log("Carte créée aléatoirement:", config.mapWidth, "x", config.mapHeight);
+}
+
+// Générer une carte aléatoire
+function generateRandomMap(width, height) {
+  const map = [];
+
+  for (let y = 0; y < height; y++) {
+    const row = [];
+    for (let x = 0; x < width; x++) {
+      const rand = Math.random();
+      if (rand < 0.05) {
+        row.push(4); // Montagne
+      } else if (rand < 0.1) {
+        row.push(3); // Pierre
+      } else if (rand < 0.15) {
+        row.push(2); // Sable
+      } else if (rand < 0.2) {
+        row.push(1); // Eau
+      } else {
+        row.push(0); // Herbe
+      }
+    }
+    map.push(row);
+  }
+
+  return map;
+}
+
+// Ajouter des ressources à la carte
+function addResourcesToMap() {
+  const numTrees = 50;
+  const numStones = 30;
+  const numBerries = 20;
+
+  function placeResource(type, num) {
+    const positions = [];
+    for (let i = 0; i < num; i++) {
+      let x, y;
+      do {
+        x = Math.floor(Math.random() * config.mapWidth);
+        y = Math.floor(Math.random() * config.mapHeight);
+      } while (gameState.map[y][x] !== 0 || positions.some(pos => pos.x === x && pos.y === y));
+      positions.push({ x, y });
+    }
+    gameState[type] = positions;
+  }
+
+  placeResource('trees', numTrees);
+  placeResource('stones', numStones);
+  placeResource('berries', numBerries);
+}
+
+// Spawn des unités
+function spawnUnit(x, y, type) {
+  // Vérifier les limites de population
+  if (gameState.resources.population >= gameState.resources.maxPopulation) {
+    updateStatus("Population maximale atteinte. Construisez plus de maisons.");
+    playSound('errorSound', 0.5);
+    return null;
+  }
+
+  let stats = {
+    hp: 10,
+    maxHp: 10,
+    attack: 1,
+    defense: 0,
+    speed: 0.07,
+    range: 1,
+    productionTime: 5000
+  };
+
+  switch (type) {
+    case 'soldier':
+      stats = { ...stats, hp: 20, maxHp: 20, attack: 3, defense: 1, speed: 0.05 };
+      break;
+    case 'archer':
+      stats = { ...stats, hp: 15, maxHp: 15, attack: 2, defense: 0, speed: 0.06, range: 5 };
+      break;
+    case 'knight':
+      stats = { ...stats, hp: 30, maxHp: 30, attack: 5, defense: 3, speed: 0.04 };
+      break;
+  }
+
+  const unit = {
+    x, y,
+    targetX: x,
+    targetY: y,
+    type,
+    selected: false,
+    hp: stats.hp,
+    maxHp: stats.maxHp,
+    attack: stats.attack,
+    defense: stats.defense,
+    task: null,
+    taskTarget: null,
+    speed: stats.speed,
+    range: stats.range,
+    direction: 'down', // Pour l'animation
+    isMoving: false,
+    attackCooldown: 0,
+    animationFrame: 0,
+    animationTime: 0
+  };
+
+  gameState.resources.population++;
+  updateUI();
+
+  if (type === 'villager') {
+    gameState.units.villagers.push(unit);
+    playSound('villagerCreate');
+  } else if (type === 'soldier') {
+    gameState.units.soldiers.push(unit);
+    playSound('soldierCreate');
+  } else if (type === 'archer') {
+    gameState.units.archers.push(unit);
+    playSound('soldierCreate', 0.7);
+  } else if (type === 'knight') {
+    gameState.units.knights.push(unit);
+    playSound('soldierCreate', 0.9);
+  }
+
+  // Ajouter un effet de création
+  addEffect('spawn', x, y, 500);
+
+  return unit;
+}
+
+function spawnVillager() {
+  if (gameState.resources.food >= 5) {
+    // Trouver un bâtiment de type mairie pour faire apparaître des villageois
+    const townCenter = gameState.buildings.find(b => b.type === 'towncenter');
+    let spawnX = Math.floor(config.mapWidth / 2);
+    let spawnY = Math.floor(config.mapHeight / 2);
+
+    if (townCenter) {
+      spawnX = townCenter.x + townCenter.width / 2;
+      spawnY = townCenter.y + townCenter.height / 2;
+    }
+
+    const unit = spawnUnit(spawnX, spawnY, 'villager');
+    if (unit) {
+      gameState.resources.food -= 5;
+      updateUI();
+      updateStatus("Villageois créé");
+    }
+  } else {
+    updateStatus("Pas assez de nourriture pour créer un villageois");
+    playSound('errorSound', 0.5);
+  }
+}
+
+function spawnSoldier() {
+  if (gameState.resources.food >= 10 && gameState.resources.wood >= 5) {
+    // Vérifier si une caserne existe
+    const barracks = gameState.buildings.find(b => b.type === 'barracks');
+
+    if (barracks) {
+      const unit = spawnUnit(barracks.x + barracks.width / 2, barracks.y + barracks.height / 2, 'soldier');
+      if (unit) {
+        gameState.resources.food -= 10;
+        gameState.resources.wood -= 5;
+        updateUI();
+        updateStatus("Soldat créé");
+      }
+    } else {
+      updateStatus("Vous avez besoin d'une caserne pour créer des soldats");
+      playSound('errorSound', 0.5);
+    }
+  } else {
+    updateStatus("Ressources insuffisantes pour créer un soldat");
+    playSound('errorSound', 0.5);
+  }
+}
+
+function spawnArcher() {
+  if (gameState.resources.food >= 10 && gameState.resources.wood >= 10) {
+    // Vérifier si un stand de tir existe
+    const archery = gameState.buildings.find(b => b.type === 'archery');
+
+    if (archery) {
+      const unit = spawnUnit(archery.x + archery.width / 2, archery.y + archery.height / 2, 'archer');
+      if (unit) {
+        gameState.resources.food -= 10;
+        gameState.resources.wood -= 10;
+        updateUI();
+        updateStatus("Archer créé");
+      }
+    } else {
+      updateStatus("Vous avez besoin d'un stand de tir pour créer des archers");
+      playSound('errorSound', 0.5);
+    }
+  } else {
+    updateStatus("Ressources insuffisantes pour créer un archer");
+    playSound('errorSound', 0.5);
+  }
+}
+
+function spawnKnight() {
+  if (gameState.resources.food >= 20 && gameState.resources.stone >= 15) {
+    // Vérifier si une caserne existe
+    const barracks = gameState.buildings.find(b => b.type === 'barracks');
+
+    if (barracks) {
+      const unit = spawnUnit(barracks.x + barracks.width / 2, barracks.y + barracks.height / 2, 'knight');
+      if (unit) {
+        gameState.resources.food -= 20;
+        gameState.resources.stone -= 15;
+        updateUI();
+        updateStatus("Chevalier créé");
+      }
+    } else {
+      updateStatus("Vous avez besoin d'une caserne pour créer des chevaliers");
+      playSound('errorSound', 0.5);
+    }
+  } else {
+    updateStatus("Ressources insuffisantes pour créer un chevalier");
+    playSound('errorSound', 0.5);
+  }
+}
+
+function spawnEnemy() {
+  // Faire apparaître des ennemis sur les bords de la carte
+  const side = Math.floor(Math.random() * 4);
+  let x, y;
+
+  switch(side) {
+    case 0: // Haut
+      x = Math.floor(Math.random() * config.mapWidth);
+      y = 0;
+      break;
+    case 1: // Droite
+      x = config.mapWidth - 1;
+      y = Math.floor(Math.random() * config.mapHeight);
+      break;
+    case 2: // Bas
+      x = Math.floor(Math.random() * config.mapWidth);
+      y = config.mapHeight - 1;
+      break;
+    case 3: // Gauche
+      x = 0;
+      y = Math.floor(Math.random() * config.mapHeight);
+      break;
+  }
+
+  // Ne pas apparaître sur l'eau
+  if (gameState.map[y][x] === 'water') {
+    // Essayer de nouveau
+    setTimeout(spawnEnemy, 1000);
+    return;
+  }
+
+  // Type d'ennemi aléatoire
+  const enemyTypes = ['basic', 'fast', 'strong'];
+  const enemyType = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+
+  let stats = {
+    hp: 15,
+    maxHp: 15,
+    attack: 2,
+    defense: 0,
+    speed: 0.03,
+    range: 1
+  };
+
+  switch (enemyType) {
+    case 'fast':
+      stats = { ...stats, hp: 10, maxHp: 10, attack: 1, speed: 0.05 };
+      break;
+    case 'strong':
+      stats = { ...stats, hp: 25, maxHp: 25, attack: 3, defense: 1, speed: 0.02 };
+      break;
+  }
+
+  const enemy = {
+    x, y,
+    targetX: x,
+    targetY: y,
+    type: enemyType,
+    hp: stats.hp,
+    maxHp: stats.maxHp,
+    attack: stats.attack,
+    defense: stats.defense,
+    speed: stats.speed,
+    range: stats.range,
+    attackCooldown: 0,
+    direction: 'down',
+    isMoving: false,
+    animationFrame: 0,
+    animationTime: 0
+  };
+
+  gameState.enemies.push(enemy);
+  playSound('enemySpawn', 0.3);
+
+  // Ajouter un effet d'apparition
+  addEffect('enemySpawn', x, y, 500);
+}
+
+// Ajouter un effet visuel
+function addEffect(type, x, y, duration) {
+  gameState.effectsQueue.push({
+    type,
+    x,
+    y,
+    startTime: gameState.gameTime,
+    duration,
+    frame: 0
+  });
+}
+
+// Construction de bâtiments
+function buildStructure(type) {
+  // Définir les coûts et dimensions des bâtiments
+  let buildingInfo = {
+    width: 1,
+    height: 1,
+    woodCost: 0,
+    stoneCost: 0,
+    foodCost: 0,
+    populationProvided: 0
+  };
+
+  switch(type) {
+    case 'house':
+      buildingInfo = {
+        width: 2,
+        height: 2,
+        woodCost: 10,
+        stoneCost: 0,
+        populationProvided: 5
+      };
+      break;
+    case 'farm':
+      buildingInfo = {
+        width: 2,
+        height: 2,
+        woodCost: 5,
+        stoneCost: 3
+      };
+      break;
+    case 'lumbermill':
+      buildingInfo = {
+        width: 2,
+        height: 2,
+        woodCost: 8,
+        stoneCost: 5
+      };
+      break;
+    case 'quarry':
+      buildingInfo = {
+        width: 2,
+        height: 2,
+        woodCost: 10,
+        stoneCost: 5
+      };
+      break;
+    case 'barracks':
+      buildingInfo = {
+        width: 3,
+        height: 2,
+        woodCost: 15,
+        stoneCost: 10
+      };
+      break;
+    case 'archery':
+      buildingInfo = {
+        width: 3,
+        height: 2,
+        woodCost: 15,
+        stoneCost: 8
+      };
+      break;
+    case 'towncenter':
+      buildingInfo = {
+        width: 4,
+        height: 3,
+        woodCost: 20,
+        stoneCost: 15,
+        populationProvided: 10
+      };
+      break;
+  }
+
+  // Vérifier les ressources
+  if (gameState.resources.wood < buildingInfo.woodCost ||
+      gameState.resources.stone < buildingInfo.stoneCost ||
+      gameState.resources.food < buildingInfo.foodCost) {
+    updateStatus("Ressources insuffisantes pour construire");
+    playSound('errorSound', 0.5);
+    return;
+  }
+
+  // Activer le mode construction
+  gameState.buildMode = {
+    type,
+    width: buildingInfo.width,
+    height: buildingInfo.height,
+    woodCost: buildingInfo.woodCost,
+    stoneCost: buildingInfo.stoneCost,
+    foodCost: buildingInfo.foodCost,
+    populationProvided: buildingInfo.populationProvided
+  };
+
+  updateStatus(`Sélectionnez un emplacement pour construire: ${getBuildingName(type)}`);
+  playSound('buttonClick');
+}
+
+function getBuildingName(type) {
+  switch(type) {
+    case 'house': return 'Maison';
+    case 'farm': return 'Ferme';
+    case 'lumbermill': return 'Scierie';
+    case 'quarry': return 'Carrière';
+    case 'barracks': return 'Caserne';
+    case 'archery': return 'Stand de tir';
+    case 'towncenter': return 'Hôtel de ville';
+    default: return type;
+  }
+}
+
+function placeBuildingAt(x, y, type, width, height, populationProvided = 0) {
+  // Vérifier si l'emplacement est valide
+  for (let dy = 0; dy < height; dy++) {
+    for (let dx = 0; dx < width; dx++) {
+      if (x + dx >= config.mapWidth || y + dy >= config.mapHeight) {
+        return false;
+      }
+
+      // Vérifier les obstacles
+      if (gameState.map[y + dy] && gameState.map[y + dy][x + dx]) {
+        const tile = gameState.map[y + dy][x + dx];
+        if (tile === 'water' || tile === 'mountain') {
+          return false;
         }
-        
-        // Affichage d'une notification
-        function showNotification(message, duration = 3000) {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, duration);
-        }
-        
-        // Achat d'une amélioration
-        function buyUpgrade(type) {
-            const upgrade = GAME.upgrades[type];
-            
-            // Vérifier si c'est possible d'améliorer
-            if (upgrade.level >= upgrade.max) {
-                showNotification("Niveau maximum atteint !");
-                return false;
+      } else {
+        return false;
+      }
+
+      // Vérifier les ressources
+      if (getResourceAt(x + dx, y + dy)) {
+        return false;
+      }
+
+      // Vérifier les autres bâtiments
+      if (gameState.buildings.some(b =>
+        x + dx >= b.x && x + dx < b.x + b.width &&
+        y + dy >= b.y && y + dy < b.y + b.height)) {
+        return false;
+      }
+    }
+  }
+
+  // Si l'emplacement est valide, ajouter le bâtiment
+  const building = {
+    x, y,
+    width, height,
+    type,
+    hp: 100,
+    maxHp: 100,
+    productionTimer: 0,
+    isConstructing: true,
+    constructionProgress: 0,
+    populationProvided
+  };
+
+  gameState.buildings.push(building);
+
+  // Soustraire les ressources si on est en mode construction
+  if (gameState.buildMode) {
+    gameState.resources.wood -= gameState.buildMode.woodCost;
+    gameState.resources.stone -= gameState.buildMode.stoneCost;
+    gameState.resources.food -= gameState.buildMode.foodCost || 0;
+
+    // Ajouter à la population maximale si c'est une maison
+    if (populationProvided > 0) {
+      gameState.resources.maxPopulation += populationProvided;
+    }
+
+    gameState.buildMode = null;
+  }
+
+  updateUI();
+  playSound('buildingPlace');
+
+  // Ajouter un effet de construction
+  for (let dy = 0; dy < height; dy++) {
+    for (let dx = 0; dx < width; dx++) {
+      addEffect('construction', x + dx, y + dy, 1000);
+    }
+  }
+
+  return true;
+}
+
+// Mise à jour du statut
+function updateStatus(message) {
+  statusBar.textContent = message;
+}
+
+// Mise à jour de l'interface utilisateur
+function updateUI() {
+  document.getElementById('food').textContent = Math.floor(gameState.resources.food);
+  document.getElementById('wood').textContent = Math.floor(gameState.resources.wood);
+  document.getElementById('stone').textContent = Math.floor(gameState.resources.stone);
+  document.getElementById('population').textContent = `${gameState.resources.population}/${gameState.resources.maxPopulation}`;
+
+  // Mettre à jour les boutons en fonction des ressources disponibles
+  document.getElementById('villager-btn').disabled =
+    gameState.resources.food < 5 ||
+    gameState.resources.population >= gameState.resources.maxPopulation;
+
+  document.getElementById('soldier-btn').disabled =
+    gameState.resources.food < 10 ||
+    gameState.resources.wood < 5 ||
+    !gameState.buildings.some(b => b.type === 'barracks' && !b.isConstructing) ||
+    gameState.resources.population >= gameState.resources.maxPopulation;
+
+  document.getElementById('archer-btn').disabled =
+    gameState.resources.food < 10 ||
+    gameState.resources.wood < 10 ||
+    !gameState.buildings.some(b => b.type === 'archery' && !b.isConstructing) ||
+    gameState.resources.population >= gameState.resources.maxPopulation;
+
+  document.getElementById('knight-btn').disabled =
+    gameState.resources.food < 20 ||
+    gameState.resources.stone < 15 ||
+    !gameState.buildings.some(b => b.type === 'barracks' && !b.isConstructing) ||
+    gameState.resources.population >= gameState.resources.maxPopulation;
+
+  // Bâtiments
+  document.getElementById('house-btn').disabled = gameState.resources.wood < 10;
+  document.getElementById('farm-btn').disabled = gameState.resources.wood < 5 || gameState.resources.stone < 3;
+  document.getElementById('lumbermill-btn').disabled = gameState.resources.wood < 8 || gameState.resources.stone < 5;
+  document.getElementById('quarry-btn').disabled = gameState.resources.wood < 10 || gameState.resources.stone < 5;
+  document.getElementById('barracks-btn').disabled = gameState.resources.wood < 15 || gameState.resources.stone < 10;
+  document.getElementById('archery-btn').disabled = gameState.resources.wood < 15 || gameState.resources.stone < 8;
+}
+
+// Boucle de jeu principale
+function gameLoop(timestamp) {
+  // Calculer le delta time pour des animations fluides
+  if (!gameState.lastFrameTime) {
+    gameState.lastFrameTime = timestamp;
+  }
+
+  gameState.deltaTime = timestamp - gameState.lastFrameTime;
+  gameState.lastFrameTime = timestamp;
+  gameState.gameTime += gameState.deltaTime;
+
+  // Mettre à jour les unités, bâtiments, etc.
+  updateGameState();
+
+  // Dessiner tout
+  draw();
+
+  // Continuer la boucle
+  window.requestAnimationFrame(gameLoop);
+}
+
+function updateGameState() {
+  // Interpoler la caméra pour un mouvement fluide
+  gameState.camera.x += (gameState.camera.targetX - gameState.camera.x) * gameState.camera.speed;
+  gameState.camera.y += (gameState.camera.targetY - gameState.camera.y) * gameState.camera.speed;
+
+  // Mettre à jour les unités
+  updateUnits();
+
+  // Mettre à jour les bâtiments
+  updateBuildings();
+
+  // Mettre à jour les ennemis
+  updateEnemies();
+
+  // Mettre à jour les ressources automatiques
+  collectAutomaticResources();
+
+  // Mettre à jour la visibilité
+  if (config.fogOfWarEnabled) {
+    updateRevealedMap();
+  }
+
+  // Nettoyer les effets expirés
+  gameState.effectsQueue = gameState.effectsQueue.filter(
+    effect => gameState.gameTime - effect.startTime < effect.duration
+  );
+
+  // Mettre à jour les animations
+  updateAnimations();
+}
+
+function updateUnits() {
+  // Mise à jour des villageois
+  for (const villager of gameState.units.villagers) {
+    // Animation
+    villager.animationTime += gameState.deltaTime;
+    if (villager.animationTime > 200) {
+      villager.animationTime = 0;
+      villager.animationFrame = (villager.animationFrame + 1) % 4;
+    }
+
+    // Déplacement
+    if (villager.x !== villager.targetX || villager.y !== villager.targetY) {
+      villager.isMoving = true;
+
+      const dx = villager.targetX - villager.x;
+      const dy = villager.targetY - villager.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Déterminer la direction du mouvement pour l'animation
+      if (Math.abs(dx) > Math.abs(dy)) {
+        villager.direction = dx > 0 ? 'right' : 'left';
+      } else {
+        villager.direction = dy > 0 ? 'down' : 'up';
+      }
+
+      if (dist < villager.speed) {
+        villager.x = villager.targetX;
+        villager.y = villager.targetY;
+        villager.isMoving = false;
+      } else {
+        villager.x += (dx / dist) * villager.speed;
+        villager.y += (dy / dist) * villager.speed;
+      }
+    } else {
+      villager.isMoving = false;
+    }
+
+    // Collecte de ressources
+    if (villager.task === 'gather' && villager.taskTarget) {
+      const tx = Math.floor(villager.taskTarget.x);
+      const ty = Math.floor(villager.taskTarget.y);
+      const vx = Math.floor(villager.x);
+      const vy = Math.floor(villager.y);
+
+      // Si à proximité de la ressource
+      if (Math.abs(vx - tx) <= 1 && Math.abs(vy - ty) <= 1) {
+        // Orienter le villageois vers la ressource
+        if (vx < tx) villager.direction = 'right';
+        else if (vx > tx) villager.direction = 'left';
+        else if (vy < ty) villager.direction = 'down';
+        else villager.direction = 'up';
+
+        // Collecter la ressource progressivement
+        villager.taskTarget.gatherProgress = (villager.taskTarget.gatherProgress || 0) + gameState.deltaTime;
+
+        if (villager.taskTarget.gatherProgress >= config.resourceGatherInterval) {
+          villager.taskTarget.gatherProgress = 0;
+
+          if (villager.taskTarget.resources > 0) {
+            // Ajouter la ressource aux stocks
+            if (villager.taskTarget.type === 'wood') {
+              gameState.resources.wood += config.resourceGatherRate;
+              playSound('treeChop', 0.3);
+            } else if (villager.taskTarget.type === 'stone') {
+              gameState.resources.stone += config.resourceGatherRate;
+              playSound('rockMine', 0.3);
+            } else if (villager.taskTarget.type === 'food') {
+              gameState.resources.food += config.resourceGatherRate;
+              playSound('berryPick', 0.3);
             }
-            
-            // Vérifier si assez d'argent
-            if (GAME.money < upgrade.cost) {
-                showNotification("Pas assez d'argent !");
-                return false;
+
+            // Diminuer la ressource
+            villager.taskTarget.resources -= config.resourceGatherRate;
+
+            // Ajouter un indicateur de ressource récoltée
+            addResourceIndicator(villager.x, villager.y, villager.taskTarget.type, config.resourceGatherRate);
+
+            // Si la ressource est épuisée
+            if (villager.taskTarget.resources <= 0) {
+              // Ajouter un effet de destruction
+              addEffect(
+                villager.taskTarget.type === 'wood' ? 'treeDestruction' :
+                villager.taskTarget.type === 'stone' ? 'stoneDestruction' :
+                'berryDepletion',
+                villager.taskTarget.x,
+                villager.taskTarget.y,
+                1000
+              );
+
+              // Réinitialiser la tâche
+              villager.task = null;
+              villager.taskTarget = null;
             }
-            
-            // Acheter l'amélioration
-            GAME.money -= upgrade.cost;
-            upgrade.level++;
-            
-            // Calculer nouveau coût
-            upgrade.cost = Math.floor(upgrade.cost * upgrade.costMultiplier);
-            
-            // Mettre à jour l'affichage
-            updateMoneyDisplay();
-            updateShopDisplay();
-            
-            showNotification(`Amélioration de ${type === 'accuracy' ? 'la visée' : 'la cadence de tir'} achetée !`);
-            return true;
+
+            updateUI();
+          }
         }
-        
-        // Achat d'une arme
-        function buyWeapon(weaponName) {
-            const weapon = GAME.weapons[weaponName];
-            
-            // Vérifier si déjà possédée
-            if (weapon.owned) {
-                showNotification("Arme déjà acquise !");
-                return false;
+      }
+    }
+
+    // Construction
+    if (villager.task === 'build' && villager.taskTarget) {
+      const bx = villager.taskTarget.x + villager.taskTarget.width / 2;
+      const by = villager.taskTarget.y + villager.taskTarget.height / 2;
+      const dist = distance(villager.x, villager.y, bx, by);
+
+      // Si à proximité du bâtiment
+      if (dist <= 1.5) {
+        // Orienter le villageois vers le bâtiment
+        if (villager.x < bx) villager.direction = 'right';
+        else if (villager.x > bx) villager.direction = 'left';
+        else if (villager.y < by) villager.direction = 'down';
+        else villager.direction = 'up';
+
+        // Construire progressivement
+        villager.taskTarget.constructionProgress += gameState.deltaTime / 20;
+
+        // Si la construction est terminée
+        if (villager.taskTarget.constructionProgress >= 100) {
+          villager.taskTarget.isConstructing = false;
+          villager.task = null;
+          villager.taskTarget = null;
+          playSound('buildingPlace', 0.7);
+
+          // Ajouter un effet de construction terminée
+          addEffect('constructionComplete', bx, by, 1000);
+        }
+      }
+    }
+
+    // Auto-défense contre les ennemis proches
+    if (!villager.task || villager.task !== 'attack') {
+      for (const enemy of gameState.enemies) {
+        if (distance(villager.x, villager.y, enemy.x, enemy.y) < 0.8) {
+          // Attaquer automatiquement l'ennemi
+          if (villager.attackCooldown <= 0) {
+            // Infliger des dégâts
+            enemy.hp -= Math.max(1, config.villagerDamage - enemy.defense);
+            villager.attackCooldown = 1000; // 1 seconde
+
+            // Effet d'attaque
+            addEffect('attack', enemy.x, enemy.y, 300);
+            playSound('villagerHarvest', 0.3);
+
+            // Vérifier si l'ennemi est mort
+            if (enemy.hp <= 0) {
+              const index = gameState.enemies.indexOf(enemy);
+              if (index !== -1) {
+                gameState.enemies.splice(index, 1);
+                addEffect('enemyDeath', enemy.x, enemy.y, 500);
+                playSound('enemyDeath', 0.5);
+              }
             }
-            
-            // Vérifier si assez d'argent
-            if (GAME.money < weapon.cost) {
-                showNotification("Pas assez d'argent !");
-                return false;
+          }
+          break;
+        }
+      }
+    }
+
+    // Mettre à jour le temps de recharge d'attaque
+    if (villager.attackCooldown > 0) {
+      villager.attackCooldown -= gameState.deltaTime;
+    }
+  }
+
+  // Mise à jour des soldats, archers et chevaliers de façon similaire
+  updateCombatUnits(gameState.units.soldiers, 'soldier');
+  updateCombatUnits(gameState.units.archers, 'archer');
+  updateCombatUnits(gameState.units.knights, 'knight');
+}
+
+function updateCombatUnits(units, unitType) {
+  for (const unit of units) {
+    // Animation
+    unit.animationTime += gameState.deltaTime;
+    if (unit.animationTime > 200) {
+      unit.animationTime = 0;
+      unit.animationFrame = (unit.animationFrame + 1) % 4;
+    }
+
+    // Déplacement
+    if (unit.x !== unit.targetX || unit.y !== unit.targetY) {
+      unit.isMoving = true;
+
+      const dx = unit.targetX - unit.x;
+      const dy = unit.targetY - unit.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Déterminer la direction du mouvement pour l'animation
+      if (Math.abs(dx) > Math.abs(dy)) {
+        unit.direction = dx > 0 ? 'right' : 'left';
+      } else {
+        unit.direction = dy > 0 ? 'down' : 'up';
+      }
+
+      if (dist < unit.speed) {
+        unit.x = unit.targetX;
+        unit.y = unit.targetY;
+        unit.isMoving = false;
+      } else {
+        unit.x += (dx / dist) * unit.speed;
+        unit.y += (dy / dist) * unit.speed;
+      }
+    } else {
+      unit.isMoving = false;
+    }
+
+    // Attaque automatique des ennemis à proximité
+    if (gameState.enemies.length > 0) {
+      let closestEnemy = null;
+      let closestDist = unitType === 'archer' ? unit.range : 1.5;
+
+      for (const enemy of gameState.enemies) {
+        const dist = distance(unit.x, unit.y, enemy.x, enemy.y);
+        if (dist < closestDist) {
+          closestEnemy = enemy;
+          closestDist = dist;
+        }
+      }
+
+      if (closestEnemy) {
+        // Orienter l'unité vers l'ennemi
+        const dx = closestEnemy.x - unit.x;
+        const dy = closestEnemy.y - unit.y;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          unit.direction = dx > 0 ? 'right' : 'left';
+        } else {
+          unit.direction = dy > 0 ? 'down' : 'up';
+        }
+
+        // Attaquer si le temps de recharge est écoulé
+        if (unit.attackCooldown <= 0) {
+          // Déterminer les dégâts selon le type d'unité
+          let damage = 0;
+          switch (unitType) {
+            case 'soldier': damage = config.soldierDamage; break;
+            case 'archer': damage = config.archerDamage; break;
+            case 'knight': damage = config.knightDamage; break;
+          }
+
+          // Infliger des dégâts
+          closestEnemy.hp -= Math.max(1, damage - closestEnemy.defense);
+
+          // Réinitialiser le temps de recharge
+          unit.attackCooldown = unitType === 'archer' ? 1500 : 1000;
+
+          // Effet d'attaque
+          addEffect('attack', closestEnemy.x, closestEnemy.y, 300);
+          playSound('soldierAttack', 0.3);
+
+          // Vérifier si l'ennemi est mort
+          if (closestEnemy.hp <= 0) {
+            const index = gameState.enemies.indexOf(closestEnemy);
+            if (index !== -1) {
+              gameState.enemies.splice(index, 1);
+              addEffect('enemyDeath', closestEnemy.x, closestEnemy.y, 500);
+              playSound('enemyDeath', 0.5);
             }
-            
-            // Acheter l'arme
-            GAME.money -= weapon.cost;
-            weapon.owned = true;
-            GAME.currentWeapon = weaponName;
-            
-            // Mettre à jour l'affichage
-            updateMoneyDisplay();
-            updateShopDisplay();
-            updateWeaponDisplay();
-            
-            showNotification(`Arme ${weaponName.toUpperCase()} acquise !`);
-            return true;
+          }
         }
-        
-        // Mise à jour de l'affichage des armes
-        function updateWeaponDisplay() {
-            // Supprimer toutes les classes d'armes
-            survivor.classList.remove('gun-pistol', 'gun-smg', 'gun-rifle', 'gun-sniper');
-            
-            // Ajouter la classe pour l'arme actuelle
-            survivor.classList.add(`gun-${GAME.currentWeapon}`);
+      }
+    }
+
+    // Mettre à jour le temps de recharge d'attaque
+    if (unit.attackCooldown > 0) {
+      unit.attackCooldown -= gameState.deltaTime;
+    }
+  }
+}
+
+function updateBuildings() {
+  for (const building of gameState.buildings) {
+    // Si le bâtiment est en construction, pas de production
+    if (building.isConstructing) continue;
+
+    // Production automatique selon le type de bâtiment
+    switch (building.type) {
+      case 'farm':
+        building.productionTimer += gameState.deltaTime;
+        if (building.productionTimer >= 5000) { // 5 secondes
+          gameState.resources.food += 2;
+          building.productionTimer = 0;
+          addResourceIndicator(building.x + building.width / 2, building.y + building.height / 2, 'food', 2);
+          updateUI();
         }
-        
-        // Mise à jour de l'affichage du magasin
-        function updateShopDisplay() {
-            // Mise à jour de la visée
-            const accuracyUpgrade = document.getElementById('accuracy-upgrade');
-            const accuracyLevel = GAME.upgrades.accuracy.level;
-            const accuracyMax = GAME.upgrades.accuracy.max;
-            const accuracyCost = GAME.upgrades.accuracy.cost;
-            
-            accuracyUpgrade.querySelector('.shop-item-cost').textContent = `$${accuracyCost}`;
-            accuracyUpgrade.querySelector('.level-fill').style.width = `${(accuracyLevel / accuracyMax) * 100}%`;
-            accuracyUpgrade.querySelector('.level-text').textContent = `${accuracyLevel}/${accuracyMax}`;
-            
-            if (accuracyLevel >= accuracyMax) {
-                accuracyUpgrade.classList.add('disabled');
-                accuracyUpgrade.querySelector('.shop-item-description').textContent = 'Précision maximale atteinte';
+        break;
+
+      case 'lumbermill':
+        building.productionTimer += gameState.deltaTime;
+        if (building.productionTimer >= 8000) { // 8 secondes
+          gameState.resources.wood += 1;
+          building.productionTimer = 0;
+          addResourceIndicator(building.x + building.width / 2, building.y + building.height / 2, 'wood', 1);
+          updateUI();
+        }
+        break;
+
+      case 'quarry':
+        building.productionTimer += gameState.deltaTime;
+        if (building.productionTimer >= 10000) { // 10 secondes
+          gameState.resources.stone += 1;
+          building.productionTimer = 0;
+          addResourceIndicator(building.x + building.width / 2, building.y + building.height / 2, 'stone', 1);
+          updateUI();
+        }
+        break;
+    }
+  }
+}
+
+function updateEnemies() {
+  for (let i = gameState.enemies.length - 1; i >= 0; i--) {
+    const enemy = gameState.enemies[i];
+
+    // Animation
+    enemy.animationTime += gameState.deltaTime;
+    if (enemy.animationTime > 200) {
+      enemy.animationTime = 0;
+      enemy.animationFrame = (enemy.animationFrame + 1) % 4;
+    }
+
+    // Trouver la cible la plus proche
+    let closestTarget = null;
+    let closestDist = Infinity;
+
+    // Vérifier les bâtiments d'abord
+    for (const building of gameState.buildings) {
+      if (building.isConstructing) continue; // Ignorer les bâtiments en construction
+
+      const bx = building.x + building.width / 2;
+      const by = building.y + building.height / 2;
+      const dist = distance(enemy.x, enemy.y, bx, by);
+
+      if (dist < closestDist) {
+        closestTarget = { type: 'building', obj: building, x: bx, y: by };
+        closestDist = dist;
+      }
+    }
+
+    // Ensuite vérifier toutes les unités
+    const allUnits = [
+      ...gameState.units.villagers,
+      ...gameState.units.soldiers,
+      ...gameState.units.archers,
+      ...gameState.units.knights
+    ];
+
+    for (const unit of allUnits) {
+      const dist = distance(enemy.x, enemy.y, unit.x, unit.y);
+      if (dist < closestDist) {
+        closestTarget = { type: 'unit', obj: unit, x: unit.x, y: unit.y };
+        closestDist = dist;
+      }
+    }
+
+    // Si une cible est trouvée
+    if (closestTarget) {
+      // Déplacement vers la cible
+      if (closestDist > enemy.range) {
+        enemy.isMoving = true;
+
+        // Calculer la direction vers la cible
+        const dx = closestTarget.x - enemy.x;
+        const dy = closestTarget.y - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        // Déterminer la direction du mouvement pour l'animation
+        if (Math.abs(dx) > Math.abs(dy)) {
+          enemy.direction = dx > 0 ? 'right' : 'left';
+        } else {
+          enemy.direction = dy > 0 ? 'down' : 'up';
+        }
+
+        // Déplacer l'ennemi
+        enemy.x += (dx / dist) * enemy.speed;
+        enemy.y += (dy / dist) * enemy.speed;
+      } else {
+        enemy.isMoving = false;
+
+        // Orienter l'ennemi vers la cible
+        const dx = closestTarget.x - enemy.x;
+        const dy = closestTarget.y - enemy.y;
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          enemy.direction = dx > 0 ? 'right' : 'left';
+        } else {
+          enemy.direction = dy > 0 ? 'down' : 'up';
+        }
+
+        // Attaquer si le temps de recharge est écoulé
+        if (enemy.attackCooldown <= 0) {
+          if (closestTarget.type === 'building') {
+            closestTarget.obj.hp -= Math.max(1, enemy.attack);
+
+            // Vérifier si le bâtiment est détruit
+            if (closestTarget.obj.hp <= 0) {
+              // Si c'est une maison, réduire la population maximale
+              if (closestTarget.obj.type === 'house') {
+                gameState.resources.maxPopulation -= closestTarget.obj.populationProvided;
+              }
+
+              const index = gameState.buildings.indexOf(closestTarget.obj);
+              if (index !== -1) {
+                gameState.buildings.splice(index, 1);
+                addEffect('buildingDestroy', closestTarget.x, closestTarget.y, 1000);
+                playSound('buildingDestroy', 0.6);
+              }
+
+              updateUI();
             }
-            
-            // Mise à jour de la cadence de tir
-            const fireRateUpgrade = document.getElementById('fire-rate-upgrade');
-            const fireRateLevel = GAME.upgrades.fireRate.level;
-            const fireRateMax = GAME.upgrades.fireRate.max;
-            const fireRateCost = GAME.upgrades.fireRate.cost;
-            
-            fireRateUpgrade.querySelector('.shop-item-cost').textContent = `$${fireRateCost}`;
-            fireRateUpgrade.querySelector('.level-fill').style.width = `${(fireRateLevel / fireRateMax) * 100}%`;
-            fireRateUpgrade.querySelector('.level-text').textContent = `${fireRateLevel}/${fireRateMax}`;
-            
-            if (fireRateLevel >= fireRateMax) {
-                fireRateUpgrade.classList.add('disabled');
-                fireRateUpgrade.querySelector('.shop-item-description').textContent = 'Cadence maximale atteinte';
+          } else {
+            closestTarget.obj.hp -= Math.max(1, enemy.attack - closestTarget.obj.defense);
+
+            // Vérifier si l'unité est morte
+            if (closestTarget.obj.hp <= 0) {
+              let unitArray;
+              switch (closestTarget.obj.type) {
+                case 'villager': unitArray = gameState.units.villagers; break;
+                case 'soldier': unitArray = gameState.units.soldiers; break;
+                case 'archer': unitArray = gameState.units.archers; break;
+                case 'knight': unitArray = gameState.units.knights; break;
+              }
+
+              const index = unitArray.indexOf(closestTarget.obj);
+              if (index !== -1) {
+                unitArray.splice(index, 1);
+                gameState.resources.population--;
+                addEffect('unitDeath', closestTarget.x, closestTarget.y, 500);
+                updateUI();
+              }
             }
-            
-            // Mise à jour des armes
-            ['smg', 'rifle', 'sniper'].forEach(weapon => {
-                const weaponUpgrade = document.getElementById(`${weapon}-upgrade`);
-                const weaponObj = GAME.weapons[weapon];
-                
-                if (weaponObj.owned) {
-                    weaponUpgrade.classList.add('disabled');
-                    weaponUpgrade.querySelector('.level-fill').style.width = '100%';
-                    weaponUpgrade.querySelector('.level-text').textContent = 'Acquis';
-                    weaponUpgrade.querySelector('.shop-item-cost').textContent = 'Acquis';
-                } else {
-                    weaponUpgrade.querySelector('.shop-item-cost').textContent = `$${weaponObj.cost}`;
-                    weaponUpgrade.classList.remove('disabled');
-                    
-                    // Afficher "disponible" si on a assez d'argent
-                    if (GAME.money >= weaponObj.cost) {
-                        weaponUpgrade.querySelector('.level-text').textContent = 'Disponible';
-                        weaponUpgrade.querySelector('.level-fill').style.width = '50%';
-                    } else {
-                        weaponUpgrade.querySelector('.level-text').textContent = 'Non acquis';
-                        weaponUpgrade.querySelector('.level-fill').style.width = '0%';
-                    }
-                }
-            });
+          }
+
+          // Réinitialiser le temps de recharge
+          enemy.attackCooldown = 1000;
+
+          // Effet d'attaque
+          addEffect('enemyAttack', closestTarget.x, closestTarget.y, 300);
         }
-        
-        // Création de zombies
-        function createZombie() {
-            const zombie = document.createElement('div');
-            zombie.className = 'zombie';
-            
-            const zombieHead = document.createElement('div');
-            zombieHead.className = 'zombie-head';
-            
-            const zombieBody = document.createElement('div');
-            zombieBody.className = 'zombie-body';
-            
-            const zombieArmLeft = document.createElement('div');
-            zombieArmLeft.className = 'zombie-arm zombie-arm-left';
-            
-            const zombieArmRight = document.createElement('div');
-            zombieArmRight.className = 'zombie-arm zombie-arm-right';
-            
-            zombie.appendChild(zombieHead);
-            zombie.appendChild(zombieBody);
-            zombie.appendChild(zombieArmLeft);
-            zombie.appendChild(zombieArmRight);
-            
-            // Vitesse aléatoire basée sur la difficulté
-            const speedVariation = Math.random() * 2 - 1; // -1 à +1
-            const baseSpeed = GAME.zombieSpeed - (GAME.difficultyLevel * 0.5); // Plus rapide avec la difficulté
-            const speed = Math.max(5, baseSpeed + speedVariation);
-            
-            zombie.style.animationDuration = speed + 's';
-            
-            // Positionnement aléatoire vertical (légèrement)
-            const verticalPosition = Math.random() * 10 - 5; // -5 à +5
-            zombie.style.bottom = (40 + verticalPosition) + 'px';
-            
-            // Ajouter à la scène
-            gameScene.appendChild(zombie);
-            
-            // Enregistrer le zombie
-            zombies.push(zombie);
-            
-            // Supprimer le zombie une fois qu'il a traversé l'écran
-            setTimeout(() => {
-                if (zombie.parentNode) {
-                    zombie.parentNode.removeChild(zombie);
-                }
-                zombies = zombies.filter(z => z !== zombie);
-            }, speed * 1000);
+      }
+    } else {
+      // Pas de cible, se déplacer aléatoirement
+      if (Math.random() < 0.01) {
+        enemy.targetX = Math.max(0, Math.min(config.mapWidth - 1, enemy.x + (Math.random() * 10 - 5)));
+        enemy.targetY = Math.max(0, Math.min(config.mapHeight - 1, enemy.y + (Math.random() * 10 - 5)));
+      }
+
+      if (enemy.x !== enemy.targetX || enemy.y !== enemy.targetY) {
+        enemy.isMoving = true;
+
+        const dx = enemy.targetX - enemy.x;
+        const dy = enemy.targetY - enemy.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (Math.abs(dx) > Math.abs(dy)) {
+          enemy.direction = dx > 0 ? 'right' : 'left';
+        } else {
+          enemy.direction = dy > 0 ? 'down' : 'up';
         }
-        
-        // Gestion des vagues de zombies
-        function startZombieWave() {
-            // Afficher la vague actuelle
-            waveDisplay.textContent = GAME.waveNumber;
-            
-            // Réinitialiser le compteur de zombies tués
-            GAME.zombiesKilled = 0;
-            
-            // Créer des zombies à intervalle régulier
-            const interval = setInterval(() => {
-                createZombie();
-                
-                // Arrêter de créer des zombies si on a atteint le nombre requis pour cette vague
-                if (GAME.zombiesKilled >= GAME.zombiesRequired) {
-                    clearInterval(interval);
-                    
-                    // Passer à la vague suivante après un délai
-                    setTimeout(() => {
-                        GAME.waveNumber++;
-                        // Augmenter la difficulté tous les 3 vagues
-                        if (GAME.waveNumber % 3 === 0) {
-                            GAME.difficultyLevel++;
-                            difficultyDisplay.textContent = `Niveau ${GAME.difficultyLevel}`;
-                            showNotification(`Difficulté augmentée : Niveau ${GAME.difficultyLevel}`, 5000);
-                        }
-                        
-                        // Augmenter le nombre de zombies requis pour la prochaine vague
-                        GAME.zombiesRequired = Math.floor(GAME.zombiesRequired * 1.2);
-                        
-                        // Réduire l'intervalle entre les zombies
-                        GAME.zombieInterval = Math.max(500, GAME.zombieInterval - 200);
-                        
-                        // Lancer la vague suivante
-                        startZombieWave();
-                    }, 3000);
-                }
-            }, GAME.zombieInterval / GAME.difficultyLevel);
+
+        if (dist < enemy.speed) {
+          enemy.x = enemy.targetX;
+          enemy.y = enemy.targetY;
+          enemy.isMoving = false;
+        } else {
+          enemy.x += (dx / dist) * enemy.speed;
+          enemy.y += (dy / dist) * enemy.speed;
         }
-        
-        // Tirer
-        function shoot(event) {
-            // Vérifier si on peut tirer (cooldown)
-            if (!GAME.canShoot) return;
-            
-            // Calculer la cadence de tir réelle basée sur l'arme et les améliorations
-            const baseFireRate = GAME.upgrades.fireRate.cooldown;
-            const weaponBonus = GAME.weapons[GAME.currentWeapon].fireRateBonus || 1;
-            const fireRateLevel = GAME.upgrades.fireRate.level;
-            
-            // Réduction du cooldown basée sur le niveau de cadence de tir et le bonus d'arme
-            const actualCooldown = baseFireRate / (weaponBonus * (0.5 + (fireRateLevel * 0.1)));
-            
-            // Empêcher de tirer trop rapidement
-            GAME.canShoot = false;
-            setTimeout(() => { GAME.canShoot = true; }, actualCooldown);
-            
-            // Ajouter la classe pour l'animation de recul
-            survivor.classList.add('shooting');
-            setTimeout(() => {
-                survivor.classList.remove('shooting');
-            }, 300);
-            
-            // Créer un effet de flash
-            const muzzleFlash = document.querySelector('.muzzle-flash');
-            muzzleFlash.style.top = '-2px';
-            muzzleFlash.style.left = '25px';
-            muzzleFlash.classList.add('active');
-            setTimeout(() => {
-                muzzleFlash.classList.remove('active');
-            }, 200);
-            
-            // Obtenir les coordonnées du clic
-            const sceneRect = gameScene.getBoundingClientRect();
-            const clickX = event.clientX - sceneRect.left;
-            const clickY = event.clientY - sceneRect.top;
-            
-            // Créer une balle
-            const bullet = document.createElement('div');
-            bullet.className = 'bullet';
-            
-            // Position de départ de la balle (bout du fusil)
-            const gunEnd = survivor.querySelector('.survivor-gun');
-            const gunRect = gunEnd.getBoundingClientRect();
-            
-            bullet.style.top = (gunRect.top - sceneRect.top + gunRect.height/2 - 1) + 'px';
-            bullet.style.left = (gunRect.right - sceneRect.left) + 'px';
-            
-            // Ajouter une déviation aléatoire basée sur la précision
-            const accuracyLevel = GAME.upgrades.accuracy.level;
-            const maxAccuracy = GAME.upgrades.accuracy.max;
-            const accuracyRatio = accuracyLevel / maxAccuracy;
-            
-            // Déviation verticale (inversement proportionnelle à la précision)
-            const maxDeviation = 30; // pixels maximum de déviation à précision minimale
-            const deviation = maxDeviation * (1 - accuracyRatio);
-            const randomDeviation = (Math.random() * deviation * 2 - deviation);
-            
-            // Appliquer la déviation
-            const newTop = parseFloat(bullet.style.top) + randomDeviation;
-            bullet.style.top = newTop + 'px';
-            
-            gameScene.appendChild(bullet);
-            bullets.push(bullet);
-            
-            // Supprimer la balle après l'animation
-            setTimeout(() => {
-                if (bullet.parentNode) {
-                    bullet.parentNode.removeChild(bullet);
-                }
-                bullets = bullets.filter(b => b !== bullet);
-            }, 500);
-            
-            // Vérifier les collisions après un court délai
-            setTimeout(checkCollisions, 100);
+      } else {
+        enemy.isMoving = false;
+      }
+    }
+
+    // Mettre à jour le temps de recharge d'attaque
+    if (enemy.attackCooldown > 0) {
+      enemy.attackCooldown -= gameState.deltaTime;
+    }
+  }
+}
+
+function addResourceIndicator(x, y, type, amount) {
+  // Créer un élément div pour l'indicateur
+  const indicator = document.createElement('div');
+  indicator.className = 'resource-indicator';
+
+  // Définir le contenu selon le type de ressource
+  let icon;
+  switch (type) {
+    case 'food': icon = '🌾'; break;
+    case 'wood': icon = '🪵'; break;
+    case 'stone': icon = '⛏️'; break;
+    default: icon = '+';
+  }
+
+  indicator.textContent = `${icon} +${amount}`;
+
+  // Positionner l'indicateur
+  const screenX = Math.floor((x * config.tileSize) - gameState.camera.x);
+  const screenY = Math.floor((y * config.tileSize) - gameState.camera.y);
+
+  indicator.style.left = `${screenX}px`;
+  indicator.style.top = `${screenY}px`;
+
+  // Ajouter l'indicateur au DOM
+  document.getElementById('ui-overlay').appendChild(indicator);
+
+  // Supprimer l'indicateur après l'animation
+  setTimeout(() => {
+    indicator.remove();
+  }, 1500);
+}
+
+function collectAutomaticResources() {
+  // Cette fonction gère les ressources générées automatiquement par certains bâtiments
+  // La logique est déjà implémentée dans updateBuildings
+}
+
+function updateAnimations() {
+  // Cette fonction met à jour les frames d'animation pour les unités et effets
+  // La logique est déjà implémentée dans les fonctions respectives
+}
+
+// Dessiner le jeu
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Dessiner la carte
+  drawMap();
+
+  // Dessiner les bâtiments
+  drawBuildings();
+
+  // Dessiner les unités
+  drawUnits();
+
+  // Dessiner les ennemis
+  drawEnemies();
+
+  // Dessiner les effets
+  drawEffects();
+
+  // Dessiner l'interface utilisateur
+  drawUI();
+
+  // Dessiner la mini-carte
+  drawMinimap();
+}
+
+function drawMap() {
+  const tileSize = config.tileSize;
+
+  // Calculer la zone visible
+  const startX = Math.floor(gameState.camera.x / tileSize);
+  const startY = Math.floor(gameState.camera.y / tileSize);
+  const endX = Math.min(config.mapWidth, startX + Math.ceil(canvas.width / tileSize) + 1);
+  const endY = Math.min(config.mapHeight, startY + Math.ceil(canvas.height / tileSize) + 1);
+
+  // Dessiner le terrain
+  for (let y = startY; y < endY; y++) {
+    for (let x = startX; x < endX; x++) {
+      // Si en dehors de la carte, continuer
+      if (y >= gameState.map.length || x >= gameState.map[y].length) continue;
+
+      const screenX = x * tileSize - gameState.camera.x;
+      const screenY = y * tileSize - gameState.camera.y;
+
+      // Obtenir le type de terrain
+      const tile = gameState.map[y][x];
+
+      // Définir la couleur selon le type
+      switch (tile) {
+        case 'grass':
+          ctx.fillStyle = (x + y) % 2 === 0 ? '#3a5' : '#294';
+          break;
+        case 'water':
+          ctx.fillStyle = '#39f';
+          break;
+        case 'sand':
+          ctx.fillStyle = '#da3';
+          break;
+        case 'stone':
+          ctx.fillStyle = '#777';
+          break;
+        case 'mountain':
+          ctx.fillStyle = '#961';
+          break;
+        default:
+          ctx.fillStyle = '#3a5';
+      }
+
+      // Dessiner la tuile
+      ctx.fillRect(screenX, screenY, tileSize, tileSize);
+
+      // Dessiner les ressources à cette position
+      const tree = gameState.trees.find(t => t.x === x && t.y === y && t.resources > 0);
+      if (tree) {
+        ctx.fillStyle = '#063';
+        ctx.beginPath();
+        ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const stone = gameState.stones.find(s => s.x === x && s.y === y && s.resources > 0);
+      if (stone) {
+        ctx.fillStyle = '#999';
+        ctx.fillRect(screenX + tileSize / 4, screenY + tileSize / 4, tileSize / 2, tileSize / 2);
+      }
+
+      const berry = gameState.berries.find(b => b.x === x && b.y === y && b.resources > 0);
+      if (berry) {
+        ctx.fillStyle = '#e44';
+        ctx.beginPath();
+        ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+}
+
+function drawBuildings() {
+  const tileSize = config.tileSize;
+
+  for (const building of gameState.buildings) {
+    const screenX = Math.floor(building.x * tileSize - gameState.camera.x);
+    const screenY = Math.floor(building.y * tileSize - gameState.camera.y);
+    const width = building.width * tileSize;
+    const height = building.height * tileSize;
+
+    // Si hors écran, ne pas dessiner
+    if (screenX + width < 0 || screenX > canvas.width ||
+        screenY + height < 0 || screenY > canvas.height) {
+      continue;
+    }
+
+    // Couleur selon le type de bâtiment
+    let color;
+    switch(building.type) {
+      case 'house': color = '#b94'; break;
+      case 'farm': color = '#b80'; break;
+      case 'lumbermill': color = '#851'; break;
+      case 'barracks': color = '#755'; break;
+      default: color = '#aaa';
+    }
+
+    // Construction en cours
+    if (building.isConstructing) {
+      ctx.globalAlpha = 0.5 + (building.constructionProgress / 200);
+      ctx.fillStyle = color;
+      ctx.fillRect(screenX, screenY, width, height);
+
+      // Bordure
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screenX, screenY, width, height);
+
+      // Barre de progression
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(screenX, screenY + height - 8, width, 8);
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.7)';
+      ctx.fillRect(screenX, screenY + height - 8, width * (building.constructionProgress / 100), 8);
+
+      ctx.globalAlpha = 1.0;
+    } else {
+      // Bâtiment terminé
+      ctx.fillStyle = color;
+      ctx.fillRect(screenX, screenY, width, height);
+
+      // Bordure
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(screenX, screenY, width, height);
+
+      // Symbole du bâtiment
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      let symbol = '';
+      switch(building.type) {
+        case 'house': symbol = '🏠'; break;
+        case 'farm': symbol = '🌾'; break;
+        case 'lumbermill': symbol = '🪓'; break;
+        case 'barracks': symbol = '⚔️'; break;
+      }
+
+      ctx.fillText(symbol, screenX + width / 2, screenY + height / 2);
+    }
+
+    // Barre de vie
+    const healthPercentage = building.hp / building.maxHp;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(screenX + 2, screenY + height + 2, width - 4, 6);
+    ctx.fillStyle = healthPercentage > 0.6 ? 'rgba(0, 255, 0, 0.7)' :
+                   healthPercentage > 0.3 ? 'rgba(255, 255, 0, 0.7)' :
+                   'rgba(255, 0, 0, 0.7)';
+    ctx.fillRect(screenX + 2, screenY + height + 2, (width - 4) * healthPercentage, 6);
+  }
+}
+
+function drawUnitType(units, type) {
+  const tileSize = config.tileSize;
+
+  for (const unit of units) {
+    const screenX = Math.floor(unit.x * tileSize - gameState.camera.x);
+    const screenY = Math.floor(unit.y * tileSize - gameState.camera.y);
+
+    // Si hors écran, ne pas dessiner
+    if (screenX + tileSize < 0 || screenX > canvas.width ||
+        screenY + tileSize < 0 || screenY > canvas.height) {
+      continue;
+    }
+
+    // Dessiner selon le type d'unité
+    if (type === 'villager') {
+      // Villageois (cercle)
+      ctx.fillStyle = unit.selected ? '#6cf' : '#fff';
+      ctx.beginPath();
+      ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 3, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      // Soldat (carré)
+      ctx.fillStyle = unit.selected ? '#6cf' : '#ccc';
+      ctx.fillRect(screenX + 6, screenY + 6, tileSize - 12, tileSize - 12);
+    }
+
+    // Barre de vie
+    const healthPercentage = unit.hp / unit.maxHp;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(screenX + 5, screenY - 8, tileSize - 10, 4);
+    ctx.fillStyle = healthPercentage > 0.6 ? 'rgba(0, 255, 0, 0.7)' :
+                   healthPercentage > 0.3 ? 'rgba(255, 255, 0, 0.7)' :
+                   'rgba(255, 0, 0, 0.7)';
+    ctx.fillRect(screenX + 5, screenY - 8, (tileSize - 10) * healthPercentage, 4);
+
+    // Cercle de sélection
+    if (unit.selected) {
+      ctx.strokeStyle = '#6cf';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(screenX + tileSize / 2, screenY + tileSize / 2, tileSize / 2, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+
+    // Icône de tâche
+    if (unit.task) {
+      ctx.fillStyle = '#fff';
+      ctx.textAlign = 'center';
+      let icon = '';
+      switch(unit.task) {
+        case 'gather': icon = '⛏️'; break;
+        case 'build': icon = '🔨'; break;
+        case 'attack': icon = '⚔️'; break;
+      }
+      ctx.fillText(icon, screenX + tileSize / 2, screenY - 12);
+    }
+  }
+}
+
+function drawEnemies() {
+  const tileSize = config.tileSize;
+
+  for (const enemy of gameState.enemies) {
+    const screenX = Math.floor(enemy.x * tileSize - gameState.camera.x);
+    const screenY = Math.floor(enemy.y * tileSize - gameState.camera.y);
+
+    // Vérifier si l'ennemi est dans la zone visible
+    if (screenX + tileSize < 0 || screenX > canvas.width ||
+        screenY + tileSize < 0 || screenY > canvas.height) {
+      continue;
+    }
+
+    // Vérifier si l'ennemi est visible (brouillard de guerre)
+    const enemyX = Math.floor(enemy.x);
+    const enemyY = Math.floor(enemy.y);
+
+    if (config.fogOfWarEnabled &&
+        (enemyY < 0 || enemyY >= config.mapHeight ||
+         enemyX < 0 || enemyX >= config.mapWidth ||
+         gameState.revealedMap[enemyY][enemyX] === 0)) {
+      continue;
+    }
+
+    // Dessiner l'ennemi
+    const enemyImage = resourceCache.images.enemy;
+    ctx.drawImage(enemyImage, screenX, screenY, tileSize, tileSize);
+
+    // Dessiner la barre de vie
+    const healthBarWidth = tileSize - 10;
+    const healthPercentage = enemy.hp / enemy.maxHp;
+
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    ctx.fillRect(screenX + 5, screenY - 10, healthBarWidth, 5);
+
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+    ctx.fillRect(screenX + 5, screenY - 10, healthBarWidth * healthPercentage, 5);
+
+    // Si l'ennemi est visible mais en brouillard de guerre exploré
+    if (config.fogOfWarEnabled && gameState.revealedMap[enemyY][enemyX] === 1) {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(screenX, screenY, tileSize, tileSize);
+    }
+  }
+}
+
+function drawEffects() {
+  const tileSize = config.tileSize;
+
+  for (const effect of gameState.effectsQueue) {
+    const screenX = Math.floor(effect.x * tileSize - gameState.camera.x);
+    const screenY = Math.floor(effect.y * tileSize - gameState.camera.y);
+
+    // Vérifier si l'effet est dans la zone visible
+    if (screenX + tileSize < 0 || screenX > canvas.width ||
+        screenY + tileSize < 0 || screenY > canvas.height) {
+      continue;
+    }
+
+    // Calculer la progression de l'effet
+    const progress = (gameState.gameTime - effect.startTime) / effect.duration;
+
+    // Dessiner l'effet selon son type
+    switch (effect.type) {
+      case 'spawn':
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.beginPath();
+        ctx.arc(
+          screenX + tileSize / 2,
+          screenY + tileSize / 2,
+          tileSize * progress,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        break;
+
+      case 'enemySpawn':
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.arc(
+          screenX + tileSize / 2,
+          screenY + tileSize / 2,
+          tileSize * progress,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        break;
+
+      case 'attack':
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = 'rgba(255, 255, 0, 0.6)';
+        ctx.beginPath();
+        ctx.arc(
+          screenX + tileSize / 2,
+          screenY + tileSize / 2,
+          tileSize / 3 * progress,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        break;
+
+      case 'enemyAttack':
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.6)';
+        ctx.beginPath();
+        ctx.arc(
+          screenX + tileSize / 2,
+          screenY + tileSize / 2,
+          tileSize / 3 * progress,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        break;
+
+      case 'enemyDeath':
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+        ctx.beginPath();
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2;
+          const distance = tileSize * progress;
+          const particleX = screenX + tileSize / 2 + Math.cos(angle) * distance;
+          const particleY = screenY + tileSize / 2 + Math.sin(angle) * distance;
+          ctx.moveTo(screenX + tileSize / 2, screenY + tileSize / 2);
+          ctx.lineTo(particleX, particleY);
         }
-        
-        // Gérer le mouvement du viseur
-        function updateCrosshair(event) {
-            const sceneRect = gameScene.getBoundingClientRect();
-            const x = event.clientX - sceneRect.left;
-            const y = event.clientY - sceneRect.top;
-            
-            // Taille du viseur basée sur la précision
-            const accuracyLevel = GAME.upgrades.accuracy.level;
-            const maxAccuracy = GAME.upgrades.accuracy.max;
-            const accuracyRatio = accuracyLevel / maxAccuracy;
-            
-            const minSize = 10; // Taille minimale à précision maximale
-            const maxSize = 40; // Taille maximale à précision minimale
-            const size = maxSize - ((maxSize - minSize) * accuracyRatio);
-            
-            crosshair.style.width = size + 'px';
-            crosshair.style.height = size + 'px';
-            crosshair.style.left = (x - size/2) + 'px';
-            crosshair.style.top = (y - size/2) + 'px';
-            crosshair.style.display = 'block';
+        ctx.stroke();
+        ctx.globalAlpha = 1.0;
+        break;
+
+      case 'construction':
+        const constructionImage = resourceCache.images.constructionEffect;
+        ctx.globalAlpha = 0.7;
+        ctx.drawImage(
+          constructionImage,
+          screenX,
+          screenY,
+          tileSize,
+          tileSize
+        );
+        ctx.globalAlpha = 1.0;
+        break;
+
+      case 'constructionComplete':
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
+        ctx.beginPath();
+        ctx.arc(
+          screenX + tileSize / 2,
+          screenY + tileSize / 2,
+          tileSize * 2 * progress,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        ctx.globalAlpha = 1.0;
+        break;
+
+      case 'treeDestruction':
+        ctx.globalAlpha = 1 - progress;
+        ctx.fillStyle = 'rgba(139, 69, 19, 0.6)';
+        for (let i = 0; i < 5; i++) {
+          const angle = (i / 5) * Math.PI * 2 + progress * Math.PI;
+          const distanceX = (Math.random() * 10 + 10) * progress;
+          const distanceY = (Math.random() * 5 + 15) * progress;
+          const particleX = screenX + tileSize / 2 + Math.cos(angle) * distanceX;
+          const particleY = screenY + tileSize / 2 - distanceY;
+          ctx.fillRect(particleX, particleY, 3, 3);
         }
-        
-        // Masquer le viseur quand la souris quitte la zone de jeu
-        function hideCrosshair() {
-            crosshair.style.display = 'none';
+        ctx.globalAlpha = 1.0;
+        break;
+    }
+  }
+}
+
+function drawUI() {
+  // Dessiner la boîte de sélection
+  if (gameState.selectionBox) {
+    const { startX, startY, endX, endY } = gameState.selectionBox;
+    const boxX = Math.min(startX, endX);
+    const boxY = Math.min(startY, endY);
+    const boxWidth = Math.abs(endX - startX);
+    const boxHeight = Math.abs(endY - startY);
+
+    ctx.strokeStyle = 'rgba(100, 200, 255, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+    ctx.fillStyle = 'rgba(100, 200, 255, 0.1)';
+    ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+  }
+
+  // Dessiner le mode construction (aperçu du bâtiment)
+  if (gameState.buildMode) {
+    const tileSize = config.tileSize;
+    const mouseX = Math.floor((lastMouseX + gameState.camera.x) / tileSize);
+    const mouseY = Math.floor((lastMouseY + gameState.camera.y) / tileSize);
+    const screenX = Math.floor(mouseX * tileSize - gameState.camera.x);
+    const screenY = Math.floor(mouseY * tileSize - gameState.camera.y);
+    const width = gameState.buildMode.width * tileSize;
+    const height = gameState.buildMode.height * tileSize;
+
+    // Vérifier si l'emplacement est valide
+    let isValid = true;
+    for (let dy = 0; dy < gameState.buildMode.height; dy++) {
+      for (let dx = 0; dx < gameState.buildMode.width; dx++) {
+        if (mouseX + dx >= config.mapWidth || mouseY + dy >= config.mapHeight) {
+          isValid = false;
+          break;
         }
-        
-        // Vérifier les collisions balle-zombie
-        function checkCollisions() {
-            bullets.forEach(bullet => {
-                const bulletRect = bullet.getBoundingClientRect();
-                
-                zombies.forEach(zombie => {
-                    if (zombie.classList.contains('hit')) return;
-                    
-                    const zombieRect = zombie.getBoundingClientRect();
-                    
-                    // Vérifier la collision
-                    if (
-                        bulletRect.right >= zombieRect.left &&
-                        bulletRect.left <= zombieRect.right &&
-                        bulletRect.bottom >= zombieRect.top &&
-                        bulletRect.top <= zombieRect.bottom
-                    ) {
-                        // Marquer le zombie comme touché
-                        zombie.classList.add('hit');
-                        
-                        // Créer un effet de sang
-                        const blood = document.createElement('div');
-                        blood.className = 'blood-splatter';
-                        blood.style.left = (zombieRect.left + zombieRect.width/2 - 15) + 'px';
-                        blood.style.top = (zombieRect.top + zombieRect.height/3 - 15) + 'px';
-                        document.body.appendChild(blood);
-                        
-                        // Supprimer l'effet de sang après l'animation
-                        setTimeout(() => {
-                            if (blood.parentNode) {
-                                blood.parentNode.removeChild(blood);
-                            }
-                        }, 500);
-                        
-                        // Calculer la récompense basée sur la difficulté
-                        const reward = 30 * GAME.difficultyLevel;
-                        GAME.money += reward;
-                        updateMoneyDisplay();
-                        updateShopDisplay();
-                        
-                        // Personnaliser le message de récompense
-                        zombie.style.setProperty('--reward', `"+$${reward}"`);
-                        
-                        // Incrémenter le compteur de zombies tués
-                        GAME.zombiesKilled++;
-                        
-                        // Supprimer le zombie après un délai
-                        setTimeout(() => {
-                            if (zombie.parentNode) {
-                                zombie.parentNode.removeChild(zombie);
-                            }
-                            zombies = zombies.filter(z => z !== zombie);
-                        }, 1000);
-                    }
-                });
-            });
+
+        // Vérifier les obstacles
+        if (mouseY + dy < config.mapHeight && mouseX + dx < config.mapWidth) {
+          const tile = gameState.map[mouseY + dy][mouseX + dx];
+          if (tile === 'water' || tile === 'mountain') {
+            isValid = false;
+            break;
+          }
+
+          // Vérifier les ressources
+          if (getResourceAt(mouseX + dx, mouseY + dy)) {
+            isValid = false;
+            break;
+          }
+
+          // Vérifier les autres bâtiments
+          if (gameState.buildings.some(b =>
+            mouseX + dx >= b.x && mouseX + dx < b.x + b.width &&
+            mouseY + dy >= b.y && mouseY + dy < b.y + b.height)) {
+            isValid = false;
+            break;
+          }
+        } else {
+          isValid = false;
         }
-        
-        // Compte à rebours
-        function updateCountdown() {
-            // Date de fin (à personnaliser selon vos besoins)
-            const endDate = new Date();
-            endDate.setHours(endDate.getHours() + 2); // Dans 2 heures par exemple
-            
-            // Mettre à jour le compte à rebours toutes les secondes
-            const interval = setInterval(function() {
-                const now = new Date().getTime();
-                const distance = endDate - now;
-                
-                // Calculs pour les heures, minutes et secondes
-                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                
-                // Afficher le résultat
-                document.getElementById("countdown").innerHTML = 
-                    hours.toString().padStart(2, '0') + ":" +
-                    minutes.toString().padStart(2, '0') + ":" +
-                    seconds.toString().padStart(2, '0');
-                
-                // Si le compte à rebours est terminé
-                if (distance < 0) {
-                    clearInterval(interval);
-                    document.getElementById("countdown").innerHTML = "DISPONIBLE BIENTÔT";
-                }
-            }, 1000);
+      }
+    }
+
+    // Dessiner l'aperçu du bâtiment
+    ctx.globalAlpha = 0.7;
+    let buildingImage = null;
+
+    switch (gameState.buildMode.type) {
+      case 'house': buildingImage = resourceCache.images.house; break;
+      case 'farm': buildingImage = resourceCache.images.farm; break;
+      case 'lumbermill': buildingImage = resourceCache.images.lumbermill; break;
+      case 'quarry': buildingImage = resourceCache.images.quarry; break;
+      case 'barracks': buildingImage = resourceCache.images.barracks; break;
+      case 'archery': buildingImage = resourceCache.images.archery; break;
+      case 'towncenter': buildingImage = resourceCache.images.towncenter; break;
+    }
+
+    if (buildingImage) {
+      ctx.drawImage(buildingImage, screenX, screenY, width, height);
+    }
+
+    // Dessiner un rectangle coloré pour indiquer la validité
+    ctx.fillStyle = isValid ? 'rgba(0, 255, 0, 0.3)' : 'rgba(255, 0, 0, 0.3)';
+    ctx.fillRect(screenX, screenY, width, height);
+
+    ctx.strokeStyle = isValid ? 'rgba(0, 255, 0, 0.8)' : 'rgba(255, 0, 0, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(screenX, screenY, width, height);
+    ctx.globalAlpha = 1.0;
+  }
+}
+
+function drawMinimap() {
+  minimapCtx.clearRect(0, 0, minimap.width, minimap.height);
+
+  // Dessiner le fond
+  minimapCtx.fillStyle = '#000';
+  minimapCtx.fillRect(0, 0, minimap.width, minimap.height);
+
+  // Calculer l'échelle
+  const scaleX = minimap.width / (config.mapWidth * config.tileSize);
+  const scaleY = minimap.height / (config.mapHeight * config.tileSize);
+
+  // Dessiner la carte
+  for (let y = 0; y < config.mapHeight; y++) {
+    for (let x = 0; x < config.mapWidth; x++) {
+      // Vérifier si la tuile est révélée
+      if (config.fogOfWarEnabled && gameState.revealedMap[y][x] === 0) {
+        continue;
+      }
+
+      const tile = gameState.map[y][x];
+      let color;
+
+      switch (tile) {
+        case 'grass': color = '#3a3'; break;
+        case 'water': color = '#33f'; break;
+        case 'sand': color = '#da3'; break;
+        case 'stone': color = '#777'; break;
+        case 'mountain': color = '#961'; break;
+        case 'dirt': color = '#961'; break;
+        default: color = '#3a3';
+      }
+
+      const miniX = x * config.tileSize * scaleX;
+      const miniY = y * config.tileSize * scaleY;
+      const miniSize = Math.max(1, config.tileSize * scaleX);
+
+      minimapCtx.fillStyle = color;
+      minimapCtx.fillRect(miniX, miniY, miniSize, miniSize);
+
+      // Appliquer l'effet de brouillard de guerre en mode exploré
+      if (config.fogOfWarEnabled && gameState.revealedMap[y][x] === 1) {
+        minimapCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        minimapCtx.fillRect(miniX, miniY, miniSize, miniSize);
+      }
+    }
+  }
+
+  // Dessiner les bâtiments
+  for (const building of gameState.buildings) {
+    const miniX = building.x * config.tileSize * scaleX;
+    const miniY = building.y * config.tileSize * scaleY;
+    const miniWidth = building.width * config.tileSize * scaleX;
+    const miniHeight = building.height * config.tileSize * scaleY;
+
+    minimapCtx.fillStyle = '#66f';
+    minimapCtx.fillRect(miniX, miniY, miniWidth, miniHeight);
+  }
+
+  // Dessiner les unités
+  // Villageois
+  for (const villager of gameState.units.villagers) {
+    minimapCtx.fillStyle = '#fff';
+    minimapCtx.fillRect(
+      villager.x * config.tileSize * scaleX - 1,
+      villager.y * config.tileSize * scaleY - 1,
+      3, 3
+    );
+  }
+
+  // Soldats, archers et chevaliers
+  for (const soldier of gameState.units.soldiers) {
+    minimapCtx.fillStyle = '#0ff';
+    minimapCtx.fillRect(
+      soldier.x * config.tileSize * scaleX - 1,
+      soldier.y * config.tileSize * scaleY - 1,
+      3, 3
+    );
+  }
+
+  for (const archer of gameState.units.archers) {
+    minimapCtx.fillStyle = '#ff0';
+    minimapCtx.fillRect(
+      archer.x * config.tileSize * scaleX - 1,
+      archer.y * config.tileSize * scaleY - 1,
+      3, 3
+    );
+  }
+
+  for (const knight of gameState.units.knights) {
+    minimapCtx.fillStyle = '#f0f';
+    minimapCtx.fillRect(
+      knight.x * config.tileSize * scaleX - 1,
+      knight.y * config.tileSize * scaleY - 1,
+      3, 3
+    );
+  }
+
+  // Dessiner les ennemis
+  for (const enemy of gameState.enemies) {
+    minimapCtx.fillStyle = '#f00';
+    minimapCtx.fillRect(
+      enemy.x * config.tileSize * scaleX - 1,
+      enemy.y * config.tileSize * scaleY - 1,
+      3, 3
+    );
+  }
+
+  // Dessiner la zone de caméra
+  const cameraX = gameState.camera.x * scaleX;
+  const cameraY = gameState.camera.y * scaleY;
+  const cameraWidth = canvas.width * scaleX;
+  const cameraHeight = canvas.height * scaleY;
+
+  minimapCtx.strokeStyle = '#fff';
+  minimapCtx.lineWidth = 1;
+  minimapCtx.strokeRect(cameraX, cameraY, cameraWidth, cameraHeight);
+}
+
+// Événements de souris et entrées utilisateur
+let lastMouseX = 0, lastMouseY = 0;
+
+canvas.addEventListener('mousedown', handleMouseDown);
+canvas.addEventListener('mousemove', handleMouseMove);
+canvas.addEventListener('mouseup', handleMouseUp);
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+minimap.addEventListener('mousedown', handleMinimapClick);
+window.addEventListener('keydown', handleKeyDown);
+
+// Pour les infobulles
+document.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('mouseenter', showTooltip);
+  btn.addEventListener('mouseleave', hideTooltip);
+});
+
+function handleMouseDown(e) {
+  const x = e.offsetX;
+  const y = e.offsetY;
+  lastMouseX = x;
+  lastMouseY = y;
+
+  // Jouer le son de clic
+  playSound('buttonClick', 0.2);
+
+  // Clic droit pour déplacer les unités ou collecter des ressources
+  if (e.button === 2) {
+    // Convertir les coordonnées de la souris en coordonnées du monde
+    const worldX = (x + gameState.camera.x) / config.tileSize;
+    const worldY = (y + gameState.camera.y) / config.tileSize;
+
+    // Arrondir les coordonnées
+    const tileX = Math.floor(worldX);
+    const tileY = Math.floor(worldY);
+
+    // Vérifier si il y a des ressources à récolter
+    const resource = getResourceAt(tileX, tileY);
+    const building = getBuildingAt(tileX, tileY);
+
+    // Si des villageois sont sélectionnés et qu'il y a une ressource
+    if (resource && gameState.selected.some(unit => unit.type === 'villager')) {
+      for (const unit of gameState.selected) {
+        if (unit.type === 'villager') {
+          unit.task = 'gather';
+          unit.taskTarget = {
+            x: resource.obj.x,
+            y: resource.obj.y,
+            type: resource.type,
+            resources: resource.obj.resources
+          };
+          unit.targetX = resource.obj.x;
+          unit.targetY = resource.obj.y;
+
+          // Jouer le son approprié
+          if (resource.type === 'wood') {
+            playSound('villagerAcknowledge', 0.4);
+          } else if (resource.type === 'stone') {
+            playSound('villagerAcknowledge', 0.4);
+          } else if (resource.type === 'food') {
+            playSound('villagerAcknowledge', 0.4);
+          }
         }
-        
-        // Effet de terminal
-        const terminalLines = [
-            "$ Initialisation du protocole de maintenance...",
-            "$ Vérification des modules de sécurité...",
-            "$ Mise à jour des bases de données tactiques...",
-            "$ Optimisation des systèmes de communication...",
-            "$ Calibration des capteurs de détection de zombies...",
-            "$ Mise à jour des cartes de zones dangereuses...",
-            "$ Amélioration de l'interface utilisateur...",
-            "$ Test des systèmes critiques...",
-            "$ Déploiement des patchs de sécurité...",
-            "$ Redémarrage des serveurs en cours..."
+      }
+
+      updateStatus(`${gameState.selected.filter(u => u.type === 'villager').length} villageois assignés à la récolte de ${resource.type}`);
+    }
+    // Si des villageois sont sélectionnés et qu'il y a un bâtiment en construction
+    else if (building && building.isConstructing && gameState.selected.some(unit => unit.type === 'villager')) {
+      for (const unit of gameState.selected) {
+        if (unit.type === 'villager') {
+          unit.task = 'build';
+          unit.taskTarget = building;
+          unit.targetX = building.x + building.width / 2;
+          unit.targetY = building.y + building.height / 2;
+        }
+      }
+
+      updateStatus(`${gameState.selected.filter(u => u.type === 'villager').length} villageois assignés à la construction`);
+      playSound('villagerAcknowledge', 0.4);
+    }
+    // Sinon, déplacer les unités sélectionnées
+    else if (gameState.selected.length > 0) {
+      // Vérifier si le clic est sur un ennemi pour attaquer
+      let enemyClicked = false;
+      for (const enemy of gameState.enemies) {
+        const enemyX = Math.floor(enemy.x);
+        const enemyY = Math.floor(enemy.y);
+
+        if (tileX === enemyX && tileY === enemyY) {
+          // Ordonner aux unités de combat d'attaquer
+          for (const unit of gameState.selected) {
+            // Les villageois peuvent aussi attaquer mais avec moins d'efficacité
+            unit.task = 'attack';
+            unit.taskTarget = enemy;
+            unit.targetX = enemy.x;
+            unit.targetY = enemy.y;
+
+            // Son d'acknowledgement selon le type d'unité
+            if (unit.type === 'villager') {
+              playSound('villagerAcknowledge', 0.4);
+            } else {
+              playSound('soldierAcknowledge', 0.4);
+            }
+          }
+
+          enemyClicked = true;
+          updateStatus(`${gameState.selected.length} unités attaquent l'ennemi`);
+          break;
+        }
+      }
+
+      // Si pas d'ennemi, juste déplacer
+      if (!enemyClicked) {
+        // Répartir les unités autour du point cible pour éviter qu'elles se superposent
+        const numSelected = gameState.selected.length;
+        const radius = Math.sqrt(numSelected) * 0.5;
+        let index = 0;
+
+        for (const unit of gameState.selected) {
+          // Calculer un décalage pour chaque unité
+          const angle = (index / numSelected) * Math.PI * 2;
+          const offsetX = Math.cos(angle) * radius;
+          const offsetY = Math.sin(angle) * radius;
+
+          unit.targetX = worldX + offsetX;
+          unit.targetY = worldY + offsetY;
+
+          // Réinitialiser la tâche si l'unité en avait une
+          unit.task = null;
+          unit.taskTarget = null;
+
+          // Son d'acknowledgement selon le type d'unité
+          if (unit.type === 'villager') {
+            if (Math.random() < 0.3) playSound('villagerAcknowledge', 0.3);
+          } else {
+            if (Math.random() < 0.3) playSound('soldierAcknowledge', 0.3);
+          }
+
+          index++;
+        }
+
+        updateStatus(`${numSelected} unités en déplacement`);
+      }
+    }
+
+    return;
+  }
+
+  // Clic gauche
+  // Mode construction actif
+  if (gameState.buildMode) {
+    const worldX = Math.floor((x + gameState.camera.x) / config.tileSize);
+    const worldY = Math.floor((y + gameState.camera.y) / config.tileSize);
+
+    if (placeBuildingAt(worldX, worldY,
+                       gameState.buildMode.type,
+                       gameState.buildMode.width,
+                       gameState.buildMode.height,
+                       gameState.buildMode.populationProvided)) {
+      updateStatus(`Construction de ${getBuildingName(gameState.buildMode.type)} commencée`);
+
+      // Assigner des villageois sélectionnés à la construction
+      for (const unit of gameState.selected) {
+        if (unit.type === 'villager') {
+          unit.task = 'build';
+          unit.taskTarget = gameState.buildings[gameState.buildings.length - 1];
+          unit.targetX = worldX + gameState.buildMode.width / 2;
+          unit.targetY = worldY + gameState.buildMode.height / 2;
+        }
+      }
+    } else {
+      updateStatus("Impossible de construire à cet endroit");
+      playSound('errorSound', 0.5);
+    }
+
+    return;
+  }
+
+  // Commencer la sélection
+  gameState.selectionBox = {
+    startX: x,
+    startY: y,
+    endX: x,
+    endY: y
+  };
+}
+
+function handleMouseMove(e) {
+  const x = e.offsetX;
+  const y = e.offsetY;
+  lastMouseX = x;
+  lastMouseY = y;
+
+  // Mettre à jour la boîte de sélection si on est en train de sélectionner
+  if (gameState.selectionBox) {
+    gameState.selectionBox.endX = x;
+    gameState.selectionBox.endY = y;
+  }
+
+  // Déplacer la caméra si la souris est près des bords
+  const edgeSize = 30;
+  const cameraSpeed = 20;
+
+  if (x < edgeSize) {
+    gameState.camera.targetX = Math.max(0, gameState.camera.x - cameraSpeed);
+  } else if (x > canvas.width - edgeSize) {
+    gameState.camera.targetX = Math.min(config.mapWidth * config.tileSize - canvas.width,
+                                       gameState.camera.x + cameraSpeed);
+  }
+
+  if (y < edgeSize) {
+    gameState.camera.targetY = Math.max(0, gameState.camera.y - cameraSpeed);
+  } else if (y > canvas.height - edgeSize) {
+    gameState.camera.targetY = Math.min(config.mapHeight * config.tileSize - canvas.height,
+                                       gameState.camera.y + cameraSpeed);
+  }
+}
+
+function handleMouseUp(e) {
+  // Si on était en train de faire une sélection
+  if (gameState.selectionBox) {
+    // Calculer les limites de la boîte de sélection
+    const { startX, startY, endX, endY } = gameState.selectionBox;
+    const left = Math.min(startX, endX) + gameState.camera.x;
+    const right = Math.max(startX, endX) + gameState.camera.x;
+    const top = Math.min(startY, endY) + gameState.camera.y;
+    const bottom = Math.max(startY, endY) + gameState.camera.y;
+
+    // Réinitialiser la sélection
+    gameState.selected = [];
+
+    // Si la boîte est très petite, considérer comme un clic simple
+    if (Math.abs(endX - startX) < 5 && Math.abs(endY - startY) < 5) {
+      const worldX = Math.floor((startX + gameState.camera.x) / config.tileSize);
+      const worldY = Math.floor((startY + gameState.camera.y) / config.tileSize);
+
+      // Vérifier si une unité est cliquée
+      const allUnits = [
+        ...gameState.units.villagers,
+        ...gameState.units.soldiers,
+        ...gameState.units.archers,
+        ...gameState.units.knights
+      ];
+
+      for (const unit of allUnits) {
+        const unitX = Math.floor(unit.x);
+        const unitY = Math.floor(unit.y);
+
+        if (unitX === worldX && unitY === worldY) {
+          unit.selected = true;
+          gameState.selected.push(unit);
+          break; // Sélectionner seulement une unité en cas de clic simple
+        }
+      }
+    } else {
+      // Sélectionner les unités dans la boîte
+      const allUnits = [
+        ...gameState.units.villagers,
+        ...gameState.units.soldiers,
+        ...gameState.units.archers,
+        ...gameState.units.knights
+      ];
+
+      for (const unit of allUnits) {
+        const unitX = unit.x * config.tileSize;
+        const unitY = unit.y * config.tileSize;
+
+        // Vérifier si l'unité est dans la boîte de sélection
+        if (unitX >= left && unitX <= right && unitY >= top && unitY <= bottom) {
+          unit.selected = true;
+          gameState.selected.push(unit);
+        } else {
+          unit.selected = false;
+        }
+      }
+    }
+
+    // Afficher le nombre d'unités sélectionnées
+    if (gameState.selected.length > 0) {
+      updateStatus(`${gameState.selected.length} unités sélectionnées`);
+      playSound('buttonClick', 0.2);
+    } else {
+      updateStatus("Sélectionnez des unités et cliquez pour les déplacer");
+    }
+
+    // Réinitialiser la boîte de sélection
+    gameState.selectionBox = null;
+  }
+}
+
+function handleMinimapClick(e) {
+  // Récupérer les coordonnées relatives à la mini-carte
+  const rect = minimap.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // Convertir en coordonnées du monde
+  const worldX = (x / minimap.width) * (config.mapWidth * config.tileSize);
+  const worldY = (y / minimap.height) * (config.mapHeight * config.tileSize);
+
+  // Centrer la caméra sur ce point
+  gameState.camera.targetX = worldX - canvas.width / 2;
+  gameState.camera.targetY = worldY - canvas.height / 2;
+
+  // Limiter les coordonnées de la caméra
+  gameState.camera.targetX = Math.max(0, Math.min(config.mapWidth * config.tileSize - canvas.width, gameState.camera.targetX));
+  gameState.camera.targetY = Math.max(0, Math.min(config.mapHeight * config.tileSize - canvas.height, gameState.camera.targetY));
+
+  // Empêcher l'événement par défaut
+  e.preventDefault();
+
+  // Son de clic
+  playSound('buttonClick', 0.2);
+}
+
+function handleKeyDown(e) {
+  // Raccourcis clavier
+  switch (e.key) {
+    case 'Escape':
+      // Annuler la sélection ou le mode construction
+      if (gameState.buildMode) {
+        gameState.buildMode = null;
+        updateStatus("Mode construction annulé");
+      } else {
+        for (const unit of gameState.selected) {
+          unit.selected = false;
+        }
+        gameState.selected = [];
+        updateStatus("Sélection annulée");
+      }
+      playSound('buttonClick', 0.2);
+      break;
+
+    case 'Delete':
+      // Supprimer les unités sélectionnées
+      for (const unit of gameState.selected) {
+        let unitArray;
+        switch (unit.type) {
+          case 'villager': unitArray = gameState.units.villagers; break;
+          case 'soldier': unitArray = gameState.units.soldiers; break;
+          case 'archer': unitArray = gameState.units.archers; break;
+          case 'knight': unitArray = gameState.units.knights; break;
+        }
+
+        const index = unitArray.indexOf(unit);
+        if (index !== -1) {
+          unitArray.splice(index, 1);
+          gameState.resources.population--;
+        }
+      }
+      gameState.selected = [];
+      updateStatus("Unités supprimées");
+      updateUI();
+      break;
+
+    case 'a':
+      // Sélectionner toutes les unités (avec Ctrl+A)
+      if (e.ctrlKey) {
+        gameState.selected = [];
+        const allUnits = [
+          ...gameState.units.villagers,
+          ...gameState.units.soldiers,
+          ...gameState.units.archers,
+          ...gameState.units.knights
         ];
-        
-        function typeTerminalText() {
-            const terminal = document.getElementById('terminal-text');
-            let lineIndex = 0;
-            let charIndex = 0;
-            
-            function typeLine() {
-                if (lineIndex >= terminalLines.length) {
-                    lineIndex = 0;
-                    terminal.innerHTML = '';
-                }
-                
-                if (charIndex < terminalLines[lineIndex].length) {
-                    terminal.innerHTML += terminalLines[lineIndex].charAt(charIndex);
-                    charIndex++;
-                    setTimeout(typeLine, 50);
-                } else {
-                    terminal.innerHTML += '<br>';
-                    charIndex = 0;
-                    lineIndex++;
-                    setTimeout(typeLine, 1000);
-                }
-            }
-            
-            typeLine();
+
+        for (const unit of allUnits) {
+          unit.selected = true;
+          gameState.selected.push(unit);
         }
-        
-        // Initialiser les animations et le jeu
-        document.addEventListener('DOMContentLoaded', function() {
-            updateCountdown();
-            typeTerminalText();
-            updateMoneyDisplay();
-            
-            // Ajouter l'événement de tir
-            gameScene.addEventListener('click', shoot);
-            gameScene.addEventListener('mousemove', updateCrosshair);
-            gameScene.addEventListener('mouseleave', hideCrosshair);
-            
-            // Configurer les événements d'achat
-            document.getElementById('accuracy-upgrade').addEventListener('click', function() {
-                buyUpgrade('accuracy');
-            });
-            
-            document.getElementById('fire-rate-upgrade').addEventListener('click', function() {
-                buyUpgrade('fireRate');
-            });
-            
-            document.getElementById('smg-upgrade').addEventListener('click', function() {
-                if (buyWeapon('smg')) {
-                    showNotification("SMG acquis ! Cadence de tir améliorée !");
-                }
-            });
-            
-            document.getElementById('rifle-upgrade').addEventListener('click', function() {
-                if (buyWeapon('rifle')) {
-                    showNotification("Fusil d'assaut acquis ! Dégâts augmentés !");
-                }
-            });
-            
-            document.getElementById('sniper-upgrade').addEventListener('click', function() {
-                if (buyWeapon('sniper')) {
-                    showNotification("Sniper acquis ! Haute précision et dégâts !");
-                }
-            });
-            
-            // Argent de départ pour tester (retirez ceci pour la version finale)
-            GAME.money = 100;
-            updateMoneyDisplay();
-            updateShopDisplay();
-            
-            // Commencer la première vague
-            startZombieWave();
-            
-            // Petit tutoriel
-            setTimeout(() => {
-                showNotification("Cliquez sur l'écran pour tirer sur les zombies !");
-            }, 1000);
-            
-            setTimeout(() => {
-                showNotification("Gagnez de l'argent pour améliorer votre équipement !");
-            }, 5000);
-        });
-    </script>
+
+        updateStatus(`${gameState.selected.length} unités sélectionnées`);
+        playSound('buttonClick', 0.2);
+        e.preventDefault();
+      }
+      break;
+
+    // Touches de déplacement de la caméra (ZQSD ou WASD)
+    case 'z':
+    case 'w':
+    case 'ArrowUp':
+      gameState.camera.targetY = Math.max(0, gameState.camera.targetY - 20);
+      break;
+
+    case 's':
+    case 'ArrowDown':
+      gameState.camera.targetY = Math.min(config.mapHeight * config.tileSize - canvas.height,
+                                         gameState.camera.targetY + 20);
+      break;
+
+    case 'q':
+    case 'a':
+    case 'ArrowLeft':
+      if (!e.ctrlKey) {
+        gameState.camera.targetX = Math.max(0, gameState.camera.targetX - 20);
+      }
+      break;
+
+    case 'd':
+    case 'ArrowRight':
+      gameState.camera.targetX = Math.min(config.mapWidth * config.tileSize - canvas.width,
+                                         gameState.camera.targetX + 20);
+      break;
+
+    // Touches numériques pour sélectionner des groupes d'unités
+    case '1': case '2': case '3': case '4': case '5':
+      const groupNum = parseInt(e.key);
+      if (e.ctrlKey) {
+        // Ctrl+Num pour définir un groupe
+        createUnitGroup(groupNum);
+      } else {
+        // Num pour sélectionner un groupe
+        selectUnitGroup(groupNum);
+      }
+      break;
+  }
+}
+
+// Infobulles
+function showTooltip(e) {
+  const btn = e.target;
+
+  // Récupérer le type d'élément
+  let title, description;
+  if (btn.id.includes('villager')) {
+    title = "Villageois";
+    description = "Récolte des ressources et construit des bâtiments. Coût: 5 🌾";
+  } else if (btn.id.includes('soldier')) {
+    title = "Soldat";
+    description = "Unité de combat de base. Coût: 10 🌾, 5 🪵";
+  } else if (btn.id.includes('archer')) {
+    title = "Archer";
+    description = "Attaque à distance. Coût: 10 🌾, 10 🪵";
+  } else if (btn.id.includes('knight')) {
+    title = "Chevalier";
+    description = "Unité de combat puissante. Coût: 20 🌾, 15 ⛏️";
+  } else if (btn.id.includes('house')) {
+    title = "Maison";
+    description = "Augmente la population maximale de 5. Coût: 10 🪵";
+  } else if (btn.id.includes('farm')) {
+    title = "Ferme";
+    description = "Produit de la nourriture automatiquement. Coût: 5 🪵, 3 ⛏️";
+  } else if (btn.id.includes('lumbermill')) {
+    title = "Scierie";
+    description = "Produit du bois automatiquement. Coût: 8 🪵, 5 ⛏️";
+  } else if (btn.id.includes('quarry')) {
+    title = "Carrière";
+    description = "Produit de la pierre automatiquement. Coût: 10 🪵, 5 ⛏️";
+  } else if (btn.id.includes('barracks')) {
+    title = "Caserne";
+    description = "Permet de créer des soldats et des chevaliers. Coût: 15 🪵, 10 ⛏️";
+  } else if (btn.id.includes('archery')) {
+    title = "Stand de tir";
+    description = "Permet de créer des archers. Coût: 15 🪵, 8 ⛏️";
+  }
+
+  tooltip.querySelector('.tooltip-title').textContent = title;
+  tooltip.querySelector('.tooltip-description').textContent = description;
+
+  const rect = btn.getBoundingClientRect();
+  tooltip.style.left = `${rect.right + 10}px`;
+  tooltip.style.top = `${rect.top}px`;
+  tooltip.style.opacity = '1';
+}
+
+function hideTooltip() {
+  tooltip.style.opacity = '0';
+}
+
+// Groupes d'unités
+const unitGroups = [{}, {}, {}, {}, {}, {}]; // 1-5
+
+function createUnitGroup(groupNum) {
+  if (gameState.selected.length === 0) return;
+
+  // Enregistrer les unités sélectionnées dans le groupe
+  unitGroups[groupNum] = {
+    units: [...gameState.selected]
+  };
+
+  updateStatus(`Groupe ${groupNum} créé avec ${gameState.selected.length} unités`);
+  playSound('buttonClick', 0.2);
+}
+
+function selectUnitGroup(groupNum) {
+  const group = unitGroups[groupNum];
+  if (!group.units || group.units.length === 0) return;
+
+  // Désélectionner toutes les unités
+  for (const unit of gameState.selected) {
+    unit.selected = false;
+  }
+
+  // Réinitialiser la sélection
+  gameState.selected = [];
+
+  // Sélectionner les unités du groupe qui existent encore
+  for (const savedUnit of group.units) {
+    let found = false;
+
+    // Chercher dans tous les types d'unités
+    const allUnitTypes = [
+      { array: gameState.units.villagers, type: 'villager' },
+      { array: gameState.units.soldiers, type: 'soldier' },
+      { array: gameState.units.archers, type: 'archer' },
+      { array: gameState.units.knights, type: 'knight' }
+    ];
+
+    for (const { array } of allUnitTypes) {
+      const unit = array.find(u => u === savedUnit);
+      if (unit) {
+        unit.selected = true;
+        gameState.selected.push(unit);
+        found = true;
+        break;
+      }
+    }
+  }
+
+  updateStatus(`Groupe ${groupNum} sélectionné (${gameState.selected.length} unités)`);
+  playSound('buttonClick', 0.2);
+}
+
+// Initialisation du jeu
+function initGame() {
+  resizeCanvas();
+  initMap();
+  updateUI();
+
+  // Créer un hôtel de ville au départ
+  placeBuildingAt(
+    Math.floor(config.mapWidth / 2) - 2,
+    Math.floor(config.mapHeight / 2) - 2,
+    'towncenter', 4, 3, 10
+  );
+
+  // Créer des villageois de départ
+  spawnUnit(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2), 'villager');
+  spawnUnit(Math.floor(config.mapWidth / 2) + 1, Math.floor(config.mapHeight / 2), 'villager');
+  spawnUnit(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2) + 1, 'villager');
+
+  // Révéler la zone de départ
+  revealArea(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2), 10);
+
+  // Démarrer la musique de fond
+  if (config.musicEnabled) {
+    playMusic('gameTheme', 0.2);
+  }
+
+  // Démarrer les intervalles réguliers
+  setInterval(spawnEnemy, config.enemySpawnInterval);
+
+  // Démarrer la boucle de jeu
+  window.requestAnimationFrame(gameLoop);
+
+  updateStatus("Bienvenue dans Strategic Kingdoms 2025! Construisez votre royaume et défendez-le contre les ennemis.");
+}
+
+// Commencer le chargement des ressources
+loadResources();
+
+</script>
 </body>
 </html>
