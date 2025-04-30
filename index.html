@@ -516,7 +516,6 @@ const assets = {
     waterTile: 'https://i.imgur.com/kWw36HA.png',
     sandTile: 'https://i.imgur.com/Bqlv6c5.png',
     stoneTile: 'https://i.imgur.com/0iLH8tN.png',
-    dirtTile: 'https://i.imgur.com/MKjEg5m.png',
     mountainTile: 'https://i.imgur.com/ZK0BcLs.png',
 
     // Ressources
@@ -1468,7 +1467,7 @@ function updateUnits() {
               addEffect(
                 villager.taskTarget.type === 'wood' ? 'treeDestruction' :
                 villager.taskTarget.type === 'stone' ? 'stoneDestruction' :
-                'berryDepletion',
+                'berryDestruction',
                 villager.taskTarget.x,
                 villager.taskTarget.y,
                 1000
@@ -2276,7 +2275,7 @@ function drawEffects() {
           const angle = (i / 8) * Math.PI * 2;
           const distance = tileSize * progress;
           const particleX = screenX + tileSize / 2 + Math.cos(angle) * distance;
-          const particleY = screenY + tileSize / 2 + Math.sin(angle) * distance;
+          const particleY = screenY + tileSize / 2 - distance;
           ctx.moveTo(screenX + tileSize / 2, screenY + tileSize / 2);
           ctx.lineTo(particleX, particleY);
         }
@@ -2333,8 +2332,8 @@ function drawUI() {
   // Dessiner la boîte de sélection
   if (gameState.selectionBox) {
     const { startX, startY, endX, endY } = gameState.selectionBox;
-    const boxX = Math.min(startX, endX);
-    const boxY = Math.min(startY, endY);
+    const boxX = Math.min(startX, endX) + gameState.camera.x;
+    const boxY = Math.min(startY, endY) + gameState.camera.y;
     const boxWidth = Math.abs(endX - startX);
     const boxHeight = Math.abs(endY - startY);
 
@@ -2371,22 +2370,22 @@ function drawUI() {
             isValid = false;
             break;
           }
-
-          // Vérifier les ressources
-          if (getResourceAt(mouseX + dx, mouseY + dy)) {
-            isValid = false;
-            break;
-          }
-
-          // Vérifier les autres bâtiments
-          if (gameState.buildings.some(b =>
-            mouseX + dx >= b.x && mouseX + dx < b.x + b.width &&
-            mouseY + dy >= b.y && mouseY + dy < b.y + b.height)) {
-            isValid = false;
-            break;
-          }
         } else {
           isValid = false;
+        }
+
+        // Vérifier les ressources
+        if (getResourceAt(mouseX + dx, mouseY + dy)) {
+          isValid = false;
+          break;
+        }
+
+        // Vérifier les autres bâtiments
+        if (gameState.buildings.some(b =>
+          mouseX + dx >= b.x && mouseX + dx < b.x + b.width &&
+          mouseY + dy >= b.y && mouseY + dy < b.y + b.height)) {
+          isValid = false;
+          break;
         }
       }
     }
@@ -2573,7 +2572,7 @@ function handleMouseDown(e) {
     const tileX = Math.floor(worldX);
     const tileY = Math.floor(worldY);
 
-    // Vérifier si il y a des ressources à récolter
+    // Vérifier s'il y a des ressources à récolter
     const resource = getResourceAt(tileX, tileY);
     const building = getBuildingAt(tileX, tileY);
 
@@ -2745,14 +2744,14 @@ function handleMouseMove(e) {
     gameState.camera.targetX = Math.max(0, gameState.camera.x - cameraSpeed);
   } else if (x > canvas.width - edgeSize) {
     gameState.camera.targetX = Math.min(config.mapWidth * config.tileSize - canvas.width,
-                                       gameState.camera.x + cameraSpeed);
+                                        gameState.camera.x + cameraSpeed);
   }
 
   if (y < edgeSize) {
     gameState.camera.targetY = Math.max(0, gameState.camera.y - cameraSpeed);
   } else if (y > canvas.height - edgeSize) {
     gameState.camera.targetY = Math.min(config.mapHeight * config.tileSize - canvas.height,
-                                       gameState.camera.y + cameraSpeed);
+                                        gameState.camera.y + cameraSpeed);
   }
 }
 
@@ -2792,6 +2791,17 @@ function handleMouseUp(e) {
           break; // Sélectionner seulement une unité en cas de clic simple
         }
       }
+
+      // Afficher le nombre d'unités sélectionnées
+      if (gameState.selected.length > 0) {
+        updateStatus(`${gameState.selected.length} unités sélectionnées`);
+        playSound('buttonClick', 0.2);
+      } else {
+        updateStatus("Sélectionnez des unités et cliquez pour les déplacer");
+      }
+
+      // Réinitialiser la boîte de sélection
+      gameState.selectionBox = null;
     } else {
       // Sélectionner les unités dans la boîte
       const allUnits = [
@@ -3009,7 +3019,6 @@ function hideTooltip() {
 
 // Groupes d'unités
 const unitGroups = [{}, {}, {}, {}, {}, {}]; // 1-5
-
 function createUnitGroup(groupNum) {
   if (gameState.selected.length === 0) return;
 
