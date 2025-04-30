@@ -40,7 +40,7 @@ export function gainXP(amount) {
         levelUp();
     }
     updateLevelDisplay(level, xp, xpToNextLevel, progressBar);
-    saveGame({ energy, clickMultiplier, autoProduction, prestigeMultiplier, currentDimension, xp, level, artifacts, currentQuest });
+    saveGame();
 }
 
 export function levelUp() {
@@ -50,7 +50,7 @@ export function levelUp() {
     clickMultiplier *= 1.01;
     autoProduction += 1;
     updateLevelDisplay(level, xp, xpToNextLevel, progressBar);
-    saveGame({ energy, clickMultiplier, autoProduction, prestigeMultiplier, currentDimension, xp, level, artifacts, currentQuest });
+    saveGame();
 }
 
 export function lootArtifact(artifacts) {
@@ -60,7 +60,7 @@ export function lootArtifact(artifacts) {
     };
     artifacts.push(artifact);
     displayArtifacts(artifacts, artifactsContainer);
-    saveGame({ energy, clickMultiplier, autoProduction, prestigeMultiplier, currentDimension, xp, level, artifacts, currentQuest });
+    saveGame();
 }
 
 export function displayArtifacts(artifacts, container) {
@@ -99,7 +99,7 @@ export function assignQuest(quests, callback) {
     currentQuest = quests[Math.floor(Math.random() * quests.length)];
     currentQuest.progress = 0;
     displayQuest(currentQuest, questsContainer);
-    saveGame({ energy, clickMultiplier, autoProduction, prestigeMultiplier, currentDimension, xp, level, artifacts, currentQuest });
+    saveGame();
     callback();
 }
 
@@ -123,7 +123,7 @@ export function completeQuest(currentQuest, energy, xp) {
     currentQuest = null;
     displayQuest(currentQuest, questsContainer);
     assignQuest(quests, () => {
-        saveGame({ energy, clickMultiplier, autoProduction, prestigeMultiplier, currentDimension, xp, level, artifacts, currentQuest });
+        saveGame();
     });
 }
 
@@ -135,4 +135,106 @@ export function playSound(type) {
         audio.src = 'https://www.freesoundslibrary.com/wp-content/uploads/2021/08/vortex-sound.mp3';
     }
     audio.play();
+}
+
+export function changeDimension(dimension, dimensions, callback) {
+    if (dimensions[dimension]) {
+        currentDimension = dimension;
+        document.body.style.background = dimensions[dimension].background;
+        document.body.style.color = dimensions[dimension].color;
+        clickMultiplier *= dimensions[dimension].boost;
+        document.body.classList.add('fade-transition');
+        setTimeout(() => {
+            document.body.classList.remove('fade-transition');
+        }, 1000);
+        callback();
+    }
+}
+
+export function fuseArtifacts(artifacts) {
+    if (artifacts.length >= 3) {
+        const newArtifact = { name: "Artéfact Rare", effect: () => { energyProduction *= 1.1; } };
+        artifacts.push(newArtifact);
+        return newArtifact;
+    }
+}
+
+export function calculatePrestigeBonus(prestigeLevel) {
+    return 1 + (prestigeLevel * 0.05);
+}
+
+export function getPrestigeReward(prestigeLevel) {
+    if (prestigeLevel >= 10) {
+        return { name: "Artéfact Légendaire", effect: () => { energyProduction *= 2; } };
+    }
+}
+
+export function getAchievementReward(achievementsUnlocked) {
+    if (achievementsUnlocked >= 10) {
+        return { effect: () => { energyProduction *= 1.1; } };
+    }
+}
+
+export function getDailyReward(consecutiveDays) {
+    return { energy: 100 * consecutiveDays };
+}
+
+export function updateLeaderboard(leaderboardData, elementId) {
+    const leaderboardElement = document.getElementById(elementId);
+    leaderboardElement.innerHTML = '';
+    leaderboardData.forEach(player => {
+        const li = document.createElement('li');
+        li.textContent = `${player.name}: ${player.score}`;
+        leaderboardElement.appendChild(li);
+    });
+}
+
+export function addFriend(friendName) {
+    const friendsList = document.getElementById('friends');
+    const li = document.createElement('li');
+    li.textContent = friendName;
+    friendsList.appendChild(li);
+}
+
+export function showNotification(message) {
+    alert(message);
+}
+
+export function updateStats(totalEnergy, totalClicks) {
+    document.getElementById('totalEnergy').textContent = totalEnergy;
+    document.getElementById('totalClicks').textContent = totalClicks;
+}
+
+export function updateGemDisplay(gems) {
+    document.getElementById('gemCount').textContent = gems;
+}
+
+export function earnGems(amount) {
+    gems += amount;
+    updateGemDisplay(gems);
+}
+
+export function startMemoryGame() {
+    const cards = document.getElementById('cards');
+    const cardValues = ['A', 'B', 'C', 'D', 'E', 'F'];
+    const shuffledCards = [...cardValues, ...cardValues].sort(() => Math.random() - 0.5);
+    shuffledCards.forEach(value => {
+        const card = document.createElement('div');
+        card.classList.add('card');
+        card.textContent = value;
+        cards.appendChild(card);
+    });
+}
+
+export function startPrecisionGame() {
+    const target = document.getElementById('target');
+    target.style.position = 'absolute';
+    target.style.width = '50px';
+    target.style.height = '50px';
+    target.style.background = 'red';
+    target.style.left = Math.random() * window.innerWidth + 'px';
+    target.style.top = Math.random() * window.innerHeight + 'px';
+    target.addEventListener('click', () => {
+        // Logique pour obtenir la récompense
+    });
 }
