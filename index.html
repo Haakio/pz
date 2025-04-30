@@ -1,143 +1,207 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Strategic Kingdoms 2025</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeu Clicker Interdimensionnel</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #000;
+            color: #fff;
+            transition: background-color 1s, color 1s;
+        }
+        .container {
+            text-align: center;
+        }
+        .energy {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .click-button {
+            font-size: 1.5em;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            background-color: #00f;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .click-button:hover {
+            background-color: #00a;
+        }
+        .upgrades, .dimensions {
+            margin-top: 20px;
+        }
+        .upgrade, .dimension {
+            margin: 10px 0;
+            cursor: pointer;
+            background-color: #333;
+            padding: 10px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .upgrade:hover, .dimension:hover {
+            background-color: #444;
+        }
+        .glitch {
+            animation: glitch 1s infinite;
+        }
+        @keyframes glitch {
+            0%, 100% { text-shadow: 0.05em 0 0 #0ff, -0.05em 0 0 #f0f; }
+            25% { text-shadow: 0.05em 0 0 #f0f, -0.05em 0 0 #0ff; }
+            50% { text-shadow: 0.05em 0 0 #0ff, -0.05em 0 0 #f0f; }
+            75% { text-shadow: 0.05em 0 0 #f0f, -0.05em 0 0 #0ff; }
+        }
+    </style>
 </head>
 <body>
-  <div id="game-container">
-    <canvas id="game-canvas"></canvas>
-    <div id="ui-overlay">
-      <div id="top-panel">
-        <div id="resources">
-          <div class="resource">
-            <span class="resource-icon">🌾</span>
-            <span id="food">100</span>
-          </div>
-          <div class="resource">
-            <span class="resource-icon">🪵</span>
-            <span id="wood">100</span>
-          </div>
-          <div class="resource">
-            <span class="resource-icon">⛏️</span>
-            <span id="stone">50</span>
-          </div>
-          <div class="resource">
-            <span class="resource-icon">👥</span>
-            <span id="population">0/10</span>
-          </div>
+    <div class="container">
+        <div class="energy" id="energy">Énergie dimensionnelle: 0</div>
+        <button class="click-button" id="clickButton">Canaliser l'énergie</button>
+        <div class="upgrades" id="upgrades">
+            <div class="upgrade" data-cost="10" data-multiplier="2">Amélioration de clic x2 (10)</div>
+            <div class="upgrade" data-cost="50" data-interval="1000" data-auto="1">Production automatique (50)</div>
         </div>
-      </div>
-      <div id="side-panel">
-        <div class="panel-section">
-          <h3 class="panel-title">Unités</h3>
-          <div class="button-grid">
-            <button id="villager-btn" onclick="spawnVillager()">
-              <span class="btn-icon">👨‍🌾</span>
-              Villageois
-              <div class="resource-cost">
-                <span>🌾 5</span>
-              </div>
-            </button>
-            <button id="soldier-btn" onclick="spawnSoldier()">
-              <span class="btn-icon">⚔️</span>
-              Soldat
-              <div class="resource-cost">
-                <span>🌾 10</span>
-                <span>🪵 5</span>
-              </div>
-            </button>
-            <button id="archer-btn" onclick="spawnArcher()">
-              <span class="btn-icon">🏹</span>
-              Archer
-              <div class="resource-cost">
-                <span>🌾 10</span>
-                <span>🪵 10</span>
-              </div>
-            </button>
-            <button id="knight-btn" onclick="spawnKnight()">
-              <span class="btn-icon">🛡️</span>
-              Chevalier
-              <div class="resource-cost">
-                <span>🌾 20</span>
-                <span>⛏️ 15</span>
-              </div>
-            </button>
-          </div>
+        <div class="dimensions" id="dimensions">
+            <div class="dimension" data-dimension="Cybermonde">Cybermonde</div>
+            <div class="dimension" data-dimension="Terre Organique">Terre Organique</div>
+            <div class="dimension" data-dimension="Vide Lumineux">Vide Lumineux</div>
         </div>
-        <div class="panel-section">
-          <h3 class="panel-title">Bâtiments</h3>
-          <div class="button-grid">
-            <button id="house-btn" onclick="buildStructure('house')">
-              <span class="btn-icon">🏠</span>
-              Maison
-              <div class="resource-cost">
-                <span>🪵 10</span>
-              </div>
-            </button>
-            <button id="farm-btn" onclick="buildStructure('farm')">
-              <span class="btn-icon">🌾</span>
-              Ferme
-              <div class="resource-cost">
-                <span>🪵 5</span>
-                <span>⛏️ 3</span>
-              </div>
-            </button>
-            <button id="lumbermill-btn" onclick="buildStructure('lumbermill')">
-              <span class="btn-icon">🪓</span>
-              Scierie
-              <div class="resource-cost">
-                <span>🪵 8</span>
-                <span>⛏️ 5</span>
-              </div>
-            </button>
-            <button id="quarry-btn" onclick="buildStructure('quarry')">
-              <span class="btn-icon">🔨</span>
-              Carrière
-              <div class="resource-cost">
-                <span>🪵 10</span>
-                <span>⛏️ 5</span>
-              </div>
-            </button>
-            <button id="barracks-btn" onclick="buildStructure('barracks')">
-              <span class="btn-icon">⚔️</span>
-              Caserne
-              <div class="resource-cost">
-                <span>🪵 15</span>
-                <span>⛏️ 10</span>
-              </div>
-            </button>
-            <button id="archery-btn" onclick="buildStructure('archery')">
-              <span class="btn-icon">🏹</span>
-              Stand de tir
-              <div class="resource-cost">
-                <span>🪵 15</span>
-                <span>⛏️ 8</span>
-              </div>
-            </button>
-          </div>
-        </div>
-      </div>
-      <div id="minimap">
-        <canvas id="minimap-canvas"></canvas>
-      </div>
-      <div id="status-bar">
-        Bienvenue dans Strategic Kingdoms 2025! Commencez par construire des bâtiments et créer des unités.
-      </div>
-      <div id="tooltip">
-        <div class="tooltip-title">Villageois</div>
-        <div class="tooltip-description">Une unité de base qui peut récolter des ressources et construire des bâtiments.</div>
-      </div>
+        <button class="prestige-button" id="prestigeButton">Réinitialiser pour un bonus</button>
     </div>
-    <div id="loading-screen">
-      <div id="loading-logo">STRATEGIC KINGDOMS 2025</div>
-      <div id="loading-progress">
-        <div id="loading-bar"></div>
-      </div>
-      <div id="loading-text">Chargement des ressources...</div>
-    </div>
-  </div>
-  <script src="script.js"></script>
+
+    <script>
+        const energyDisplay = document.getElementById('energy');
+        const clickButton = document.getElementById('clickButton');
+        const upgradesContainer = document.getElementById('upgrades');
+        const dimensionsContainer = document.getElementById('dimensions');
+        const prestigeButton = document.getElementById('prestigeButton');
+
+        let energy = 0;
+        let clickMultiplier = 1;
+        let autoProduction = 0;
+        let autoInterval = null;
+        let prestigeMultiplier = 1;
+
+        const dimensions = {
+            "Cybermonde": { background: "#00f", color: "#fff", boost: 1.5 },
+            "Terre Organique": { background: "#0f0", color: "#000", boost: 2 },
+            "Vide Lumineux": { background: "#ff0", color: "#000", boost: 2.5 }
+        };
+
+        let currentDimension = null;
+
+        function updateEnergyDisplay() {
+            energyDisplay.textContent = `Énergie dimensionnelle: ${energy}`;
+        }
+
+        function saveGame() {
+            localStorage.setItem('energy', energy);
+            localStorage.setItem('clickMultiplier', clickMultiplier);
+            localStorage.setItem('autoProduction', autoProduction);
+            localStorage.setItem('prestigeMultiplier', prestigeMultiplier);
+            localStorage.setItem('currentDimension', currentDimension);
+        }
+
+        function loadGame() {
+            energy = parseInt(localStorage.getItem('energy')) || 0;
+            clickMultiplier = parseFloat(localStorage.getItem('clickMultiplier')) || 1;
+            autoProduction = parseInt(localStorage.getItem('autoProduction')) || 0;
+            prestigeMultiplier = parseFloat(localStorage.getItem('prestigeMultiplier')) || 1;
+            currentDimension = localStorage.getItem('currentDimension') || null;
+
+            if (currentDimension) {
+                changeDimension(currentDimension);
+            }
+
+            updateEnergyDisplay();
+            startAutoProduction();
+        }
+
+        function startAutoProduction() {
+            if (autoProduction > 0) {
+                autoInterval = setInterval(() => {
+                    energy += autoProduction * prestigeMultiplier;
+                    updateEnergyDisplay();
+                    saveGame();
+                }, 1000);
+            }
+        }
+
+        clickButton.addEventListener('click', () => {
+            energy += clickMultiplier * prestigeMultiplier;
+            updateEnergyDisplay();
+            saveGame();
+        });
+
+        upgradesContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('upgrade')) {
+                const cost = parseInt(event.target.dataset.cost);
+                const multiplier = parseFloat(event.target.dataset.multiplier);
+                const interval = parseInt(event.target.dataset.interval);
+                const auto = parseInt(event.target.dataset.auto);
+
+                if (energy >= cost) {
+                    energy -= cost;
+                    if (multiplier) {
+                        clickMultiplier = multiplier;
+                    }
+                    if (auto) {
+                        autoProduction = auto;
+                        startAutoProduction();
+                    }
+                    updateEnergyDisplay();
+                    event.target.style.display = 'none';
+                    saveGame();
+                }
+            }
+        });
+
+        dimensionsContainer.addEventListener('click', (event) => {
+            if (event.target.classList.contains('dimension')) {
+                const dimension = event.target.dataset.dimension;
+                changeDimension(dimension);
+            }
+        });
+
+        function changeDimension(dimension) {
+            if (dimensions[dimension]) {
+                currentDimension = dimension;
+                document.body.style.backgroundColor = dimensions[dimension].background;
+                document.body.style.color = dimensions[dimension].color;
+                clickMultiplier *= dimensions[dimension].boost;
+                document.body.classList.add('glitch');
+                setTimeout(() => {
+                    document.body.classList.remove('glitch');
+                }, 1000);
+                saveGame();
+            }
+        }
+
+        prestigeButton.addEventListener('click', () => {
+            if (energy >= 1000) {
+                prestigeMultiplier *= 2;
+                energy = 0;
+                clickMultiplier = 1;
+                autoProduction = 0;
+                clearInterval(autoInterval);
+                autoInterval = null;
+                document.querySelectorAll('.upgrade').forEach(upgrade => {
+                    upgrade.style.display = 'block';
+                });
+                updateEnergyDisplay();
+                saveGame();
+            }
+        });
+
+        loadGame();
+    </script>
 </body>
 </html>
