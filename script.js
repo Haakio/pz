@@ -23,60 +23,60 @@ const config = {
 const assets = {
   images: {
     // Terrain
-    grassTile: 'https://i.imgur.com/B1nV2HT.png',
-    waterTile: 'https://i.imgur.com/kWw36HA.png',
-    sandTile: 'https://i.imgur.com/Bqlv6c5.png',
-    stoneTile: 'https://i.imgur.com/0iLH8tN.png',
-    mountainTile: 'https://i.imgur.com/ZK0BcLs.png',
+    grassTile: 'images/grassTile.png',
+    waterTile: 'images/waterTile.png',
+    sandTile: 'images/sandTile.png',
+    stoneTile: 'images/stoneTile.png',
+    mountainTile: 'images/mountainTile.png',
 
     // Ressources
-    tree: 'https://i.imgur.com/pfC0lO8.png',
-    berry: 'https://i.imgur.com/JTLqR5N.png',
-    stone: 'https://i.imgur.com/8qLjUww.png',
+    tree: 'images/tree.png',
+    berry: 'images/berry.png',
+    stone: 'images/stone.png',
 
     // Unités
-    villager: 'https://i.imgur.com/YBo9e26.png',
-    soldier: 'https://i.imgur.com/2wTXcSV.png',
-    archer: 'https://i.imgur.com/R7PiJRn.png',
-    knight: 'https://i.imgur.com/Lrd2V8S.png',
-    enemy: 'https://i.imgur.com/HQExWME.png',
+    villager: 'images/villager.png',
+    soldier: 'images/soldier.png',
+    archer: 'images/archer.png',
+    knight: 'images/knight.png',
+    enemy: 'images/enemy.png',
 
     // Bâtiments
-    house: 'https://i.imgur.com/v9uRHVF.png',
-    farm: 'https://i.imgur.com/4EmNlNH.png',
-    lumbermill: 'https://i.imgur.com/7M5KrJM.png',
-    quarry: 'https://i.imgur.com/dIlAT2o.png',
-    barracks: 'https://i.imgur.com/WP68q97.png',
-    archery: 'https://i.imgur.com/ZK0BcLs.png',
-    towncenter: 'https://i.imgur.com/JZrxkBG.png',
+    house: 'images/house.png',
+    farm: 'images/farm.png',
+    lumbermill: 'images/lumbermill.png',
+    quarry: 'images/quarry.png',
+    barracks: 'images/barracks.png',
+    archery: 'images/archery.png',
+    towncenter: 'images/towncenter.png',
 
     // Effets
-    selectionCircle: 'https://i.imgur.com/iLvjmZ7.png',
-    selectionSquare: 'https://i.imgur.com/JJy7yL3.png',
-    constructionEffect: 'https://i.imgur.com/bpMJRGZ.png',
-    attackEffect: 'https://i.imgur.com/C9NeZdw.png',
-    treeDestructionEffect: 'https://i.imgur.com/VRCN5bX.png',
-    fogOfWar: 'https://i.imgur.com/0WUE4UB.png'
+    selectionCircle: 'images/selectionCircle.png',
+    selectionSquare: 'images/selectionSquare.png',
+    constructionEffect: 'images/constructionEffect.png',
+    attackEffect: 'images/attackEffect.png',
+    treeDestructionEffect: 'images/treeDestructionEffect.png',
+    fogOfWar: 'images/fogOfWar.png'
   },
   sounds: {
-    villagerCreate: 'https://assets.mixkit.co/sfx/download/mixkit-quick-jump-arcade-game-239.wav',
-    villagerAcknowledge: 'https://assets.mixkit.co/sfx/download/mixkit-positive-interface-beep-221.wav',
-    villagerHarvest: 'https://assets.mixkit.co/sfx/download/mixkit-metal-hit-woosh-1485.wav',
-    soldierCreate: 'https://assets.mixkit.co/sfx/download/mixkit-sword-blade-slide-2788.wav',
-    soldierAcknowledge: 'https://assets.mixkit.co/sfx/download/mixkit-extra-bonus-in-a-video-game-2045.wav',
-    soldierAttack: 'https://assets.mixkit.co/sfx/download/mixkit-sword-cut-swoosh-1476.wav',
-    buildingPlace: 'https://assets.mixkit.co/sfx/download/mixkit-arcade-game-jump-coin-216.wav',
-    buildingDestroy: 'https://assets.mixkit.co/sfx/download/mixkit-falling-game-over-1942.wav',
-    treeChop: 'https://assets.mixkit.co/sfx/download/mixkit-hitting-wood-with-metal-2178.wav',
-    rockMine: 'https://assets.mixkit.co/sfx/download/mixkit-hitting-a-rock-with-a-pick-2879.wav',
-    berryPick: 'https://assets.mixkit.co/sfx/download/mixkit-plastic-bubble-click-1343.wav',
-    enemySpawn: 'https://assets.mixkit.co/sfx/download/mixkit-sword-slash-swoosh-1476.wav',
-    enemyDeath: 'https://assets.mixkit.co/sfx/download/mixkit-dramatic-metal-explosion-impact-1687.wav',
-    buttonClick: 'https://assets.mixkit.co/sfx/download/mixkit-select-click-1109.wav',
-    errorSound: 'https://assets.mixkit.co/sfx/download/mixkit-wrong-answer-fail-notification-946.wav'
+    villagerCreate: 'sounds/villagerCreate.wav',
+    villagerAcknowledge: 'sounds/villagerAcknowledge.wav',
+    villagerHarvest: 'sounds/villagerHarvest.wav',
+    soldierCreate: 'sounds/soldierCreate.wav',
+    soldierAcknowledge: 'sounds/soldierAcknowledge.wav',
+    soldierAttack: 'sounds/soldierAttack.wav',
+    buildingPlace: 'sounds/buildingPlace.wav',
+    buildingDestroy: 'sounds/buildingDestroy.wav',
+    treeChop: 'sounds/treeChop.wav',
+    rockMine: 'sounds/rockMine.wav',
+    berryPick: 'sounds/berryPick.wav',
+    enemySpawn: 'sounds/enemySpawn.wav',
+    enemyDeath: 'sounds/enemyDeath.wav',
+    buttonClick: 'sounds/buttonClick.wav',
+    errorSound: 'sounds/errorSound.wav'
   },
   music: {
-    gameTheme: 'https://assets.mixkit.co/music/download/mixkit-games-worldbeat-668.mp3'
+    gameTheme: 'music/gameTheme.mp3'
   }
 };
 
@@ -2083,7 +2083,7 @@ function handleMouseDown(e) {
     const tileX = Math.floor(worldX);
     const tileY = Math.floor(worldY);
 
-    // Vérifier si il y a des ressources à récolter
+    // Vérifier s'il y a des ressources à récolter
     const resource = getResourceAt(tileX, tileY);
     const building = getBuildingAt(tileX, tileY);
 
@@ -2271,10 +2271,10 @@ function handleMouseUp(e) {
   if (gameState.selectionBox) {
     // Calculer les limites de la boîte de sélection
     const { startX, startY, endX, endY } = gameState.selectionBox;
-    const left = Math.min(startX, endX) + gameState.camera.x;
-    const right = Math.max(startX, endX) + gameState.camera.x;
-    const top = Math.min(startY, endY) + gameState.camera.y;
-    const bottom = Math.max(startY, endY) + gameState.camera.y;
+    const left = Math.min(startX, endX);
+    const right = Math.max(startX, endX);
+    const top = Math.min(startY, endY);
+    const bottom = Math.max(startY, endY);
 
     // Réinitialiser la sélection
     gameState.selected = [];
@@ -2327,7 +2327,7 @@ function handleMouseUp(e) {
 
     // Afficher le nombre d'unités sélectionnées
     if (gameState.selected.length > 0) {
-            updateStatus(`${gameState.selected.length} unités sélectionnées`);
+      updateStatus(`${gameState.selected.length} unités sélectionnées`);
       playSound('buttonClick', 0.2);
     } else {
       updateStatus("Sélectionnez des unités et cliquez pour les déplacer");
@@ -2562,49 +2562,3 @@ function selectUnitGroup(groupNum) {
         unit.selected = true;
         gameState.selected.push(unit);
         found = true;
-        break;
-      }
-    }
-  }
-
-  updateStatus(`Groupe ${groupNum} sélectionné (${gameState.selected.length} unités)`);
-  playSound('buttonClick', 0.2);
-}
-
-// Initialisation du jeu
-function initGame() {
-  resizeCanvas();
-  initMap();
-  updateUI();
-
-  // Créer un hôtel de ville au départ
-  placeBuildingAt(
-    Math.floor(config.mapWidth / 2) - 2,
-    Math.floor(config.mapHeight / 2) - 2,
-    'towncenter', 4, 3, 10
-  );
-
-  // Créer des villageois de départ
-  spawnUnit(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2), 'villager');
-  spawnUnit(Math.floor(config.mapWidth / 2) + 1, Math.floor(config.mapHeight / 2), 'villager');
-  spawnUnit(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2) + 1, 'villager');
-
-  // Révéler la zone de départ
-  revealArea(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2), 10);
-
-  // Démarrer la musique de fond
-  if (config.musicEnabled) {
-    playMusic('gameTheme', 0.2);
-  }
-
-  // Démarrer les intervalles réguliers
-  setInterval(spawnEnemy, config.enemySpawnInterval);
-
-  // Démarrer la boucle de jeu
-  window.requestAnimationFrame(gameLoop);
-
-  updateStatus("Bienvenue dans Strategic Kingdoms 2025! Construisez votre royaume et défendez-le contre les ennemis.");
-}
-
-// Commencer le chargement des ressources
-loadResources();
