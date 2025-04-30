@@ -12,29 +12,33 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #000;
-            color: #fff;
+            background-color: #2c3e50;
+            color: #ecf0f1;
             transition: background-color 1s, color 1s;
         }
         .container {
             text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #34495e;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
         .energy {
-            font-size: 2em;
+            font-size: 1.5em;
             margin-bottom: 20px;
         }
         .click-button {
-            font-size: 1.5em;
-            padding: 10px 20px;
+            font-size: 1.2em;
+            padding: 15px 30px;
             margin-bottom: 20px;
             cursor: pointer;
-            background-color: #00f;
+            background-color: #3498db;
             border: none;
             border-radius: 5px;
             transition: background-color 0.3s;
         }
         .click-button:hover {
-            background-color: #00a;
+            background-color: #2980b9;
         }
         .upgrades, .dimensions {
             margin-top: 20px;
@@ -42,22 +46,33 @@
         .upgrade, .dimension {
             margin: 10px 0;
             cursor: pointer;
-            background-color: #333;
+            background-color: #2c3e50;
             padding: 10px;
             border-radius: 5px;
             transition: background-color 0.3s;
         }
         .upgrade:hover, .dimension:hover {
-            background-color: #444;
+            background-color: #34495e;
         }
-        .glitch {
-            animation: glitch 1s infinite;
+        .prestige-button {
+            margin-top: 20px;
+            font-size: 1em;
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
-        @keyframes glitch {
-            0%, 100% { text-shadow: 0.05em 0 0 #0ff, -0.05em 0 0 #f0f; }
-            25% { text-shadow: 0.05em 0 0 #f0f, -0.05em 0 0 #0ff; }
-            50% { text-shadow: 0.05em 0 0 #0ff, -0.05em 0 0 #f0f; }
-            75% { text-shadow: 0.05em 0 0 #f0f, -0.05em 0 0 #0ff; }
+        .prestige-button:hover {
+            background-color: #c0392b;
+        }
+        .fade-transition {
+            animation: fade 1s;
+        }
+        @keyframes fade {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
@@ -91,9 +106,9 @@
         let prestigeMultiplier = 1;
 
         const dimensions = {
-            "Cybermonde": { background: "#00f", color: "#fff", boost: 1.5 },
-            "Terre Organique": { background: "#0f0", color: "#000", boost: 2 },
-            "Vide Lumineux": { background: "#ff0", color: "#000", boost: 2.5 }
+            "Cybermonde": { background: "#1abc9c", color: "#ecf0f1", boost: 1.5 },
+            "Terre Organique": { background: "#2ecc71", color: "#ecf0f1", boost: 2 },
+            "Vide Lumineux": { background: "#e67e22", color: "#ecf0f1", boost: 2.5 }
         };
 
         let currentDimension = null;
@@ -177,9 +192,9 @@
                 document.body.style.backgroundColor = dimensions[dimension].background;
                 document.body.style.color = dimensions[dimension].color;
                 clickMultiplier *= dimensions[dimension].boost;
-                document.body.classList.add('glitch');
+                document.body.classList.add('fade-transition');
                 setTimeout(() => {
-                    document.body.classList.remove('glitch');
+                    document.body.classList.remove('fade-transition');
                 }, 1000);
                 saveGame();
             }
