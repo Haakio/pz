@@ -27,7 +27,7 @@ body {
     margin-bottom: 20px;
 }
 
-.energy, .level {
+.energy, .level, .gems {
     font-size: 1.5em;
     color: #0ff;
     text-shadow: 0 0 5px #0ff, 0 0 10px #0ff, 0 0 15px #0ff, 0 0 20px #0ff;
