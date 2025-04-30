@@ -11,6 +11,7 @@
         <div class="header">
             <div class="energy" id="energy" aria-live="polite">Énergie dimensionnelle: 0</div>
             <div class="level" id="level" aria-live="polite">Niveau: 1</div>
+            <div class="gems" id="gemCount" aria-live="polite">Gemmes: 0</div>
         </div>
         <div class="progress-bar">
             <div id="progress"></div>
@@ -20,16 +21,61 @@
             <div class="upgrade" data-cost="10" data-multiplier="2">Amélioration de clic x2 (10)</div>
             <div class="upgrade" data-cost="50" data-interval="1000" data-auto="1">Production automatique (50)</div>
         </div>
+        <div class="upgrades" id="passiveUpgrades">
+            <div class="upgrade" data-cost="500" data-type="passive" data-effect="energyProduction">Générateur d'Énergie (500)</div>
+        </div>
+        <div class="upgrades" id="dimensionUpgrades">
+            <div class="upgrade" data-dimension="Cybermonde" data-cost="300" data-effect="energyProduction">Boost de Cybermonde (300)</div>
+        </div>
         <div class="dimensions" id="dimensions">
             <div class="dimension" data-dimension="Cybermonde">Cybermonde</div>
             <div class="dimension" data-dimension="Terre Organique">Terre Organique</div>
             <div class="dimension" data-dimension="Vide Lumineux">Vide Lumineux</div>
+            <div class="dimension" data-dimension="Dimension Quantique">Dimension Quantique</div>
         </div>
         <button class="prestige-button" id="prestigeButton">Réinitialiser pour un bonus</button>
         <button class="menu-button" id="menuButton">Menu</button>
         <div class="menu" id="menu">
             <div class="artifacts" id="artifacts"></div>
             <div class="quests" id="quests"></div>
+            <div id="stats">
+                <p>Énergie totale produite: <span id="totalEnergy">0</span></p>
+                <p>Nombre de clics: <span id="totalClicks">0</span></p>
+            </div>
+            <div id="themeSelectorContainer">
+                <select id="themeSelector">
+                    <option value="dark">Thème Sombre</option>
+                    <option value="light">Thème Clair</option>
+                    <option value="custom">Thème Personnalisé</option>
+                </select>
+            </div>
+            <div id="friendsList">
+                <h2>Amis</h2>
+                <ul id="friends"></ul>
+            </div>
+            <div id="tradeSection">
+                <h2>Échanges</h2>
+                <input type="text" id="tradeInput" placeholder="Nom de l'ami">
+                <button id="tradeButton">Échanger</button>
+            </div>
+            <div id="shop">
+                <h2>Boutique</h2>
+                <div class="shopItem" data-cost="100" data-item="Artéfact Rare">Artéfact Rare (100 gemmes)</div>
+            </div>
+            <div id="avatarCustomization">
+                <h2>Personnalisation de l'Avatar</h2>
+                <select id="avatarSelector">
+                    <option value="avatar1">Avatar 1</option>
+                    <option value="avatar2">Avatar 2</option>
+                </select>
+            </div>
+            <div id="accessories">
+                <h2>Accessoires</h2>
+                <select id="accessorySelector">
+                    <option value="hat1">Chapeau 1</option>
+                    <option value="hat2">Chapeau 2</option>
+                </select>
+            </div>
         </div>
     </div>
     <script type="module" src="main.js"></script>
