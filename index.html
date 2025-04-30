@@ -10,7 +10,7 @@
         body {
             font-family: 'Orbitron', sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             height: 100vh;
             margin: 0;
@@ -26,11 +26,30 @@
             background: rgba(44, 62, 80, 0.8);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 600px;
         }
-        .energy {
-            font-size: 2em;
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            animation: fadeIn 2s;
+        }
+        .energy, .level {
+            font-size: 1.5em;
+        }
+        .progress-bar {
+            width: 100%;
+            background: #34495e;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        .progress-bar div {
+            height: 20px;
+            background: #3498db;
+            width: 0;
+            transition: width 0.5s;
         }
         .click-button {
             font-size: 1.5em;
@@ -47,10 +66,10 @@
             transform: scale(1.05);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
         }
-        .upgrades, .dimensions {
+        .upgrades, .dimensions, .artifacts, .quests {
             margin-top: 20px;
         }
-        .upgrade, .dimension {
+        .upgrade, .dimension, .artifact, .quest {
             margin: 15px 0;
             cursor: pointer;
             background: rgba(44, 62, 80, 0.7);
@@ -59,11 +78,11 @@
             transition: background 0.3s, transform 0.3s;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
         }
-        .upgrade:hover, .dimension:hover {
+        .upgrade:hover, .dimension:hover, .artifact:hover, .quest:hover {
             background: rgba(44, 62, 80, 0.9);
             transform: scale(1.03);
         }
-        .prestige-button {
+        .prestige-button, .menu-button {
             margin-top: 20px;
             font-size: 1.2em;
             padding: 15px 30px;
@@ -74,9 +93,18 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             transition: transform 0.3s, box-shadow 0.3s;
         }
-        .prestige-button:hover {
+        .prestige-button:hover, .menu-button:hover {
             transform: scale(1.05);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        .menu {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .menu.active {
+            display: flex;
         }
         .fade-transition {
             animation: fade 1s;
@@ -89,11 +117,23 @@
             from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes glitch {
+            0%, 100% { text-shadow: 0.05em 0 0 #0ff, -0.05em 0 0 #f0f; }
+            25% { text-shadow: 0.05em 0 0 #f0f, -0.05em 0 0 #0ff; }
+            50% { text-shadow: 0.05em 0 0 #0ff, -0.05em 0 0 #f0f; }
+            75% { text-shadow: 0.05em 0 0 #f0f, -0.05em 0 0 #0ff; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="energy" id="energy">Énergie dimensionnelle: 0</div>
+        <div class="header">
+            <div class="energy" id="energy">Énergie dimensionnelle: 0</div>
+            <div class="level" id="level">Niveau: 1</div>
+        </div>
+        <div class="progress-bar">
+            <div id="progress"></div>
+        </div>
         <button class="click-button" id="clickButton">Canaliser l'énergie</button>
         <div class="upgrades" id="upgrades">
             <div class="upgrade" data-cost="10" data-multiplier="2">Amélioration de clic x2 (10)</div>
@@ -105,20 +145,37 @@
             <div class="dimension" data-dimension="Vide Lumineux">Vide Lumineux</div>
         </div>
         <button class="prestige-button" id="prestigeButton">Réinitialiser pour un bonus</button>
+        <button class="menu-button" id="menuButton">Menu</button>
+        <div class="menu" id="menu">
+            <div class="artifacts" id="artifacts"></div>
+            <div class="quests" id="quests"></div>
+        </div>
     </div>
 
     <script>
         const energyDisplay = document.getElementById('energy');
+        const levelDisplay = document.getElementById('level');
+        const progressBar = document.getElementById('progress');
         const clickButton = document.getElementById('clickButton');
         const upgradesContainer = document.getElementById('upgrades');
         const dimensionsContainer = document.getElementById('dimensions');
         const prestigeButton = document.getElementById('prestigeButton');
+        const menuButton = document.getElementById('menuButton');
+        const menu = document.getElementById('menu');
+        const artifactsContainer = document.getElementById('artifacts');
+        const questsContainer = document.getElementById('quests');
 
         let energy = 0;
         let clickMultiplier = 1;
         let autoProduction = 0;
         let autoInterval = null;
         let prestigeMultiplier = 1;
+        let xp = 0;
+        let level = 1;
+        let xpToNextLevel = 100;
+        let artifacts = [];
+        let currentQuest = null;
+        let eventInterval = null;
 
         const dimensions = {
             "Cybermonde": { background: "linear-gradient(135deg, #1abc9c, #16a085)", color: "#ecf0f1", boost: 1.5 },
@@ -128,8 +185,24 @@
 
         let currentDimension = null;
 
+        const events = [
+            { name: "Faille instable", effect: () => { clickMultiplier *= 1.5; }, duration: 30000 },
+            { name: "Pluie de quanta", effect: () => { autoProduction *= 2; }, duration: 60000 },
+            { name: "Perturbation énergétique", effect: () => { clickMultiplier *= 0.5; }, duration: 45000 }
+        ];
+
+        const quests = [
+            { description: "Cliquez 100 fois", goal: 100, type: 'click', reward: { energy: 500 } },
+            { description: "Atteignez 1000 énergie", goal: 1000, type: 'energy', reward: { xp: 200 } }
+        ];
+
         function updateEnergyDisplay() {
             energyDisplay.textContent = `Énergie dimensionnelle: ${energy}`;
+        }
+
+        function updateLevelDisplay() {
+            levelDisplay.textContent = `Niveau: ${level}`;
+            progressBar.style.width = `${(xp / xpToNextLevel) * 100}%`;
         }
 
         function saveGame() {
@@ -138,6 +211,10 @@
             localStorage.setItem('autoProduction', autoProduction);
             localStorage.setItem('prestigeMultiplier', prestigeMultiplier);
             localStorage.setItem('currentDimension', currentDimension);
+            localStorage.setItem('xp', xp);
+            localStorage.setItem('level', level);
+            localStorage.setItem('artifacts', JSON.stringify(artifacts));
+            localStorage.setItem('currentQuest', JSON.stringify(currentQuest));
         }
 
         function loadGame() {
@@ -146,29 +223,68 @@
             autoProduction = parseInt(localStorage.getItem('autoProduction')) || 0;
             prestigeMultiplier = parseFloat(localStorage.getItem('prestigeMultiplier')) || 1;
             currentDimension = localStorage.getItem('currentDimension') || null;
+            xp = parseInt(localStorage.getItem('xp')) || 0;
+            level = parseInt(localStorage.getItem('level')) || 1;
+            artifacts = JSON.parse(localStorage.getItem('artifacts')) || [];
+            currentQuest = JSON.parse(localStorage.getItem('currentQuest')) || null;
 
             if (currentDimension) {
                 changeDimension(currentDimension);
             }
 
             updateEnergyDisplay();
+            updateLevelDisplay();
             startAutoProduction();
+            displayArtifacts();
+            displayQuest();
+            startEventInterval();
         }
 
         function startAutoProduction() {
             if (autoProduction > 0) {
                 autoInterval = setInterval(() => {
                     energy += autoProduction * prestigeMultiplier;
+                    gainXP(autoProduction);
                     updateEnergyDisplay();
                     saveGame();
                 }, 1000);
             }
         }
 
+        function gainXP(amount) {
+            xp += amount;
+            if (xp >= xpToNextLevel) {
+                levelUp();
+            }
+            updateLevelDisplay();
+            saveGame();
+        }
+
+        function levelUp() {
+            level++;
+            xp = 0;
+            xpToNextLevel = Math.floor(xpToNextLevel * 1.5);
+            clickMultiplier *= 1.01;
+            autoProduction += 1;
+            updateLevelDisplay();
+            saveGame();
+        }
+
         clickButton.addEventListener('click', () => {
             energy += clickMultiplier * prestigeMultiplier;
+            gainXP(clickMultiplier);
             updateEnergyDisplay();
             saveGame();
+            if (Math.random() < 0.01) {
+                lootArtifact();
+            }
+            if (currentQuest && currentQuest.type === 'click') {
+                currentQuest.progress++;
+                if (currentQuest.progress >= currentQuest.goal) {
+                    completeQuest();
+                }
+                displayQuest();
+            }
         });
 
         upgradesContainer.addEventListener('click', (event) => {
@@ -231,7 +347,84 @@
             }
         });
 
+        menuButton.addEventListener('click', () => {
+            menu.classList.toggle('active');
+        });
+
+        function lootArtifact() {
+            const artifact = {
+                name: `Artefact ${artifacts.length + 1}`,
+                effect: `Bonus permanent de +${Math.floor(Math.random() * 10) + 1}% d'énergie`
+            };
+            artifacts.push(artifact);
+            displayArtifacts();
+            saveGame();
+        }
+
+        function displayArtifacts() {
+            artifactsContainer.innerHTML = '';
+            artifacts.forEach(artifact => {
+                const artifactElement = document.createElement('div');
+                artifactElement.classList.add('artifact');
+                artifactElement.textContent = `${artifact.name}: ${artifact.effect}`;
+                artifactsContainer.appendChild(artifactElement);
+            });
+        }
+
+        function startEventInterval() {
+            eventInterval = setInterval(() => {
+                const event = events[Math.floor(Math.random() * events.length)];
+                triggerEvent(event);
+            }, 120000); // Every 2 minutes
+        }
+
+        function triggerEvent(event) {
+            alert(`Événement: ${event.name}`);
+            event.effect();
+            setTimeout(() => {
+                if (event.name === "Faille instable" || event.name === "Perturbation énergétique") {
+                    clickMultiplier /= 1.5;
+                } else if (event.name === "Pluie de quanta") {
+                    autoProduction /= 2;
+                }
+                alert(`Fin de l'événement: ${event.name}`);
+            }, event.duration);
+        }
+
+        function assignQuest() {
+            currentQuest = quests[Math.floor(Math.random() * quests.length)];
+            currentQuest.progress = 0;
+            displayQuest();
+            saveGame();
+        }
+
+        function displayQuest() {
+            questsContainer.innerHTML = '';
+            if (currentQuest) {
+                const questElement = document.createElement('div');
+                questElement.classList.add('quest');
+                questElement.textContent = `Quête: ${currentQuest.description} (${currentQuest.progress}/${currentQuest.goal})`;
+                questsContainer.appendChild(questElement);
+            }
+        }
+
+        function completeQuest() {
+            if (currentQuest.reward.energy) {
+                energy += currentQuest.reward.energy;
+            }
+            if (currentQuest.reward.xp) {
+                gainXP(currentQuest.reward.xp);
+            }
+            currentQuest = null;
+            displayQuest();
+            assignQuest();
+            saveGame();
+        }
+
         loadGame();
+        if (!currentQuest) {
+            assignQuest();
+        }
     </script>
 </body>
 </html>
