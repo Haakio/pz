@@ -1,4 +1,4 @@
-import { updateEnergyDisplay, updateLevelDisplay, saveGame, loadGame, startAutoProduction, gainXP, levelUp, lootArtifact, displayArtifacts, startEventInterval, assignQuest, displayQuest, completeQuest, playSound, changeDimension, fuseArtifacts, calculatePrestigeBonus, getPrestigeReward, getAchievementReward, getDailyReward, updateLeaderboard, addFriend, showNotification, updateStats, updateGemDisplay, earnGems, startMemoryGame, startPrecisionGame } from './gameLogic.js';
+import { updateEnergyDisplay, updateLevelDisplay, saveGame, loadGame, startAutoProduction, gainXP, levelUp, lootArtifact, displayArtifacts, startEventInterval, assignQuest, displayQuest, completeQuest, playSound, changeDimension, updateStats, updateGemDisplay, earnGems } from './gameLogic.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const energyDisplay = document.getElementById('energy');
