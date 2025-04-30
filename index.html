@@ -3,81 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeu Clicker Interdimensionnel</title>
+    <title>Clicker Interdimensionnel</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="energy" id="energy">Énergie dimensionnelle: 0</div>
-            <div class="level" id="level">Niveau: 1</div>
-            <div class="gems" id="gemCount">Gemmes: 0</div>
-        </div>
-        <div class="progress-bar">
-            <div id="progress"></div>
-        </div>
-        <button class="click-button" id="clickButton">Canaliser l'énergie</button>
-        <div class="upgrades" id="upgrades">
-            <div class="upgrade" data-cost="10" data-multiplier="2">Amélioration de clic x2 (10)</div>
-            <div class="upgrade" data-cost="50" data-interval="1000" data-auto="1">Production automatique (50)</div>
-        </div>
-        <div class="upgrades" id="passiveUpgrades">
-            <div class="upgrade" data-cost="500" data-type="passive" data-effect="energyProduction">Générateur d'Énergie (500)</div>
-        </div>
-        <div class="upgrades" id="dimensionUpgrades">
-            <div class="upgrade" data-dimension="Cybermonde" data-cost="300" data-effect="energyProduction">Boost de Cybermonde (300)</div>
-        </div>
-        <div class="dimensions" id="dimensions">
-            <div class="dimension" data-dimension="Cybermonde">Cybermonde</div>
-            <div class="dimension" data-dimension="Terre Organique">Terre Organique</div>
-            <div class="dimension" data-dimension="Vide Lumineux">Vide Lumineux</div>
-            <div class="dimension" data-dimension="Dimension Quantique">Dimension Quantique</div>
-        </div>
-        <button class="prestige-button" id="prestigeButton">Réinitialiser pour un bonus</button>
-        <button class="menu-button" id="menuButton">Menu</button>
-        <div class="menu" id="menu">
-            <div class="artifacts" id="artifacts"></div>
-            <div class="quests" id="quests"></div>
-            <div id="stats">
-                <p>Énergie totale produite: <span id="totalEnergy">0</span></p>
-                <p>Nombre de clics: <span id="totalClicks">0</span></p>
+    <div id="game-container">
+        <div id="background"></div>
+        <div id="main-interface">
+            <button id="energy-button">Produire de l'Énergie</button>
+            <div id="upgrades">
+                <h2>Améliorations</h2>
+                <button class="upgrade" data-cost="10" data-increase="1">Amélioration 1</button>
+                <button class="upgrade" data-cost="50" data-increase="2">Amélioration 2</button>
             </div>
-            <div id="themeSelectorContainer">
-                <select id="themeSelector">
-                    <option value="dark">Thème Sombre</option>
-                    <option value="light">Thème Clair</option>
-                    <option value="custom">Thème Personnalisé</option>
-                </select>
+            <div id="dimensions">
+                <h2>Dimensions</h2>
+                <button class="dimension" data-dimension="1">Dimension 1</button>
+                <button class="dimension" data-dimension="2">Dimension 2</button>
             </div>
-            <div id="friendsList">
-                <h2>Amis</h2>
-                <ul id="friends"></ul>
+            <div id="progress-bar">
+                <h2>Progression</h2>
+                <div id="progress"></div>
             </div>
-            <div id="tradeSection">
-                <h2>Échanges</h2>
-                <input type="text" id="tradeInput" placeholder="Nom de l'ami">
-                <button id="tradeButton">Échanger</button>
+            <div id="quests">
+                <h2>Quêtes Hebdomadaires</h2>
+                <div id="quest-list"></div>
             </div>
-            <div id="shop">
-                <h2>Boutique</h2>
-                <div class="shopItem" data-cost="100" data-item="Artéfact Rare">Artéfact Rare (100 gemmes)</div>
+            <div id="inventory">
+                <h2>Inventaire</h2>
+                <div id="artifacts"></div>
             </div>
-            <div id="avatarCustomization">
-                <h2>Personnalisation de l'Avatar</h2>
-                <select id="avatarSelector">
-                    <option value="avatar1">Avatar 1</option>
-                    <option value="avatar2">Avatar 2</option>
-                </select>
+            <div id="prestige">
+                <h2>Prestige</h2>
+                <button id="prestige-button">Recommencer avec des bonus</button>
             </div>
-            <div id="accessories">
-                <h2>Accessoires</h2>
-                <select id="accessorySelector">
-                    <option value="hat1">Chapeau 1</option>
-                    <option value="hat2">Chapeau 2</option>
-                </select>
+            <div id="events">
+                <h2>Événements</h2>
+                <div id="event-list"></div>
+            </div>
+            <div id="lore">
+                <h2>Journal Galactique</h2>
+                <div id="lore-content"></div>
+            </div>
+            <div id="themes">
+                <h2>Thèmes</h2>
+                <button class="theme" data-theme="blue">Galaxie Bleue</button>
+                <button class="theme" data-theme="red">Galaxie Rouge</button>
+            </div>
+            <div id="mini-games">
+                <h2>Mini-Jeux</h2>
+                <button id="puzzle-game">Puzzle</button>
+                <button id="hacking-game">Hacking</button>
+            </div>
+            <div id="rewards">
+                <h2>Récompenses Journalières</h2>
+                <div id="daily-rewards"></div>
             </div>
         </div>
     </div>
-    <script type="module" src="main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script src="main.js"></script>
+    <script src="gameLogic.js"></script>
+    <script src="utils.js"></script>
 </body>
 </html>
