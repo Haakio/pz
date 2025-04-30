@@ -2327,4 +2327,284 @@ function handleMouseUp(e) {
 
     // Afficher le nombre d'unités sélectionnées
     if (gameState.selected.length > 0) {
-      updateStatus(`\${gameState.selected.length} 
+            updateStatus(`${gameState.selected.length} unités sélectionnées`);
+      playSound('buttonClick', 0.2);
+    } else {
+      updateStatus("Sélectionnez des unités et cliquez pour les déplacer");
+    }
+
+    // Réinitialiser la boîte de sélection
+    gameState.selectionBox = null;
+  }
+}
+
+function handleMinimapClick(e) {
+  // Récupérer les coordonnées relatives à la mini-carte
+  const rect = minimap.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  // Convertir en coordonnées du monde
+  const worldX = (x / minimap.width) * (config.mapWidth * config.tileSize);
+  const worldY = (y / minimap.height) * (config.mapHeight * config.tileSize);
+
+  // Centrer la caméra sur ce point
+  gameState.camera.targetX = worldX - canvas.width / 2;
+  gameState.camera.targetY = worldY - canvas.height / 2;
+
+  // Limiter les coordonnées de la caméra
+  gameState.camera.targetX = Math.max(0, Math.min(config.mapWidth * config.tileSize - canvas.width, gameState.camera.targetX));
+  gameState.camera.targetY = Math.max(0, Math.min(config.mapHeight * config.tileSize - canvas.height, gameState.camera.targetY));
+
+  // Empêcher l'événement par défaut
+  e.preventDefault();
+
+  // Son de clic
+  playSound('buttonClick', 0.2);
+}
+
+function handleKeyDown(e) {
+  // Raccourcis clavier
+  switch (e.key) {
+    case 'Escape':
+      // Annuler la sélection ou le mode construction
+      if (gameState.buildMode) {
+        gameState.buildMode = null;
+        updateStatus("Mode construction annulé");
+      } else {
+        for (const unit of gameState.selected) {
+          unit.selected = false;
+        }
+        gameState.selected = [];
+        updateStatus("Sélection annulée");
+      }
+      playSound('buttonClick', 0.2);
+      break;
+
+    case 'Delete':
+      // Supprimer les unités sélectionnées
+      for (const unit of gameState.selected) {
+        let unitArray;
+        switch (unit.type) {
+          case 'villager': unitArray = gameState.units.villagers; break;
+          case 'soldier': unitArray = gameState.units.soldiers; break;
+          case 'archer': unitArray = gameState.units.archers; break;
+          case 'knight': unitArray = gameState.units.knights; break;
+        }
+
+        const index = unitArray.indexOf(unit);
+        if (index !== -1) {
+          unitArray.splice(index, 1);
+          gameState.resources.population--;
+        }
+      }
+      gameState.selected = [];
+      updateStatus("Unités supprimées");
+      updateUI();
+      break;
+
+    case 'a':
+      // Sélectionner toutes les unités (avec Ctrl+A)
+      if (e.ctrlKey) {
+        gameState.selected = [];
+        const allUnits = [
+          ...gameState.units.villagers,
+          ...gameState.units.soldiers,
+          ...gameState.units.archers,
+          ...gameState.units.knights
+        ];
+
+        for (const unit of allUnits) {
+          unit.selected = true;
+          gameState.selected.push(unit);
+        }
+
+        updateStatus(`${gameState.selected.length} unités sélectionnées`);
+        playSound('buttonClick', 0.2);
+        e.preventDefault();
+      }
+      break;
+
+    // Touches de déplacement de la caméra (ZQSD ou WASD)
+    case 'z':
+    case 'w':
+    case 'ArrowUp':
+      gameState.camera.targetY = Math.max(0, gameState.camera.targetY - 20);
+      break;
+
+    case 's':
+    case 'ArrowDown':
+      gameState.camera.targetY = Math.min(config.mapHeight * config.tileSize - canvas.height,
+                                         gameState.camera.targetY + 20);
+      break;
+
+    case 'q':
+    case 'a':
+    case 'ArrowLeft':
+      if (!e.ctrlKey) {
+        gameState.camera.targetX = Math.max(0, gameState.camera.targetX - 20);
+      }
+      break;
+
+    case 'd':
+    case 'ArrowRight':
+      gameState.camera.targetX = Math.min(config.mapWidth * config.tileSize - canvas.width,
+                                         gameState.camera.targetX + 20);
+      break;
+
+    // Touches numériques pour sélectionner des groupes d'unités
+    case '1': case '2': case '3': case '4': case '5':
+      const groupNum = parseInt(e.key);
+      if (e.ctrlKey) {
+        // Ctrl+Num pour définir un groupe
+        createUnitGroup(groupNum);
+      } else {
+        // Num pour sélectionner un groupe
+        selectUnitGroup(groupNum);
+      }
+      break;
+  }
+}
+
+// Infobulles
+function showTooltip(e) {
+  const btn = e.target;
+
+  // Récupérer le type d'élément
+  let title, description;
+  if (btn.id.includes('villager')) {
+    title = "Villageois";
+    description = "Récolte des ressources et construit des bâtiments. Coût: 5 🌾";
+  } else if (btn.id.includes('soldier')) {
+    title = "Soldat";
+    description = "Unité de combat de base. Coût: 10 🌾, 5 🪵";
+  } else if (btn.id.includes('archer')) {
+    title = "Archer";
+    description = "Attaque à distance. Coût: 10 🌾, 10 🪵";
+  } else if (btn.id.includes('knight')) {
+    title = "Chevalier";
+    description = "Unité de combat puissante. Coût: 20 🌾, 15 ⛏️";
+  } else if (btn.id.includes('house')) {
+    title = "Maison";
+    description = "Augmente la population maximale de 5. Coût: 10 🪵";
+  } else if (btn.id.includes('farm')) {
+    title = "Ferme";
+    description = "Produit de la nourriture automatiquement. Coût: 5 🪵, 3 ⛏️";
+  } else if (btn.id.includes('lumbermill')) {
+    title = "Scierie";
+    description = "Produit du bois automatiquement. Coût: 8 🪵, 5 ⛏️";
+  } else if (btn.id.includes('quarry')) {
+    title = "Carrière";
+    description = "Produit de la pierre automatiquement. Coût: 10 🪵, 5 ⛏️";
+  } else if (btn.id.includes('barracks')) {
+    title = "Caserne";
+    description = "Permet de créer des soldats et des chevaliers. Coût: 15 🪵, 10 ⛏️";
+  } else if (btn.id.includes('archery')) {
+    title = "Stand de tir";
+    description = "Permet de créer des archers. Coût: 15 🪵, 8 ⛏️";
+  }
+
+  tooltip.querySelector('.tooltip-title').textContent = title;
+  tooltip.querySelector('.tooltip-description').textContent = description;
+
+  const rect = btn.getBoundingClientRect();
+  tooltip.style.left = `${rect.right + 10}px`;
+  tooltip.style.top = `${rect.top}px`;
+  tooltip.style.opacity = '1';
+}
+
+function hideTooltip() {
+  tooltip.style.opacity = '0';
+}
+
+// Groupes d'unités
+const unitGroups = [{}, {}, {}, {}, {}, {}]; // 1-5
+
+function createUnitGroup(groupNum) {
+  if (gameState.selected.length === 0) return;
+
+  // Enregistrer les unités sélectionnées dans le groupe
+  unitGroups[groupNum] = {
+    units: [...gameState.selected]
+  };
+
+  updateStatus(`Groupe ${groupNum} créé avec ${gameState.selected.length} unités`);
+  playSound('buttonClick', 0.2);
+}
+
+function selectUnitGroup(groupNum) {
+  const group = unitGroups[groupNum];
+  if (!group.units || group.units.length === 0) return;
+
+  // Désélectionner toutes les unités
+  for (const unit of gameState.selected) {
+    unit.selected = false;
+  }
+
+  // Réinitialiser la sélection
+  gameState.selected = [];
+
+  // Sélectionner les unités du groupe qui existent encore
+  for (const savedUnit of group.units) {
+    let found = false;
+
+    // Chercher dans tous les types d'unités
+    const allUnitTypes = [
+      { array: gameState.units.villagers, type: 'villager' },
+      { array: gameState.units.soldiers, type: 'soldier' },
+      { array: gameState.units.archers, type: 'archer' },
+      { array: gameState.units.knights, type: 'knight' }
+    ];
+
+    for (const { array } of allUnitTypes) {
+      const unit = array.find(u => u === savedUnit);
+      if (unit) {
+        unit.selected = true;
+        gameState.selected.push(unit);
+        found = true;
+        break;
+      }
+    }
+  }
+
+  updateStatus(`Groupe ${groupNum} sélectionné (${gameState.selected.length} unités)`);
+  playSound('buttonClick', 0.2);
+}
+
+// Initialisation du jeu
+function initGame() {
+  resizeCanvas();
+  initMap();
+  updateUI();
+
+  // Créer un hôtel de ville au départ
+  placeBuildingAt(
+    Math.floor(config.mapWidth / 2) - 2,
+    Math.floor(config.mapHeight / 2) - 2,
+    'towncenter', 4, 3, 10
+  );
+
+  // Créer des villageois de départ
+  spawnUnit(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2), 'villager');
+  spawnUnit(Math.floor(config.mapWidth / 2) + 1, Math.floor(config.mapHeight / 2), 'villager');
+  spawnUnit(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2) + 1, 'villager');
+
+  // Révéler la zone de départ
+  revealArea(Math.floor(config.mapWidth / 2), Math.floor(config.mapHeight / 2), 10);
+
+  // Démarrer la musique de fond
+  if (config.musicEnabled) {
+    playMusic('gameTheme', 0.2);
+  }
+
+  // Démarrer les intervalles réguliers
+  setInterval(spawnEnemy, config.enemySpawnInterval);
+
+  // Démarrer la boucle de jeu
+  window.requestAnimationFrame(gameLoop);
+
+  updateStatus("Bienvenue dans Strategic Kingdoms 2025! Construisez votre royaume et défendez-le contre les ennemis.");
+}
+
+// Commencer le chargement des ressources
+loadResources();
